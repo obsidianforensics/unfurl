@@ -1,0 +1,112 @@
+<!--Copyright 2019 Google LLC-->
+<!-- -->
+<!--Licensed under the Apache License, Version 2.0 (the "License");-->
+<!--you may not use this file except in compliance with the License.-->
+<!--You may obtain a copy of the License at-->
+<!-- -->
+<!--     https://www.apache.org/licenses/LICENSE-2.0-->
+<!-- -->
+<!--Unless required by applicable law or agreed to in writing, software-->
+<!--distributed under the License is distributed on an "AS IS" BASIS,-->
+<!--WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.-->
+<!--See the License for the specific language governing permissions and-->
+<!--limitations under the License.-->
+
+{% extends "base.html" %}
+{% block content %}
+
+<p>
+
+</p>
+
+<form id="topinput">
+  <input type="text" id="text_to_unfurl" size="120" autocomplete="on" required>
+  <input type="submit" value="Unfurl!" id="subButton">
+</form>
+
+<div id="unfurl_graph"></div>
+<script type="text/javascript">
+    subButton.addEventListener("click", function (evt) {
+        if (document.getElementById("text_to_unfurl").value.length > 0){
+            evt.preventDefault();
+            window.location.replace("/" + document.getElementById("text_to_unfurl").value);
+        }
+        return false;
+    });
+
+    // create a network
+    var container = document.getElementById('unfurl_graph');
+
+    var options = {
+        layout: {
+            hierarchical: {
+                direction: 'UD',
+                sortMethod: 'directed',
+                levelSeparation: 100,
+                nodeSpacing: 200
+            }
+        },
+        physics: {
+            enabled: false
+        },
+        'edges': {
+            'color': {
+                'color': 'gray'
+            },
+            'font': {
+                'color': '#e0e0e0',
+                'strokeColor': '#444444',
+                'strokeWidth': 4
+            },
+            'smooth': false,
+            'shadow': {
+                'enabled': true
+            },
+            'width': 3
+        },
+        nodes: {
+            borderWidthSelected: 1,
+            'color': {
+                'background': '#e0e0e0',
+                'border': '#444444',
+                'highlight': {
+                    background: '#e0e0e0',
+                    border: '#111111'
+                },
+                'hover': {}
+            },
+            labelHighlightBold: false,
+            'shadow': {
+                'enabled': true
+            },
+            shape: 'box',
+            shapeProperties: {
+                borderRadius: 2
+            },
+            widthConstraint: {
+                maximum: 200
+            }
+        },
+        configure: {
+            enabled: true,
+            showButton: true
+        }
+    };
+
+    fetch('//localhost:5000/api/{{ url_to_unfurl }}').then(response => {
+      return response.json();
+    }).then(data => {
+        console.log(data);
+        // Work with your JSON data here..
+
+        var unfurl = {
+           nodes: data.nodes,
+           edges: data.edges
+        };
+        var network = new vis.Network(container, unfurl, options);
+    }).catch(err => {
+      // What do when the request fails
+      console.log('The request failed! ', err);
+    });
+</script>
+{% endblock %}
