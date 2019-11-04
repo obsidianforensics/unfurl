@@ -1,4 +1,4 @@
-#Extract and Visualize Data from URLs using Unfurl
+# Extract and Visualize Data from URLs using Unfurl
 Unfurl takes a URL and expands (“unfurls”) it into a directed graph, extracting every bit of information from the URL and exposing the obscured. 
 It does this by breaking up a URL up into components, extracting as much information as it can from each piece, and presenting it all visually. 
 This “show your work” approach (along with embedded references and documentation) makes the analysis transparent to the user and helps them learn 
