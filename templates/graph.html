@@ -25,6 +25,11 @@
 </form>
 
 <div id="unfurl_graph"></div>
+<div id="optionsBox">
+  <button onclick="toggleVisConfig()">Toggle advanced styling options</button>
+  <div id="unfurlOptions"></div>
+</div>
+<br/>
 <script type="text/javascript">
     subButton.addEventListener("click", function (evt) {
         if (document.getElementById("text_to_unfurl").value.length > 0){
@@ -89,7 +94,8 @@
         },
         configure: {
             enabled: true,
-            showButton: true
+            showButton: false,
+            container: document.getElementById("unfurlOptions"),
         }
     };
 
@@ -108,5 +114,15 @@
       // What do when the request fails
       console.log('The request failed! ', err);
     });
+
+    function toggleVisConfig() {
+      var visConfig = document.getElementById('unfurlOptions');
+      if (visConfig.style.display === "block") {
+        visConfig.style.display = "none";
+      } else {
+        visConfig.style.display = "block";
+      }
+    }
+
 </script>
 {% endblock %}
