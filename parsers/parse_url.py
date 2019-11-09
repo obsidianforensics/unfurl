@@ -17,7 +17,7 @@ import re
 
 urlparse_edge = {
     'color': {
-        'color': 'red'
+        'color': '#4d4d4d'
     },
     'title': 'URL Parsing Functions',
     'label': 'u'

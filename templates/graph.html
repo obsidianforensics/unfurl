@@ -16,7 +16,7 @@
 {% block content %}
 
 <p>
-<img src="/static/unfurl.png" style="width:600px;padding:20px 40px 40px;">
+    <a href="/"><img src="/static/unfurl.png" style="width:600px; padding:20px 40px 40px;"></a>
 </p>
 
 <form id="topinput">
@@ -24,7 +24,19 @@
   <input type="submit" value="Unfurl!" id="subButton">
 </form>
 
-<div id="unfurl_graph"></div>
+<div id="unfurl_graph">
+    <div id="exampleBox">
+        <h2>Welcome to Unfurl! Here are some examples:</h2>
+        <ul>
+            <li><a href="/https://www.google.com/search?source=hp&ei=yTLGXeyKN_2y0PEP2smVuAg&q=dfir.blog&oq=dfir.blog&gs_l=psy-ab.3..0i30j0i8i30.1008.2701..2824...0.0..0.140.669.9j1....2..0....1..gws-wiz.....6..0i362i308i154i357j0j0i131j0i10j0i10i30j0i5i10i30j0i13j0i8i10i30.nDHWsi-Ws90&ved=0ahUKEwisk-WjmNzlAhV9GTQIHdpkBYcQ4dUDCAg&uact=5">
+            https://www.google.com/search?source=hp&ei=yTLGXeyKN_2y0PEP2smVuAg&q=dfir.blog&oq=dfir.blog&gs_l=psy-ab.3..0i30j0i8i30.1008.2701..2824...0.0..0.140.669.9j1....2..0....1..gws-wiz.....6..0i362i308i154i357j0j0i131j0i10j0i10i30j0i5i10i30j0i13j0i8i10i30.nDHWsi-Ws90&ved=0ahUKEwisk-WjmNzlAhV9GTQIHdpkBYcQ4dUDCAg&uact=5</a></li>
+            <li><a href="/https://twitter.com/_RyanBenson/status/1189581422685634560">https://twitter.com/_RyanBenson/status/1189581422685634560</a></li>
+            <li><a href="/https://discordapp.com/channels/427876741990711298/551531058039095296">https://discordapp.com/channels/427876741990711298/551531058039095296</a></li>
+            <li><a href="/1573259548">1573259548</a></li>
+        </ul>
+        <h3>You can move and select nodes, zoom and pan the camera, and save the graph image.</h3>
+    </div>
+</div>
 <div id="optionsBox">
   <button onclick="toggleVisConfig()">Toggle advanced styling options</button>
   <div id="unfurlOptions"></div>
