@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+message Ved {
+	/*
+	References:
+	 - https://deedpolloffice.com/blog/articles/decoding-ved-parameter
+	*/
+
+	int32 link_index = 1; // i
+	int32 link_type = 2; // t
+	int32 v3 = 3;
+	int32 v4 = 4;
+	int32 sub_result_position = 5; // (zero based)
+	int32 result_position = 6; // r (zero based)
+	int32 results_start = 7; // s (zero based)
+	int32 v8 = 8;
+	int32 v9 = 9;
+	int32 v10 = 10;
+	int32 v11 = 11;
+	int32 v12 = 12;
+	message v13_Outer_Msg {
+		message v13_Inner_Msg {
+			int64 timestamp = 1;
+			fixed32 v13_2 = 2;
+			fixed32 v13_3 = 3;
+		}
+		v13_Inner_Msg v13_Inner = 1;
+	}
+	v13_Outer_Msg v13_Outer = 13;
+}
