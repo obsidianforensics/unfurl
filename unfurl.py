@@ -60,11 +60,43 @@ class Unfurl:
         successors = list(self.graph.successors(node))
         return successors
 
-    def find_preceding_domain(self, node):
+    def check_sibling_nodes(self, node, data_type=None, key=None, value=None):
         parent_node = self.get_predecessor_node(node)
 
         if not parent_node:
             return False
+
+        assert type(parent_node) == Unfurl.Node, \
+            'Expected Unfurl.Node as parent type; got {}'.format(type(parent_node))
+
+        sibling_nodes = self.get_successor_nodes(parent_node)
+
+        for sibling_node in sibling_nodes:
+
+            # Skip the "sibling" if it's actually the source node
+            if node.node_id == sibling_node.node_id:
+                continue
+
+            # For each attribute, check if it is set. If it is and it
+            # doesn't match, stop checking this node and go to the next
+            if data_type and data_type != sibling_node.data_type:
+                continue
+            if key and key != sibling_node.key:
+                continue
+            if value and value != sibling_node.value:
+                continue
+
+            # This node matched all the given criteria;
+            return True
+
+        # If we got here, no nodes matched all criteria.
+        return False
+
+    def find_preceding_domain(self, node):
+        parent_node = self.get_predecessor_node(node)
+
+        if not parent_node:
+            return ''
 
         assert type(parent_node) == Unfurl.Node, \
             'Expected Unfurl.Node as parent type; got {}'.format(type(parent_node))
@@ -129,29 +161,29 @@ class Unfurl:
 
     def run_plugins(self, node):
 
-        plugin_path = os.path.join(os.getcwd(), 'parsers')
-        if os.path.isdir(plugin_path):
-            sys.path.insert(0, plugin_path)
+        parser_path = os.path.join(os.getcwd(), 'parsers')
+        if os.path.isdir(parser_path):
+            sys.path.insert(0, parser_path)
             try:
-                # Get list of available plugins and run them
-                plugin_listing = os.listdir(plugin_path)
+                # Get list of available parsers and run them
+                parser_listing = os.listdir(parser_path)
 
-                for plugin in plugin_listing:
+                for plugin in parser_listing:
                     if plugin[-3:] == ".py" and plugin[0] != '_':
                         plugin = plugin.replace(".py", "")
 
                         try:
-                            parser = __import__(plugin)
+                            plugin = __import__(plugin)
                         except ImportError as e:
                             print("ImportError: {}".format(e))
                             continue
                         try:
-                            parser.run(self, node)
+                            plugin.run(self, node)
                         except Exception as e:
                             print("Exception: {}; {}".format(e, e.args))
 
             except Exception as e:
-                print('Error loading plugins: {}'.format(e))
+                print('Error loading parsers: {}'.format(e))
 
     def parse(self, queued_item):
         item = queued_item
