@@ -55,10 +55,10 @@ def run(unfurl, node):
     elif node.data_type == 'url.path':
         path_segments = node.value.split('/')
         if len(path_segments) > 2:
-            for path_segment in path_segments:
+            for segment_number, path_segment in enumerate(path_segments):
                 if path_segment != '':
-                    unfurl.add_to_queue(data_type='url.path.segment', key=None, value=path_segment,
-                                        hover='This is a URL <b>path segment</b> (the URL path is split on /s)',
+                    unfurl.add_to_queue(data_type='url.path.segment', key=segment_number, value=path_segment,
+                                        hover='This is a URL <b>path segment</b> (the URL path is split on "/"s)',
                                         parent_id=node.node_id, incoming_edge_config=urlparse_edge)
 
     elif node.data_type == 'url.query' or node.data_type == 'url.fragment':

@@ -60,10 +60,30 @@ def parse_discord_snowflake(unfurl, node):
 
 def run(unfurl, node):
 
-    # Known pattern from main discordapp.com site
-    if node.data_type == 'url.path.segment' and node.value != 'channels':
-        if 'discordapp.com' in unfurl.find_preceding_domain(node):
-            parse_discord_snowflake(unfurl, node)
+    # Known patterns from main discordapp.com site
+    if 'discordapp.com' in unfurl.find_preceding_domain(node):
+        if node.data_type == 'url.path.segment':
+            # Viewing a channel on a server
+            # Ex: https://discordapp.com/channels/427876741990711298/551531058039095296
+            if unfurl.check_sibling_nodes(node, data_type='url.path.segment', key=1, value='channels'):
+                if node.key == 2:
+                    unfurl.add_to_queue(
+                        data_type='description', key=None, value=None, label='Server ID',
+                        hover='The timestamp in the associated Discord Snowflake is the time of Server creation',
+                        parent_id=node.node_id, incoming_edge_config=discord_edge)
+                elif node.key == 3:
+                    unfurl.add_to_queue(
+                        data_type='description', key=None, value=None, label='Channel ID',
+                        hover='The timestamp in the associated Discord Snowflake is the time of Channel creation on the given Server',
+                        parent_id=node.node_id, incoming_edge_config=discord_edge)
+                # Linking to a specific message
+                # Ex: https://discordapp.com/channels/427876741990711298/537760691302563843/643183730227281931
+                elif node.key == 4:
+                    unfurl.add_to_queue(
+                        data_type='description', key=None, value=None, label='Message ID',
+                        hover='The timestamp in the associated Discord Snowflake is the time the Message was sent',
+                        parent_id=node.node_id, incoming_edge_config=discord_edge)
+                parse_discord_snowflake(unfurl, node)
 
     # TODO: Parse attachment URLs
     # Ex: https://cdn.discordapp.com/attachments/622136585277931532/626893414490832918/Discord_Developer_Portal_Snowflakes.pdf
