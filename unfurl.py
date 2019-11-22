@@ -98,15 +98,18 @@ class Unfurl:
         if not parent_node:
             return ''
 
-        assert type(parent_node) == Unfurl.Node, \
+        assert isinstance(parent_node, Unfurl.Node), \
             'Expected Unfurl.Node as parent type; got {}'.format(type(parent_node))
 
-        if parent_node.data_type == "netloc":
+        if parent_node.data_type == 'netloc':
+            assert isinstance(parent_node.value, str)
             return parent_node.value
-        elif parent_node.data_type == "url":
+        elif parent_node.data_type == 'url':
             for child_node in self.get_successor_nodes(parent_node):
-                if child_node.data_type == "netloc":
+                if child_node.data_type == 'netloc':
+                    assert isinstance(child_node.value, str)
                     return child_node.value
+            return ''
         else:
             return self.find_preceding_domain(parent_node)
 
@@ -255,4 +258,4 @@ def testing():
     print(test.generate_json())
 
 
-testing()
+# testing()
