@@ -48,11 +48,13 @@ def run(unfurl, node):
                                 label="Time generated: {}".format(timestamp),
                                 parent_id=node.node_id, incoming_edge_config=uuid_edge)
 
-            # TODO: add MAC address vendor lookup integration
-            # TODO: add detection for randomly generatoed MACs (random 48-bit number with its eighth bit set to 1 as
+            # TODO: add detection for randomly generated MACs (random 48-bit number with its eighth bit set to 1 as
             #  recommended in RFC 4122)
+            pretty_mac = '{value:0{length}X}'.format(value=u.node, length=12)
+            pretty_mac = ':'.join([pretty_mac[i]+pretty_mac[i+1] for i in range(0, 12, 2)])
+
             unfurl.add_to_queue(
-                data_type="uuid-parsed", key=None, value=u.node, label="MAC address: {}".format(u.node, 'x'),
+                data_type='mac-address', key=None, value=pretty_mac, label="MAC address: {}".format(pretty_mac),
                 parent_id=node.node_id, incoming_edge_config=uuid_edge)
 
         elif u.version == 4:
@@ -60,5 +62,5 @@ def run(unfurl, node):
                 data_type="uuid-parsed", key=None, value=node.value, label="Version 4 UUID is randomly generated",
                 parent_id=node.node_id, incoming_edge_config=uuid_edge)
 
-        # TODO: Add lookup of well-known GUIDs?
-        # https://github.com/EricZimmerman/GuidMapping/blob/master/Resources/GuidToName.txt
+    # TODO: Add lookup of well-known GUIDs?
+    # https://github.com/EricZimmerman/GuidMapping/blob/master/Resources/GuidToName.txt
