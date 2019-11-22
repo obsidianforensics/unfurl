@@ -34,7 +34,6 @@ def run(unfurl, node):
 
     elif node.data_type == 'uuid':
         u = uuid.UUID(node.value)
-        print(u)
         # TODO: reference: http://www.mahonri.info/cgi/uuid.cgi
         if u.version == 1:
             unfurl.add_to_queue(data_type="uuid-parsed", key=None, value=node.value,

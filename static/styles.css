@@ -285,7 +285,7 @@ vis.vis-configuration-wrapper {
 #exampleBox {
     text-align: left;
     padding: 30px;
-    width: 800px;
+    width: 650px;
     display: inline-block;
 }
 
@@ -302,5 +302,5 @@ vis.vis-configuration-wrapper {
 }
 
 #exampleBox li {
-    margin: 15px;
+    margin: 18px;
 }
