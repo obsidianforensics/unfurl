@@ -22,9 +22,9 @@ twitter_edge = {
 
 
 def parse_twitter_snowflake(unfurl, node):
+    # Ref: https://blog.twitter.com/engineering/en_us/a/2010/announcing-snowflake.html
+    #      https://ws-dl.blogspot.com/2019/08/2019-08-03-tweetedat-finding-tweet.html
     try:
-        # Ref: https://blog.twitter.com/engineering/en_us/a/2010/announcing-snowflake.html
-        #      https://ws-dl.blogspot.com/2019/08/2019-08-03-tweetedat-finding-tweet.html
         snowflake = int(node.value)
         timestamp = (snowflake >> 22) + 1288834974657
         machine_id = (snowflake & 0x3FF000) >> 12
