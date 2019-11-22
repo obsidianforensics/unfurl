@@ -39,7 +39,7 @@ def parse_discord_snowflake(unfurl, node):
 
     unfurl.add_to_queue(
         data_type='epoch-milliseconds', key=None, value=timestamp, label='Timestamp: {}'.format(timestamp),
-        hover='The first value in a Discord Snowflake is a timestamp',
+        hover='The first value in a Discord Snowflake is a timestamp associated with object creation',
         parent_id=node.node_id, incoming_edge_config=discord_edge)
 
     unfurl.add_to_queue(
