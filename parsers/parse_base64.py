@@ -30,7 +30,8 @@ def run(unfurl, node):
                 # things could be encoded, but it's a start.
                 str_decoded = decoded.decode('ascii', errors='strict')
             except UnicodeDecodeError:
-                # This will happen a lot with things that aren't really b64 encoded
+                # This will happen a lot with things that aren't really b64 encoded and things that are b64-encoded, but the results are not
+                # ASCII (like gzip or protobufs).
                 return
 
             unfurl.add_to_queue(data_type='b64', key=None, value=str_decoded,
