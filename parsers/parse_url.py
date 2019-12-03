@@ -58,7 +58,7 @@ def run(unfurl, node):
             for segment_number, path_segment in enumerate(path_segments):
                 if path_segment != '':
                     unfurl.add_to_queue(data_type='url.path.segment', key=segment_number, value=path_segment,
-                                        hover='This is a URL <b>path segment</b> (the URL path is split on "/"s)',
+                                        hover='This is a URL <b>path segment</b> (the URL path is split on "/"s). Numbering starts at 1.',
                                         parent_id=node.node_id, incoming_edge_config=urlparse_edge)
 
     elif node.data_type == 'url.query' or node.data_type == 'url.fragment':

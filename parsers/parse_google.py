@@ -33,17 +33,6 @@ known_sources = {
 }
 
 
-def add_padding_base64(base_64_encoded_string):
-    num_extra_bytes = (len(base_64_encoded_string) % 4)  # number of extra bytes needed to make len a multiple of 4
-    if num_extra_bytes != 0:
-        pad_length = 4 - num_extra_bytes  # ex: 4 - 1 results in 3 extra "=" pad bytes being added
-        pad_string = base_64_encoded_string + pad_length * '='
-    else:
-        pad_string = base_64_encoded_string
-
-    return pad_string
-
-
 def decode_varint(source):
     result = 0
     number_of_bytes = 0
@@ -63,8 +52,7 @@ def parse_ei(ei):
       Kevin Jones - https://deedpolloffice.com/blog/articles/decoding-ei-parameter
     """
 
-    padded_string = add_padding_base64(ei)
-    decoded = base64.urlsafe_b64decode(padded_string)
+    decoded = base64.urlsafe_b64decode(ei + '===')
 
     # grab 1st 4 bytes and treat as LE unsigned int
     timestamp = struct.unpack('<i', decoded[0:4])[0]
@@ -160,7 +148,7 @@ def run(unfurl, node):
 
             elif node.key == 'uule':
                 # https://moz.com/ugc/geolocation-the-ultimate-tip-to-emulate-local-search
-                location_string = base64.b64decode(add_padding_base64(node.value[10:]))
+                location_string = base64.b64decode(node.value[10:] + '===')
                 unfurl.add_to_queue(data_type='descriptor', key=None, value=location_string, label=location_string,
                                     parent_id=node.node_id, incoming_edge_config=google_edge)
 
@@ -194,7 +182,7 @@ def run(unfurl, node):
                 }
                 assert node.value.startswith('0'), 'The ved parameter should start with 0'
                 encoded_ved = node.value[1:]
-                encoded_ved = base64.urlsafe_b64decode(add_padding_base64(encoded_ved))
+                encoded_ved = base64.urlsafe_b64decode(encoded_ved + '===')
                 ved = Ved().FromString(encoded_ved)
                 ved_dict = json_format.MessageToDict(ved)
                 for key, value in ved_dict.items():
