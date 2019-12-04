@@ -64,11 +64,14 @@ def run(unfurl, node):
     elif node.data_type == 'url.query' or node.data_type == 'url.fragment':
         parsed_qs = urllib.parse.parse_qs(node.value)
         for key, value in parsed_qs.items():
-            assert type(value) is list
-            assert len(value) == 1
-            unfurl.add_to_queue(
-                data_type='url.query.pair', key=key, value=value[0], label='{}: {}'.format(key, value[0]),
-                parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+            assert type(value) is list, 'parsed_qs should result in type list, but did not.'
+            # In the majority of cases, query string keys are unique, but the spec is ambiguous. In the case of
+            # duplicate keys, urllib.parse.parsed_qs adds them to a list. Unfurl will loop over and create a
+            # node for each value in that list of values (this is typically only one value, but could be more).
+            for v in value:
+                unfurl.add_to_queue(
+                    data_type='url.query.pair', key=key, value=v, label='{}: {}'.format(key, v),
+                    parent_id=node.node_id, incoming_edge_config=urlparse_edge)
 
     elif node.data_type == 'url.query.pair':
         try:
@@ -77,6 +80,7 @@ def run(unfurl, node):
             if parsed_url.netloc and parsed_url.path:
                 unfurl.add_to_queue(data_type='url', key=None, value=node.value, parent_id=node.node_id,
                                     incoming_edge_config=urlparse_edge)
+                return
         except:
             # Guess it wasn't a URL
             pass
