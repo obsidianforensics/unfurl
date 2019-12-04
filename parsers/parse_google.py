@@ -355,10 +355,11 @@ def run(unfurl, node):
         }
 
         if node.key == 'linkType':
-            unfurl.add_to_queue(
-                data_type='descriptor', key=None, value=node.value,
-                label=known_link_types.get(
-                    node.value, 'The meaning of this linkType is not known; if you have a theory, please let us know'),
-                hover='There are tens of thousands of these values; the \'known\'<br> ones in Unfurl are based on '
-                      '<a href="https://github.com/beschulz/ved-decoder" target="_blank">Benjamin Schulz\'s work</a>',
-                parent_id=node.node_id, incoming_edge_config=google_edge)
+            if known_link_types.get(node.value):
+                unfurl.add_to_queue(
+                    data_type='descriptor', key=None, value=node.value,
+                    label=known_link_types.get(node.value),
+                    hover='There are tens of thousands of these values; the \'known\'<br> ones in Unfurl are based on '
+                          '<a href="https://github.com/beschulz/ved-decoder" target="_blank">'
+                          'Benjamin Schulz\'s work</a>',
+                    parent_id=node.node_id, incoming_edge_config=google_edge)
