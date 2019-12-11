@@ -57,9 +57,21 @@ def run(unfurl, node):
                 data_type='mac-address', key=None, value=pretty_mac, label="MAC address: {}".format(pretty_mac),
                 parent_id=node.node_id, incoming_edge_config=uuid_edge)
 
+        elif u.version == 3:
+            unfurl.add_to_queue(
+                data_type="uuid-parsed", key=None, value=node.value,
+                label="Version 3 UUID is generated based on a namespace and a name, which are combined and hashed using MD5",
+                parent_id=node.node_id, incoming_edge_config=uuid_edge)
+
         elif u.version == 4:
             unfurl.add_to_queue(
                 data_type="uuid-parsed", key=None, value=node.value, label="Version 4 UUID is randomly generated",
+                parent_id=node.node_id, incoming_edge_config=uuid_edge)
+
+        elif u.hex[12] == '5':
+            unfurl.add_to_queue(
+                data_type="uuid-parsed", key=None, value=node.value,
+                label="Version 5 UUID is generated based on a namespace and a name, which are combined and hashed using SHA-1",
                 parent_id=node.node_id, incoming_edge_config=uuid_edge)
 
     # TODO: Add lookup of well-known GUIDs?
