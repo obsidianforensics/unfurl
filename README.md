@@ -8,10 +8,10 @@ makes the analysis transparent to the user and helps them learn about (and disco
 
 Unfurl has parsers for URLs, search engines, chat applications, social media sites, and more. It also has more generic parsers 
 (timestamps, UUIDs, etc) helpful for exploring new URLs or reverse engineering. It’s also easy to build new parsers, since 
-unfurl is open source (Python 3) and has an extensible plugin system.
+Unfurl is open source (Python 3) and has an extensible plugin system.
 
 No matter if you extracted a URL from a memory image, carved it from slack space, or pulled it from a browser’s history file, 
-unfurl can help you get the most out of it. 
+Unfurl can help you get the most out of it. 
 
 ## How to use Unfurl
 
@@ -25,7 +25,7 @@ page with an interesting URL, you can click the bookmarklet and see the URL "unf
 
 ### Local Install
 
-1. Clone or download unfurl from GitHub.
+1. Clone or download Unfurl from GitHub.
 1. Install Python 3 and the modules in `requirements.txt`
 1. Run `python unfurl_app.py`
 1. Browse to 127.0.0.1:5000/
