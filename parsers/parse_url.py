@@ -57,9 +57,10 @@ def run(unfurl, node):
         if len(path_segments) > 2:
             for segment_number, path_segment in enumerate(path_segments):
                 if path_segment != '':
-                    unfurl.add_to_queue(data_type='url.path.segment', key=segment_number, value=path_segment,
-                                        hover='This is a URL <b>path segment</b> (the URL path is split on "/"s). Numbering starts at 1.',
-                                        parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+                    unfurl.add_to_queue(
+                        data_type='url.path.segment', key=segment_number, value=path_segment,
+                        hover='This is a URL <b>path segment</b> (the URL path is split on "/"s). '
+                              'Numbering starts at 1.', parent_id=node.node_id, incoming_edge_config=urlparse_edge)
 
     elif node.data_type == 'url.query' or node.data_type == 'url.fragment':
         parsed_qs = urllib.parse.parse_qs(node.value)
@@ -73,7 +74,10 @@ def run(unfurl, node):
                     data_type='url.query.pair', key=key, value=v, label='{}: {}'.format(key, v),
                     parent_id=node.node_id, incoming_edge_config=urlparse_edge)
 
-    elif node.data_type == 'url.query.pair':
+    else:
+        if not isinstance(node.value, str):
+            return
+
         try:
             # If we can recognize another URL inside a value, parse it
             parsed_url = urllib.parse.urlparse(node.value)
@@ -86,9 +90,25 @@ def run(unfurl, node):
             pass
 
         # If the value contains more pairs of the form "a=b|c=d|e=f"
-        pipe_delimited_pairs_re = re.compile(r'(?P<key>[^|=]+)=(?P<value>[^|=]+)')
-        m = pipe_delimited_pairs_re.finditer(node.value)
+        pipe_delimited_pairs_re = re.compile(
+            r'((?P<key>[^|=]+)=(?P<value>[^|=]+)\|)+(?P<last_key>[^|=]+)=(?P<last_value>[^|=]+)')
+        m = pipe_delimited_pairs_re.fullmatch(node.value)
         if m:
-            for match in m:
-                unfurl.add_to_queue(data_type='url.query.pair', key=match['key'], value=match['value'],
+            pipe_pairs = node.value.split('|')
+            for pair in pipe_pairs:
+                key, value = pair.split('=')
+                unfurl.add_to_queue(data_type='url.query.pair', key=key, value=value,
                                     parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+            return
+
+        # If the value contains more pairs of the form "a=b&c=d&e=f"
+        amp_delimited_pairs_re = re.compile(
+            r'((?P<key>[^&=]+)=(?P<value>[^&=]+)&)+(?P<last_key>[^&=]+)=(?P<last_value>[^&=]+)')
+        m = amp_delimited_pairs_re.fullmatch(node.value)
+        if m:
+            amp_pairs = node.value.split('&')
+            for pair in amp_pairs:
+                key, value = pair.split('=')
+                unfurl.add_to_queue(data_type='url.query.pair', key=key, value=value,
+                                    parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+            return
