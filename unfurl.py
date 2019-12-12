@@ -183,7 +183,7 @@ class Unfurl:
                         try:
                             plugin.run(self, node)
                         except Exception as e:
-                            print("Exception: {}; {}".format(e, e.args))
+                            print("Exception in {}: {}; {}".format(plugin, e, e.args))
 
             except Exception as e:
                 print('Error loading parsers: {}'.format(e))

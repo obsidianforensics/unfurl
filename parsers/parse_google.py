@@ -79,6 +79,7 @@ def run(unfurl, node):
                              'target="_blank">Kevin Jones: How to decode the ei parameter in Google search</a></li>' \
                              '<li><a href="http://cheeky4n6monkey.blogspot.com/2014/10/google-eid.html" ' \
                              'target="_blank">Cheeky4n6Monkey: Google-ei\'d ?!</a></li></ul>'
+                node.extra_options = {'widthConstraint': {'maximum': 300}}
 
                 assert len(parsed_ei) == 4, \
                     'There should be 4 decoded ei values, but we have {}!'.format(len(parsed_ei))
@@ -135,6 +136,7 @@ def run(unfurl, node):
                     parent_id=node.node_id, incoming_edge_config=google_edge)
 
             elif node.key == 'sxsrf':
+                node.extra_options = {'widthConstraint': {'maximum': 400}}
                 sxs_0, sxs_1 = node.value.split(':', 1)
                 unfurl.add_to_queue(data_type='google.sxsrf', key=1, value=sxs_0,
                                     parent_id=node.node_id, incoming_edge_config=google_edge)
@@ -153,6 +155,7 @@ def run(unfurl, node):
                                     parent_id=node.node_id, incoming_edge_config=google_edge)
 
             elif node.key == 'ved':
+                node.extra_options = {'widthConstraint': {'maximum': 400}}
                 known_ved_descriptions = {
                     'linkIndex':
                         'Unique index for each link on the search page. <br>The higher the number, the farther'
