@@ -20,7 +20,7 @@ Unfurl can help you get the most out of it.
 1. There is an online version at **https://dfir.blog/unfurl**. Visit that page, enter the URL in the form, and 
 click 'Unfurl!'. 
 2. You can also access the online version using a bookmarklet - create a new bookmark and paste 
-`javascript:window.location.href='https://dfir.blog/unfurl/?url='+window.location.href;'` as the location. Then when on any
+`javascript:window.location.href='https://dfir.blog/unfurl/?url='+window.location.href;` as the location. Then when on any
 page with an interesting URL, you can click the bookmarklet and see the URL "unfurled".
 
 ### Local Install
