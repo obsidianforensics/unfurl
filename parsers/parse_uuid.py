@@ -29,8 +29,9 @@ def run(unfurl, node):
         m = re.match(r'(?P<uuid>[0-9A-Fa-f]{8}-?([0-9A-Fa-f]{4}-?){3}(?P<mac>[0-9A-Fa-f]{12}))', str(node.value))
         if m:
             u = m.group('uuid')
-            unfurl.add_to_queue(data_type="uuid", key=None, value=u, label="UUID: {}".format(u),
-                                parent_id=node.node_id, incoming_edge_config=uuid_edge)
+            u = u.replace('-', '')
+            unfurl.add_to_queue(data_type="uuid", key=None, value=u, label="UUID: {}-{}-{}-{}-{}".format(u[:8], u[8:12], u[12:16], u[16:20], u[20:]),
+                                parent_id=node.node_id, incoming_edge_config=uuid_edge, extra_options={'widthConstraint': {'maximum': 500}})
 
     elif node.data_type == 'uuid':
         u = uuid.UUID(node.value)
