@@ -4,3 +4,4 @@ flask
 flask_cors
 networkx
 protobuf
+publicsuffix2
