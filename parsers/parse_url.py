@@ -30,25 +30,42 @@ def run(unfurl, node):
         parsed_url = urllib.parse.urlparse(node.value)
 
         if parsed_url.netloc:
+            if parsed_url.scheme:
+                unfurl.add_to_queue(data_type='url.scheme', key=None, value=parsed_url.scheme,
+                                    hover='This is the URL <b>scheme</b>, per <a href="'
+                                          'https://tools.ietf.org/html/rfc3986" target="_blank">RFC3986</a>',
+                                    parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+
             unfurl.add_to_queue(data_type='netloc', key=None, value=parsed_url.netloc,
-                                hover='This is the URL <b>network location</b> (or netloc), per <a href="'
-                                      'https://tools.ietf.org/html/rfc1808.html" target="_blank">RFC1808</a>',
+                                hover='This is the URL <b>authority</b> (also often called netloc), per <a href="'
+                                      'https://tools.ietf.org/html/rfc3986" target="_blank">RFC3986</a>',
                                 parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+
+            try:
+                if parsed_url.port:
+                    unfurl.add_to_queue(data_type='url.port', key=None, value=parsed_url.port,
+                                        hover='This is the <b>port</b> subcomponent, per <a href="'
+                                              'https://tools.ietf.org/html/rfc3986" target="_blank">RFC3986</a>',
+                                        parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+            except ValueError:
+                # Given port was invalid
+                pass
+
             if parsed_url.path:
                 unfurl.add_to_queue(data_type='url.path', key=None, value=parsed_url.path,
                                     hover='This is the URL <b>path</b>, per <a href="'
-                                          'https://tools.ietf.org/html/rfc1808.html" target="_blank">RFC1808</a>',
+                                          'https://tools.ietf.org/html/rfc3986" target="_blank">RFC3986</a>',
                                     parent_id=node.node_id, incoming_edge_config=urlparse_edge)
             if parsed_url.query:
                 unfurl.add_to_queue(data_type='url.query', key=None, value=parsed_url.query,
                                     hover='This is the URL <b>query</b>, per <a href="'
-                                          'https://tools.ietf.org/html/rfc1808.html" target="_blank">RFC1808</a>',
+                                          'https://tools.ietf.org/html/rfc3986" target="_blank">RFC3986</a>',
                                     parent_id=node.node_id, incoming_edge_config=urlparse_edge,
                                     extra_options={'widthConstraint': {'maximum': 500}})
             if parsed_url.fragment:
                 unfurl.add_to_queue(data_type='url.fragment', key=None, value=parsed_url.fragment,
                                     hover='This is the URL <b>fragment</b>, per <a href="'
-                                          'https://tools.ietf.org/html/rfc1808.html" target="_blank">RFC1808</a>',
+                                          'https://tools.ietf.org/html/rfc3986" target="_blank">RFC3986</a>',
                                     parent_id=node.node_id,
                                     incoming_edge_config=urlparse_edge)
 
