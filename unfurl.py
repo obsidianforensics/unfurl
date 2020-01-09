@@ -16,6 +16,7 @@ import networkx
 import os
 import queue
 import sys
+import importlib
 
 
 class Unfurl:
@@ -176,7 +177,7 @@ class Unfurl:
                         plugin = plugin.replace(".py", "")
 
                         try:
-                            plugin = __import__(plugin)
+                            plugin = importlib.import_module(plugin, package="parsers")
                         except ImportError as e:
                             print("ImportError: {}".format(e))
                             continue
