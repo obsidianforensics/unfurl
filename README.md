@@ -31,5 +31,11 @@ page with an interesting URL, you can click the bookmarklet and see the URL "unf
 1. Browse to 127.0.0.1:5000/
 1. Enter the URL to unfurl in the form, and 'Unfurl!'
 
+### Testing 
+
+1. Units tests are dedicated for testing unique url.
+1. Integration tests concern testing multiple component of the webapp including a call for the API.
+1. To run all tests (units and integration) ``python -m unittest discover -s tests``
+
 ## Legal Bit
 This is not an officially supported Google product.
