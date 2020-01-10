@@ -101,14 +101,19 @@ class Unfurl:
         assert isinstance(parent_node, Unfurl.Node), \
             'Expected Unfurl.Node as parent type; got {}'.format(type(parent_node))
 
-        if parent_node.data_type == 'netloc':
+        if parent_node.data_type == 'url.hostname':
             assert isinstance(parent_node.value, str)
             return parent_node.value
         elif parent_node.data_type == 'url':
             for child_node in self.get_successor_nodes(parent_node):
-                if child_node.data_type == 'netloc':
+                if child_node.data_type == 'url.hostname':
                     assert isinstance(child_node.value, str)
                     return child_node.value
+                elif child_node.data_type == 'url.authority':
+                    for subcomponent in self.get_successor_nodes(child_node):
+                        if subcomponent.data_type == 'url.hostname':
+                            assert isinstance(subcomponent.value, str)
+                            return subcomponent.value
             return ''
         else:
             return self.find_preceding_domain(parent_node)
