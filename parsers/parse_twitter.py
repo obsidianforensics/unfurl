@@ -61,10 +61,3 @@ def run(unfurl, node):
         if 'twitter.com' in unfurl.find_preceding_domain(node) and \
                 unfurl.check_if_int_between(node.value, 561675293291446272, 1245138807813046272):
             parse_twitter_snowflake(unfurl, node)
-
-    # Generation of fake snowflakes for time-bounding:
-    #  fake_snowflake = (target_date_in_epoch_ms - snowflake_epoch) << 22
-
-    # Check if the node's value would correspond to a Snowflake with timestamp between 2015-02 and 2020-04
-    elif unfurl.check_if_int_between(node.value, 561675293291446272, 1245138807813046272):
-        parse_twitter_snowflake(unfurl, node)
