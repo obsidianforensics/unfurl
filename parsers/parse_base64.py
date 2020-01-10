@@ -18,7 +18,7 @@ def run(unfurl, node):
 
     try:
         # TODO: better validation/detection/etc. This is very basic.
-        m = re.match(r'^[A-Za-z0-9_=\-]{8,}$', node.value)
+        m = re.match(r'^[A-Za-z0-9_=\-]{16,}$', node.value)
         if m:
             # As far as I can tell, just adding the max padding possible works, even when the padding is excessive.
             decoded = base64.urlsafe_b64decode(node.value + '===')

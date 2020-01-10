@@ -34,7 +34,7 @@ urlparse_edge = {
 
 
 def run(unfurl, node):
-    if psl is None or node.data_type != 'netloc' or not isinstance(node.value, str):
+    if psl is None or node.data_type != 'url.hostname' or not isinstance(node.value, str):
         return
 
     full_domain = node.value

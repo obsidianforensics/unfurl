@@ -114,6 +114,6 @@ def run(unfurl, node):
                         data_type='description', key=None, value=None, label='Attachment File Name',
                         parent_id=node.node_id, incoming_edge_config=discord_edge)
 
-    # Check if the node's value would correspond to a Snowflake with timestamp between 2015-02 and 2020-04
-    elif unfurl.check_if_int_between(node.value, 15000000000000000, 700000000000000000):
-        parse_discord_snowflake(unfurl, node)
+            # Check if the node's value would correspond to a Snowflake with timestamp between 2015-02 and 2020-04
+            elif unfurl.check_if_int_between(node.value, 15000000000000000, 700000000000000000):
+                parse_discord_snowflake(unfurl, node)
