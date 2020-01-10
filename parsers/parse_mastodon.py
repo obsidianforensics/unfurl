@@ -53,5 +53,6 @@ def run(unfurl, node):
     # Known pattern from mastodon.social site
     if node.data_type == 'url.path.segment':
         mastodon_domains = ['mastodon.social', 'mastodon.cloud']
-        if any(mastodon_domain in unfurl.find_preceding_domain(node) for mastodon_domain in mastodon_domains):
+        # a mastodon domain and it is an integer between 2015-01 and 2030-01
+        if any(mastodon_domain in unfurl.find_preceding_domain(node) for mastodon_domain in mastodon_domains) and unfurl.check_if_int_between(node.value, 93065733734400000, 124089536413761540):
             parse_mastodon_snowflake(unfurl, node)
