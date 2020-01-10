@@ -31,25 +31,23 @@ def run(unfurl, node):
 
         if parsed_url.netloc:
             if parsed_url.scheme:
-                unfurl.add_to_queue(data_type='url.scheme', key=None, value=parsed_url.scheme,
+                unfurl.add_to_queue(data_type='url.scheme', key='Scheme', value=parsed_url.scheme,
                                     hover='This is the URL <b>scheme</b>, per <a href="'
                                           'https://tools.ietf.org/html/rfc3986" target="_blank">RFC3986</a>',
                                     parent_id=node.node_id, incoming_edge_config=urlparse_edge)
 
-            unfurl.add_to_queue(data_type='netloc', key=None, value=parsed_url.netloc,
-                                hover='This is the URL <b>authority</b> (also often called netloc), per <a href="'
-                                      'https://tools.ietf.org/html/rfc3986" target="_blank">RFC3986</a>',
-                                parent_id=node.node_id, incoming_edge_config=urlparse_edge)
-
-            try:
-                if parsed_url.port:
-                    unfurl.add_to_queue(data_type='url.port', key=None, value=parsed_url.port,
-                                        hover='This is the <b>port</b> subcomponent, per <a href="'
-                                              'https://tools.ietf.org/html/rfc3986" target="_blank">RFC3986</a>',
-                                        parent_id=node.node_id, incoming_edge_config=urlparse_edge)
-            except ValueError:
-                # Given port was invalid
-                pass
+            if parsed_url.netloc == parsed_url.hostname:
+                unfurl.add_to_queue(data_type='url.hostname', key=None, value=parsed_url.hostname,
+                                    hover='This is the <b>host</b> subcomponent of authority (also often called '
+                                          'netloc), per <a href="https://tools.ietf.org/html/rfc3986" '
+                                          'target="_blank">RFC3986</a>',
+                                    parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+            else:
+                unfurl.add_to_queue(data_type='url.authority', key=None, value=parsed_url.netloc,
+                                    hover='This is the <b>authority</b> (also often called '
+                                          'netloc), per <a href="https://tools.ietf.org/html/rfc3986" '
+                                          'target="_blank">RFC3986</a>',
+                                    parent_id=node.node_id, incoming_edge_config=urlparse_edge)
 
             if parsed_url.path:
                 unfurl.add_to_queue(data_type='url.path', key=None, value=parsed_url.path,
@@ -90,6 +88,40 @@ def run(unfurl, node):
                 unfurl.add_to_queue(
                     data_type='url.query.pair', key=key, value=v, label='{}: {}'.format(key, v),
                     parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+
+    # This should only occur when a URL node was parsed previously and netloc != hostname, which means there are
+    # additional subcomponents of the authority to parse: user, password, and/or port. Reparsing this way lets the
+    # simple case of authority = hostname look uncluttered, but still support all the other subcomponents if given.
+    elif node.data_type == 'url.authority':
+        # We need to add in a fake scheme here, as we stripped in the previous run and urlparse needs one.
+        parsed_authority = urllib.parse.urlparse(f"https://{node.value}")
+
+        if parsed_authority.username:
+            unfurl.add_to_queue(data_type='url.username', key='Username', value=parsed_authority.username,
+                                hover='This is the <b>username</b> subcomponent of authority, '
+                                      'per <a href="https://tools.ietf.org/html/rfc3986" '
+                                      'target="_blank">RFC3986</a>',
+                                parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+
+        if parsed_authority.password:
+            unfurl.add_to_queue(data_type='url.password', key='Password', value=parsed_authority.password,
+                                hover='This is the <b>password</b> subcomponent of authority, '
+                                      'per <a href="https://tools.ietf.org/html/rfc3986" '
+                                      'target="_blank">RFC3986</a>',
+                                parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+
+        unfurl.add_to_queue(data_type='url.hostname', key='Host', value=parsed_authority.hostname,
+                            hover='This is the <b>host</b> subcomponent of authority (also often called '
+                                  'netloc), per <a href="https://tools.ietf.org/html/rfc3986" '
+                                  'target="_blank">RFC3986</a>',
+                            parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+
+        if parsed_authority.port:
+            unfurl.add_to_queue(data_type='url.port', key='Port', value=parsed_authority.port,
+                                hover='This is the <b>port</b> subcomponent of authority, '
+                                      'per <a href="https://tools.ietf.org/html/rfc3986" '
+                                      'target="_blank">RFC3986</a>',
+                                parent_id=node.node_id, incoming_edge_config=urlparse_edge)
 
     else:
         if not isinstance(node.value, str):
