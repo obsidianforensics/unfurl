@@ -14,7 +14,7 @@
 
 mastodon_edge = {
     'color': {
-        'color': '#1da1f2'
+        'color': '#419BDD'
     },
     'title': 'Mastodon Snowflake',
     'label': '❄'
@@ -52,7 +52,12 @@ def run(unfurl, node):
 
     # Known pattern from mastodon.social site
     if node.data_type == 'url.path.segment':
-        mastodon_domains = ['mastodon.social', 'mastodon.cloud']
-        # a mastodon domain and it is an integer between 2015-01 and 2030-01
-        if any(mastodon_domain in unfurl.find_preceding_domain(node) for mastodon_domain in mastodon_domains) and unfurl.check_if_int_between(node.value, 93065733734400000, 124089536413761540):
+        # Mastodon by nature is federated and there are many, many domains hosting instances. This list was taken
+        # from instances.social, sorted by popularity.
+        mastodon_domains = ['pawoo.net', 'mastodon.social', 'mstdn.jp', 'switter.at', 'mastodon.cloud', 'baraag.net',
+                            'sinblr.com', 'mastodon.xyz', 'mastodon.technology', 'mstdn.io', 'infosec.exchange']
+
+        # Check if node is a child of a mastodon domain, is an integer, & timestamp would be between 2015-01 and 2030-01
+        if any(mastodon_domain in unfurl.find_preceding_domain(node) for mastodon_domain in mastodon_domains) and \
+                unfurl.check_if_int_between(node.value, 93065733734400000, 124089536413761540):
             parse_mastodon_snowflake(unfurl, node)
