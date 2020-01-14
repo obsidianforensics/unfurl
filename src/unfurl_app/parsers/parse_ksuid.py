@@ -45,27 +45,25 @@ def run(unfurl, node):
         #   - https://github.com/saresend/KSUID
 
         m = re.match(r'([a-zA-Z0-9]{27})', str(node.value))
-        if m:
+        if m and len(node.value) == 27 and str(node.value) > "000000000000000000000000000" and str(node.value) < "aWgEPTl1tmebfsQzFP4bxwgy80V":
             unfurl.add_to_queue(data_type='ksuid', key=None, value=node.value, label=f'KSUID: {node.value}',
                                 hover='Ksuid are identifiers that are comprised of a timestamp and a random number. '
                                 '<a href="https://github.com/segmentio/ksuid" target="_blank">[ref]</a>',
                                 parent_id=node.node_id, incoming_edge_config=ksuid_edge,
                                 extra_options={'widthConstraint': {'maximum': 300}})
 
-    elif node.data_type == 'ksuid' and str(node.value) > "000000000000000000000000000" and str(node.value) < "aWgEPTl1tmebfsQzFP4bxwgy80V":
+    elif node.data_type == 'ksuid':
 
         decoded_str_b62_to_bytes = decodebytes(node.value)     
         time_part_in_bytes = decoded_str_b62_to_bytes[0:TIME_STAMP_LENGTH]        
         timestamp = EPOCH_TIME + int_from_bytes( time_part_in_bytes, byteorder="big", signed=False) 
-
         random_payload = decoded_str_b62_to_bytes[TIME_STAMP_LENGTH:]
-        print(timestamp, random_payload)
 
         unfurl.add_to_queue(data_type='epoch-seconds', key=None, value=timestamp,
                            label=f'Timestamp: {timestamp}',
                           parent_id=node.node_id, incoming_edge_config=ksuid_edge)
 
-        unfurl.add_to_queue(data_type='str', key=None, value=random_payload,
+        unfurl.add_to_queue(data_type='descriptor', key=None, value=random_payload,
                            label=f'Randomly generated payload: {random_payload}',
                           parent_id=node.node_id, incoming_edge_config=ksuid_edge)
 
