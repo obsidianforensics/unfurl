@@ -38,15 +38,16 @@ def run(unfurl, node):
         m = re.match(r'(?P<ulid>01[90A-HJ][A-HJKMNP-Z0-9]{23})', str(node.value).replace('-', ''))
         if m:
             u = m.group('ulid')
-            unfurl.add_to_queue(data_type='ulid', key=None, value=u, label='ULID: {}'.format(u),
-                                hover='ULIDs are identifiers that are comprised of a timestamp and a random number. '
-                                '<a href="https://github.com/ulid/spec" target="_blank">[ref]</a>',
-                                parent_id=node.node_id, incoming_edge_config=uuid_edge,
-                                extra_options={'widthConstraint': {'maximum': 300}})
+            unfurl.add_to_queue(
+                data_type='ulid', key=None, value=u, label=f'ULID: {u}',
+                hover='ULIDs are identifiers that are comprised of a timestamp and a random number. '
+                      '<a href="https://github.com/ulid/spec" target="_blank">[ref]</a>',
+                parent_id=node.node_id, incoming_edge_config=uuid_edge,
+                extra_options={'widthConstraint': {'maximum': 300}})
 
     elif node.data_type == 'ulid':
         u = ulid.parse(node.value)
         timestamp = u.timestamp().int
-        unfurl.add_to_queue(data_type='ulid-parsed', key=None, value=timestamp,
-                            label='Timestamp: {}'.format(timestamp),
-                            parent_id=node.node_id, incoming_edge_config=uuid_edge)
+        unfurl.add_to_queue(
+            data_type='ulid-parsed', key=None, value=timestamp, label=f'Timestamp: {timestamp}',
+            parent_id=node.node_id, incoming_edge_config=uuid_edge)

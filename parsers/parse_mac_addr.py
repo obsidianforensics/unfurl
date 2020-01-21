@@ -35,7 +35,7 @@ def run(unfurl, node):
 
             # Check if we need to add colons
             if len(u) == 12:
-                pretty_mac = '{value:0{length}X}'.format(value=u, length=12)
+                pretty_mac = f'{u:0{12}X}'
                 pretty_mac = ':'.join([pretty_mac[i]+pretty_mac[i+1] for i in range(0, 12, 2)])
 
             else:
@@ -44,7 +44,7 @@ def run(unfurl, node):
             # TODO: add detection for randomly generated MACs (random 48-bit number with its eighth bit set to 1 as
             #  recommended in RFC 4122)
             unfurl.add_to_queue(
-                data_type='mac-address', key=None, value=pretty_mac, label="MAC address: {}".format(pretty_mac),
+                data_type='mac-address', key=None, value=pretty_mac, label=f'MAC address: {pretty_mac}',
                 parent_id=node.node_id, incoming_edge_config=uuid_edge)
 
     elif node.data_type == 'mac-address' and MACADDRESS_IO_API_KEY:
@@ -53,5 +53,5 @@ def run(unfurl, node):
 
         if vendor_lookup:
             unfurl.add_to_queue(
-                data_type="mac-address.vendor", key=None, value=vendor_lookup, label="Vendor: {}".format(vendor_lookup),
+                data_type="mac-address.vendor", key=None, value=vendor_lookup, label=f'Vendor: {vendor_lookup}',
                 parent_id=node.node_id, incoming_edge_config=uuid_edge)

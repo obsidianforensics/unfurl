@@ -51,8 +51,7 @@ def run(unfurl, node):
             subdomain = full_domain[:-len(domain)-1]
             unfurl.add_to_queue(
                 data_type='url.subdomain', key='Subdomain', value=subdomain,
-                hover='This is the <b>sub-domain</b> part of the domain or '
-                      'netloc.',
+                hover='This is the <b>sub-domain</b> part of the domain or netloc.',
                 parent_id=node.node_id, incoming_edge_config=urlparse_edge)
         unfurl.add_to_queue(
             data_type='url.domain', key='Domain Name', value=domain,
@@ -63,6 +62,5 @@ def run(unfurl, node):
     if tld is not None:
         unfurl.add_to_queue(
             data_type='url.tld', key='TLD', value=tld,
-            hover='This is the <b>Top Level Domain</b>, or TLD, for the domain '
-                  'or netloc',
+            hover='This is the <b>Top Level Domain</b>, or TLD, for the domain or netloc',
             parent_id=node.node_id, incoming_edge_config=urlparse_edge)

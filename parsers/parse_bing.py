@@ -26,19 +26,19 @@ def run(unfurl, node):
         if 'bing' in unfurl.find_preceding_domain(node):
             if node.key == 'pq':
                 unfurl.add_to_queue(
-                    data_type='descriptor', key=None, value='"Previous" Search Query: {}'.format(node.value),
+                    data_type='descriptor', key=None, value=f'"Previous" Search Query: {node.value}',
                     hover='Previous terms entered by the user; auto-complete or suggestions <br>'
                           'may have been used to reach the actual search terms (in <b>q</b>)',
                     parent_id=node.node_id, incoming_edge_config=bing_edge)
 
             elif node.key == 'q':
                 unfurl.add_to_queue(
-                    data_type='descriptor', key=None, value='Search Query: {}'.format(node.value),
+                    data_type='descriptor', key=None, value=f'Search Query: {node.value}',
                     hover='Terms used in the Bing search', parent_id=node.node_id, incoming_edge_config=bing_edge)
 
             elif node.key == 'first':
                 unfurl.add_to_queue(
-                    data_type='descriptor', key=None, value='Starting Result: {}'.format(node.value),
+                    data_type='descriptor', key=None, value=f'Starting Result: {node.value}',
                     hover='Bing search by default shows 8 results per page; higher <br>'
                           '"first" values may indicate browsing more subsequent results pages.',
                     parent_id=node.node_id, incoming_edge_config=bing_edge)

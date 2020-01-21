@@ -43,7 +43,7 @@ class Unfurl:
 
             if self.label is None:
                 if self.key and self.value:
-                    self.label = '{}: {}'.format(self.key, self.value)
+                    self.label = f'{self.key}: {self.value}'
                 elif self.value:
                     self.label = self.value
 
@@ -68,7 +68,7 @@ class Unfurl:
             return False
 
         assert type(parent_node) == Unfurl.Node, \
-            'Expected Unfurl.Node as parent type; got {}'.format(type(parent_node))
+            f'Expected Unfurl.Node as parent type; got {type(parent_node)}'
 
         sibling_nodes = self.get_successor_nodes(parent_node)
 
@@ -100,7 +100,7 @@ class Unfurl:
             return ''
 
         assert isinstance(parent_node, Unfurl.Node), \
-            'Expected Unfurl.Node as parent type; got {}'.format(type(parent_node))
+            f'Expected Unfurl.Node as parent type; got {type(parent_node)}'
 
         if parent_node.data_type == 'url.hostname':
             assert isinstance(parent_node.value, str)
@@ -154,17 +154,17 @@ class Unfurl:
     def add_to_queue(self, data_type, key, value, label=None, hover=None, parent_id=None, incoming_edge_config=None,
                      extra_options=None):
         new_item = {
-            "data_type": data_type,
-            "key": key,
-            "value": value,
-            "label": label,
-            "hover": hover,
+            'data_type': data_type,
+            'key': key,
+            'value': value,
+            'label': label,
+            'hover': hover,
             'incoming_edge_config': incoming_edge_config,
             'extra_options': extra_options
         }
 
         if parent_id:
-            new_item["parent_id"] = parent_id
+            new_item['parent_id'] = parent_id
 
         self.queue.put(new_item)
 
@@ -178,30 +178,30 @@ class Unfurl:
                 parser_listing = os.listdir(parser_path)
 
                 for plugin in parser_listing:
-                    if plugin[-3:] == ".py" and plugin[0] != '_':
-                        plugin = plugin.replace(".py", "")
+                    if plugin[-3:] == '.py' and plugin[0] != '_':
+                        plugin = plugin.replace('.py', '')
 
                         try:
-                            plugin = importlib.import_module(plugin, package="parsers")
+                            plugin = importlib.import_module(plugin, package='parsers')
                         except ImportError as e:
-                            print("ImportError: {}".format(e))
+                            print(f'ImportError: {e}')
                             continue
                         try:
                             plugin.run(self, node)
                         except Exception as e:
-                            print("Exception in {}: {}; {}".format(plugin, e, e.args))
+                            print(f'Exception in {plugin}: {e}; {e.args}')
 
             except Exception as e:
-                print('Error loading parsers: {}'.format(e))
+                print(f'Error loading parsers: {e}')
 
     def parse(self, queued_item):
         item = queued_item
         node_id = self.create_node(
-            data_type=item["data_type"], key=item["key"], value=item["value"], label=item["label"], hover=item["hover"],
-            parent_id=item.get("parent_id", None), incoming_edge_config=item.get("incoming_edge_config", None),
+            data_type=item['data_type'], key=item['key'], value=item['value'], label=item['label'], hover=item['hover'],
+            parent_id=item.get('parent_id', None), incoming_edge_config=item.get('incoming_edge_config', None),
             extra_options=item.get('extra_options', None))
 
-        if item.get("parent_id"):
+        if item.get('parent_id'):
             self.get_predecessor_node(self.nodes[node_id])
 
         self.run_plugins(self.nodes[node_id])
@@ -214,7 +214,7 @@ class Unfurl:
     def transform_node(node):
         transformed = {
                 'id': int(node.node_id),
-                'label': '{}'.format(node.label)
+                'label': f'{node.label}'
         }
         if node.hover:
             transformed['title'] = node.hover
