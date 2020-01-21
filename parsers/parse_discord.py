@@ -38,22 +38,22 @@ def parse_discord_snowflake(unfurl, node):
                  '<a href="https://discordapp.com/developers/docs/reference#snowflakes" target="_blank">[ref]</a>'
 
     unfurl.add_to_queue(
-        data_type='epoch-milliseconds', key=None, value=timestamp, label='Timestamp:\n{}'.format(timestamp),
+        data_type='epoch-milliseconds', key=None, value=timestamp, label=f'Timestamp:\n{timestamp}',
         hover='The first value in a Discord Snowflake is a timestamp associated with object creation',
         parent_id=node.node_id, incoming_edge_config=discord_edge)
 
     unfurl.add_to_queue(
-        data_type='integer', key=None, value=worker_id, label='Worker ID: {}'.format(worker_id),
+        data_type='integer', key=None, value=worker_id, label=f'Worker ID: {worker_id}',
         hover='The second value in a Discord Snowflake is the internal worker ID',
         parent_id=node.node_id, incoming_edge_config=discord_edge)
 
     unfurl.add_to_queue(
-        data_type='integer', key=None, value=internal_process_id, label='Process ID: {}'.format(internal_process_id),
+        data_type='integer', key=None, value=internal_process_id, label=f'Process ID: {internal_process_id}',
         hover='The third value in a Discord Snowflake is the internal process ID',
         parent_id=node.node_id, incoming_edge_config=discord_edge)
 
     unfurl.add_to_queue(
-        data_type='integer', key=None, value=increment, label='Increment: {}'.format(increment),
+        data_type='integer', key=None, value=increment, label=f'Increment: {increment}',
         hover='For every ID that is generated on that process, this number is incremented',
         parent_id=node.node_id, incoming_edge_config=discord_edge)
 

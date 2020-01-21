@@ -82,17 +82,17 @@ def run(unfurl, node):
                 node.extra_options = {'widthConstraint': {'maximum': 300}}
 
                 assert len(parsed_ei) == 4, \
-                    'There should be 4 decoded ei values, but we have {}!'.format(len(parsed_ei))
+                    f'There should be 4 decoded ei values, but we have {len(parsed_ei)}!'
 
                 unfurl.add_to_queue(
-                    data_type='epoch-seconds', key=None, value=parsed_ei[0], label='ei-0: {}'.format(parsed_ei[0]),
+                    data_type='epoch-seconds', key=None, value=parsed_ei[0], label=f'ei-0: {parsed_ei[0]}',
                     hover='The first value in the \'ei\' parameter is thought to be the timestamp of when the search '
                           'took place.', parent_id=node.node_id, incoming_edge_config=google_edge)
 
                 for index in [1, 2, 3]:
                     unfurl.add_to_queue(
                         data_type="integer", key=None, value=parsed_ei[index],
-                        label='ei-{}: {}'.format(index, parsed_ei[index]),
+                        label=f'ei-{index}: {parsed_ei[index]}',
                         hover="The meaning of the last three 'ei' values is not known.",
                         parent_id=node.node_id, incoming_edge_config=google_edge)
 
@@ -108,29 +108,29 @@ def run(unfurl, node):
                     if len(params[known_param]) > 0:
                         unfurl.add_to_queue(
                             data_type='google.gs_l', key=str(known_param), value=params[known_param],
-                            label='Parameter {}: {}'.format(str(known_param), params[known_param]),
+                            label=f'Parameter {str(known_param)}: {params[known_param]}',
                             parent_id=node.node_id, incoming_edge_config=google_edge)
 
             elif node.key == 'oq':
                 unfurl.add_to_queue(
-                    data_type='descriptor', key=None, value='"Original" Search Query: {}'.format(node.value),
+                    data_type='descriptor', key=None, value=f'"Original" Search Query: {node.value}',
                     hover='Original terms entered by the user; auto-complete or suggestions <br>'
                           'may have been used to reach the actual search terms (in <b>q</b>)',
                     parent_id=node.node_id, incoming_edge_config=google_edge)
 
             elif node.key == 'q':
                 unfurl.add_to_queue(
-                    data_type='descriptor', key=None, value='Search Query: {}'.format(node.value),
+                    data_type='descriptor', key=None, value=f'Search Query: {node.value}',
                     hover='Terms used in the Google search', parent_id=node.node_id, incoming_edge_config=google_edge)
 
             elif node.key == 'source':
                 unfurl.add_to_queue(
-                    data_type='descriptor', key=None, value='Source: {}'.format(known_sources[node.value]),
+                    data_type='descriptor', key=None, value=f'Source: {known_sources[node.value]}',
                     hover='Source of the Google search', parent_id=node.node_id, incoming_edge_config=google_edge)
 
             elif node.key == 'start':
                 unfurl.add_to_queue(
-                    data_type='descriptor', key=None, value='Starting Result: {}'.format(node.value),
+                    data_type='descriptor', key=None, value=f'Starting Result: {node.value}',
                     hover='Google search by default shows 10 results per page; higher <br>'
                           '"start" values may indicate browsing more subsequent results pages.',
                     parent_id=node.node_id, incoming_edge_config=google_edge)
@@ -151,8 +151,9 @@ def run(unfurl, node):
             elif node.key == 'uule':
                 # https://moz.com/ugc/geolocation-the-ultimate-tip-to-emulate-local-search
                 location_string = base64.b64decode(node.value[10:] + '===')
-                unfurl.add_to_queue(data_type='descriptor', key=None, value=location_string, label=location_string,
-                                    parent_id=node.node_id, incoming_edge_config=google_edge)
+                unfurl.add_to_queue(
+                    data_type='descriptor', key=None, value=location_string, label=location_string,
+                    parent_id=node.node_id, incoming_edge_config=google_edge)
 
             elif node.key == 'ved':
                 node.extra_options = {'widthConstraint': {'maximum': 400}}
@@ -216,7 +217,7 @@ def run(unfurl, node):
 
                     else:
                         unfurl.add_to_queue(
-                            data_type='google.ved', key=key, value=value, label='{}: {}'.format(key, value),
+                            data_type='google.ved', key=key, value=value, label=f'{key}: {value}',
                             hover=known_ved_descriptions.get(key, ''),
                             parent_id=node.node_id, incoming_edge_config=google_edge)
 
@@ -231,66 +232,67 @@ def run(unfurl, node):
         }
         if node.key == '0':
             if node.value in known_values[node.key].keys():
-                unfurl.add_to_queue(data_type='descriptor', key=None, value=known_values[node.key][node.value],
-                                    label='Searcher came from {}'.format(known_values[node.key][node.value]),
-                                    hover=None,
-                                    parent_id=node.node_id, incoming_edge_config=google_edge)
+                unfurl.add_to_queue(
+                    data_type='descriptor', key=None, value=known_values[node.key][node.value],
+                    label=f'Searcher came from {known_values[node.key][node.value]}',
+                    parent_id=node.node_id, incoming_edge_config=google_edge)
 
         if node.key == '1':
             if node.value in known_values[node.key].keys():
-                unfurl.add_to_queue(data_type='descriptor', key=None, value=known_values[node.key][node.value],
-                                    label='Searcher selected search terms by {}'.format(
-                                        known_values[node.key][node.value]), hover=None,
-                                    parent_id=node.node_id, incoming_edge_config=google_edge)
+                unfurl.add_to_queue(
+                    data_type='descriptor', key=None, value=known_values[node.key][node.value],
+                    label=f'Searcher selected search terms by {known_values[node.key][node.value]}',
+                    parent_id=node.node_id, incoming_edge_config=google_edge)
 
         if node.key == '2':
-            unfurl.add_to_queue(data_type='descriptor', key=None, value=node.value,
-                                label='Selected option {} from suggestion list'.format(node.value), hover=None,
-                                parent_id=node.node_id, incoming_edge_config=google_edge)
+            unfurl.add_to_queue(
+                data_type='descriptor', key=None, value=node.value,
+                label=f'Selected option {node.value} from suggestion list',
+                parent_id=node.node_id, incoming_edge_config=google_edge)
 
         if node.key == '4':
             if node.value == '0':
                 param_text = 'User clicked on a suggestion'
             else:
-                param_text = '{} seconds before the user selected the search box'.format(str(float(node.value) / 1000))
+                param_text = f'{str(float(node.value) / 1000)} seconds before the user selected the search box'
 
-            unfurl.add_to_queue(data_type='descriptor', key=None, value=node.value,
-                                label=param_text, hover=None,
-                                parent_id=node.node_id, incoming_edge_config=google_edge)
+            unfurl.add_to_queue(
+                data_type='descriptor', key=None, value=node.value, label=param_text,
+                parent_id=node.node_id, incoming_edge_config=google_edge)
 
         if node.key == '5':
             if node.value == '0':
                 param_text = 'User clicked on a suggestion'
             else:
-                param_text = '{} seconds on page before the user completed typing.'.format(
-                    str(float(node.value) / 1000))
+                param_text = f'{str(float(node.value) / 1000)} seconds on page before the user completed typing.'
 
-            unfurl.add_to_queue(data_type='descriptor', key=None, value=node.value,
-                                label=param_text, hover=None,
-                                parent_id=node.node_id, incoming_edge_config=google_edge)
+            unfurl.add_to_queue(
+                data_type='descriptor', key=None, value=node.value, label=param_text,
+                parent_id=node.node_id, incoming_edge_config=google_edge)
 
         if node.key == '7':
             if node.value != '0':
-                param_text = 'User spent {} seconds on page in total.'.format(str(float(node.value) / 1000))
-                unfurl.add_to_queue(data_type='descriptor', key=None, value=node.value,
-                                    label=param_text, hover=None,
-                                    parent_id=node.node_id, incoming_edge_config=google_edge)
+                param_text = f'User spent {str(float(node.value) / 1000)} seconds on page in total.'
+                unfurl.add_to_queue(
+                    data_type='descriptor', key=None, value=node.value, label=param_text,
+                    parent_id=node.node_id, incoming_edge_config=google_edge)
 
         if node.key == '8':
             if node.value == '0':
                 param_text = 'No characters typed'
             else:
-                param_text = '{} keys pressed while user was typing.'.format(node.value)
+                param_text = f'{node.value} keys pressed while user was typing.'
 
-            unfurl.add_to_queue(data_type='descriptor', key=None, value=node.value,
-                                label=param_text, hover='If the search was done in Chrome, this value may be +1.',
-                                parent_id=node.node_id, incoming_edge_config=google_edge)
+            unfurl.add_to_queue(
+                data_type='descriptor', key=None, value=node.value, label=param_text,
+                hover='If the search was done in Chrome, this value may be +1.',
+                parent_id=node.node_id, incoming_edge_config=google_edge)
 
         if node.key == '26':
             if node.value == '1':
-                unfurl.add_to_queue(data_type='descriptor', key=None, value=node.value,
-                                    label='User typed in query', hover=None,
-                                    parent_id=node.node_id, incoming_edge_config=google_edge)
+                unfurl.add_to_queue(
+                    data_type='descriptor', key=None, value=node.value, label='User typed in query',
+                    parent_id=node.node_id, incoming_edge_config=google_edge)
 
     elif node.data_type == 'google.ved':
         known_link_types = {
@@ -348,8 +350,7 @@ def run(unfurl, node):
         if node.key == 'linkType':
             if known_link_types.get(node.value):
                 unfurl.add_to_queue(
-                    data_type='descriptor', key=None, value=node.value,
-                    label=known_link_types.get(node.value),
+                    data_type='descriptor', key=None, value=node.value, label=known_link_types.get(node.value),
                     hover='There are tens of thousands of these values; the \'known\'<br> ones in Unfurl are based on '
                           '<a href="https://github.com/beschulz/ved-decoder" target="_blank">'
                           'Benjamin Schulz\'s work</a>',

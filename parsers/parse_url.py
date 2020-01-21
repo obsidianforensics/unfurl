@@ -31,41 +31,46 @@ def run(unfurl, node):
 
         if parsed_url.netloc:
             if parsed_url.scheme:
-                unfurl.add_to_queue(data_type='url.scheme', key='Scheme', value=parsed_url.scheme,
-                                    hover='This is the URL <b>scheme</b>, per <a href="'
-                                          'https://tools.ietf.org/html/rfc3986" target="_blank">RFC3986</a>',
-                                    parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+                unfurl.add_to_queue(
+                    data_type='url.scheme', key='Scheme', value=parsed_url.scheme,
+                    hover='This is the URL <b>scheme</b>, per <a href="'
+                          'https://tools.ietf.org/html/rfc3986" target="_blank">RFC3986</a>',
+                    parent_id=node.node_id, incoming_edge_config=urlparse_edge)
 
             if parsed_url.netloc == parsed_url.hostname:
-                unfurl.add_to_queue(data_type='url.hostname', key=None, value=parsed_url.hostname,
-                                    hover='This is the <b>host</b> subcomponent of authority (also often called '
-                                          'netloc), per <a href="https://tools.ietf.org/html/rfc3986" '
-                                          'target="_blank">RFC3986</a>',
-                                    parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+                unfurl.add_to_queue(
+                    data_type='url.hostname', key=None, value=parsed_url.hostname,
+                    hover='This is the <b>host</b> subcomponent of authority (also often called '
+                          'netloc), per <a href="https://tools.ietf.org/html/rfc3986" target="_blank">RFC3986</a>',
+                    parent_id=node.node_id, incoming_edge_config=urlparse_edge)
             else:
-                unfurl.add_to_queue(data_type='url.authority', key=None, value=parsed_url.netloc,
-                                    hover='This is the <b>authority</b> (also often called '
-                                          'netloc), per <a href="https://tools.ietf.org/html/rfc3986" '
-                                          'target="_blank">RFC3986</a>',
-                                    parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+                unfurl.add_to_queue(
+                    data_type='url.authority', key=None, value=parsed_url.netloc,
+                    hover='This is the <b>authority</b> (also often called '
+                          'netloc), per <a href="https://tools.ietf.org/html/rfc3986" target="_blank">RFC3986</a>',
+                    parent_id=node.node_id, incoming_edge_config=urlparse_edge)
 
             if parsed_url.path:
-                unfurl.add_to_queue(data_type='url.path', key=None, value=parsed_url.path,
-                                    hover='This is the URL <b>path</b>, per <a href="'
-                                          'https://tools.ietf.org/html/rfc3986" target="_blank">RFC3986</a>',
-                                    parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+                unfurl.add_to_queue(
+                    data_type='url.path', key=None, value=parsed_url.path,
+                    hover='This is the URL <b>path</b>, per <a href="'
+                          'https://tools.ietf.org/html/rfc3986" target="_blank">RFC3986</a>',
+                    parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+
             if parsed_url.query:
-                unfurl.add_to_queue(data_type='url.query', key=None, value=parsed_url.query,
-                                    hover='This is the URL <b>query</b>, per <a href="'
-                                          'https://tools.ietf.org/html/rfc3986" target="_blank">RFC3986</a>',
-                                    parent_id=node.node_id, incoming_edge_config=urlparse_edge,
-                                    extra_options={'widthConstraint': {'maximum': 500}})
+                unfurl.add_to_queue(
+                    data_type='url.query', key=None, value=parsed_url.query,
+                    hover='This is the URL <b>query</b>, per <a href="'
+                          'https://tools.ietf.org/html/rfc3986" target="_blank">RFC3986</a>',
+                    parent_id=node.node_id, incoming_edge_config=urlparse_edge,
+                    extra_options={'widthConstraint': {'maximum': 500}})
+
             if parsed_url.fragment:
-                unfurl.add_to_queue(data_type='url.fragment', key=None, value=parsed_url.fragment,
-                                    hover='This is the URL <b>fragment</b>, per <a href="'
-                                          'https://tools.ietf.org/html/rfc3986" target="_blank">RFC3986</a>',
-                                    parent_id=node.node_id,
-                                    incoming_edge_config=urlparse_edge)
+                unfurl.add_to_queue(
+                    data_type='url.fragment', key=None, value=parsed_url.fragment,
+                    hover='This is the URL <b>fragment</b>, per <a href="'
+                          'https://tools.ietf.org/html/rfc3986" target="_blank">RFC3986</a>',
+                    parent_id=node.node_id, incoming_edge_config=urlparse_edge)
 
     elif node.data_type == 'url.path':
         path_segments = node.value.split('/')
@@ -86,7 +91,7 @@ def run(unfurl, node):
             # node for each value in that list of values (this is typically only one value, but could be more).
             for v in value:
                 unfurl.add_to_queue(
-                    data_type='url.query.pair', key=key, value=v, label='{}: {}'.format(key, v),
+                    data_type='url.query.pair', key=key, value=v, label=f'{key}: {v}',
                     parent_id=node.node_id, incoming_edge_config=urlparse_edge)
 
     # This should only occur when a URL node was parsed previously and netloc != hostname, which means there are
@@ -94,34 +99,35 @@ def run(unfurl, node):
     # simple case of authority = hostname look uncluttered, but still support all the other subcomponents if given.
     elif node.data_type == 'url.authority':
         # We need to add in a fake scheme here, as we stripped in the previous run and urlparse needs one.
-        parsed_authority = urllib.parse.urlparse(f"https://{node.value}")
+        parsed_authority = urllib.parse.urlparse(f'https://{node.value}')
 
         if parsed_authority.username:
-            unfurl.add_to_queue(data_type='url.username', key='Username', value=parsed_authority.username,
-                                hover='This is the <b>username</b> subcomponent of authority, '
-                                      'per <a href="https://tools.ietf.org/html/rfc3986" '
-                                      'target="_blank">RFC3986</a>',
-                                parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+            unfurl.add_to_queue(
+                data_type='url.username', key='Username', value=parsed_authority.username,
+                hover='This is the <b>username</b> subcomponent of authority, '
+                      'per <a href="https://tools.ietf.org/html/rfc3986" target="_blank">RFC3986</a>',
+                parent_id=node.node_id, incoming_edge_config=urlparse_edge)
 
         if parsed_authority.password:
-            unfurl.add_to_queue(data_type='url.password', key='Password', value=parsed_authority.password,
-                                hover='This is the <b>password</b> subcomponent of authority, '
-                                      'per <a href="https://tools.ietf.org/html/rfc3986" '
-                                      'target="_blank">RFC3986</a>',
-                                parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+            unfurl.add_to_queue(
+                data_type='url.password', key='Password', value=parsed_authority.password,
+                hover='This is the <b>password</b> subcomponent of authority, '
+                      'per <a href="https://tools.ietf.org/html/rfc3986" '
+                      'target="_blank">RFC3986</a>',
+                parent_id=node.node_id, incoming_edge_config=urlparse_edge)
 
-        unfurl.add_to_queue(data_type='url.hostname', key='Host', value=parsed_authority.hostname,
-                            hover='This is the <b>host</b> subcomponent of authority (also often called '
-                                  'netloc), per <a href="https://tools.ietf.org/html/rfc3986" '
-                                  'target="_blank">RFC3986</a>',
-                            parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+        unfurl.add_to_queue(
+            data_type='url.hostname', key='Host', value=parsed_authority.hostname,
+            hover='This is the <b>host</b> subcomponent of authority (also often called '
+                  'netloc), per <a href="https://tools.ietf.org/html/rfc3986" target="_blank">RFC3986</a>',
+            parent_id=node.node_id, incoming_edge_config=urlparse_edge)
 
         if parsed_authority.port:
-            unfurl.add_to_queue(data_type='url.port', key='Port', value=parsed_authority.port,
-                                hover='This is the <b>port</b> subcomponent of authority, '
-                                      'per <a href="https://tools.ietf.org/html/rfc3986" '
-                                      'target="_blank">RFC3986</a>',
-                                parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+            unfurl.add_to_queue(
+                data_type='url.port', key='Port', value=parsed_authority.port,
+                hover='This is the <b>port</b> subcomponent of authority, '
+                      'per <a href="https://tools.ietf.org/html/rfc3986" target="_blank">RFC3986</a>',
+                parent_id=node.node_id, incoming_edge_config=urlparse_edge)
 
     else:
         if not isinstance(node.value, str):
@@ -131,8 +137,9 @@ def run(unfurl, node):
             # If we can recognize another URL inside a value, parse it
             parsed_url = urllib.parse.urlparse(node.value)
             if parsed_url.netloc and parsed_url.path:
-                unfurl.add_to_queue(data_type='url', key=None, value=node.value, parent_id=node.node_id,
-                                    incoming_edge_config=urlparse_edge)
+                unfurl.add_to_queue(
+                    data_type='url', key=None, value=node.value, parent_id=node.node_id,
+                    incoming_edge_config=urlparse_edge)
                 return
         except:
             # Guess it wasn't a URL
@@ -146,8 +153,9 @@ def run(unfurl, node):
             pipe_pairs = node.value.split('|')
             for pair in pipe_pairs:
                 key, value = pair.split('=')
-                unfurl.add_to_queue(data_type='url.query.pair', key=key, value=value,
-                                    parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+                unfurl.add_to_queue(
+                    data_type='url.query.pair', key=key, value=value,
+                    parent_id=node.node_id, incoming_edge_config=urlparse_edge)
             return
 
         # If the value contains more pairs of the form "a=b&c=d&e=f"
@@ -158,6 +166,7 @@ def run(unfurl, node):
             amp_pairs = node.value.split('&')
             for pair in amp_pairs:
                 key, value = pair.split('=')
-                unfurl.add_to_queue(data_type='url.query.pair', key=key, value=value,
-                                    parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+                unfurl.add_to_queue(
+                    data_type='url.query.pair', key=key, value=value,
+                    parent_id=node.node_id, incoming_edge_config=urlparse_edge)
             return

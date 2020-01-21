@@ -40,14 +40,14 @@ def run(unfurl, node):
         try:
 
             for json_key, json_value in json_obj.items():
-                unfurl.add_to_queue(data_type='json', key=json_key, value=json_value,
-                                    label='{}: {}'.format(json_key, json_value),
-                                    hover='This is the URL <b>network location</b> (or netloc), per <a href="'
-                                          'https://tools.ietf.org/html/rfc1808.html" target="_blank">RFC1808</a>',
-                                    parent_id=node.node_id, incoming_edge_config=json_edge)
+                unfurl.add_to_queue(
+                    data_type='json', key=json_key, value=json_value, label=f'{json_key}: {json_value}',
+                    hover='This is the URL <b>network location</b> (or netloc), per <a href="'
+                          'https://tools.ietf.org/html/rfc1808.html" target="_blank">RFC1808</a>',
+                    parent_id=node.node_id, incoming_edge_config=json_edge)
 
         except Exception as e:
-            print("url.query.pair boom: {}".format(e))
+            print(f'Exception parsing JSON string: {e}')
 
     elif node.data_type == 'json':
         node_value = node.value
@@ -59,11 +59,11 @@ def run(unfurl, node):
         if isinstance(node_value, dict):
             try:
                 for key, value in node_value.items():
-                    unfurl.add_to_queue(data_type='json', key=key, value=value,
-                                        label='{}: {}'.format(key, value),
-                                        hover='This is the URL <b>network location</b> (or netloc), per <a href="'
-                                              'https://tools.ietf.org/html/rfc1808.html" target="_blank">RFC1808</a>',
-                                        parent_id=node.node_id, incoming_edge_config=json_edge)
+                    unfurl.add_to_queue(
+                        data_type='json', key=key, value=value, label=f'{key}: {value}',
+                        hover='This is the URL <b>network location</b> (or netloc), per <a href="'
+                              'https://tools.ietf.org/html/rfc1808.html" target="_blank">RFC1808</a>',
+                        parent_id=node.node_id, incoming_edge_config=json_edge)
 
             except Exception as e:
-                print("json type boom: {}".format(e))
+                print(f'Exception parsing JSON: {e}')

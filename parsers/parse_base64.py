@@ -34,7 +34,8 @@ def run(unfurl, node):
                 # ASCII (like gzip or protobufs).
                 return
 
-            unfurl.add_to_queue(data_type='b64', key=None, value=str_decoded,
-                                parent_id=node.node_id, incoming_edge_config=b64_edge)
+            unfurl.add_to_queue(
+                data_type='b64', key=None, value=str_decoded, parent_id=node.node_id, incoming_edge_config=b64_edge)
+
     except Exception as e:
-        print('parse_base64 exception: {}'.format(e))
+        print(f'parse_base64 exception: {e}')

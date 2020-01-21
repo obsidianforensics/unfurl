@@ -20,17 +20,17 @@ app = Flask(__name__)
 CORS(app)
 
 
-@app.route("/")
+@app.route('/')
 def index():
     return render_template('graph.html', url_to_unfurl='')
 
 
-@app.route("/<path:url_to_unfurl>")
+@app.route('/<path:url_to_unfurl>')
 def graph(url_to_unfurl):
     return render_template('graph.html', url_to_unfurl=url_to_unfurl)
 
 
-@app.route("/api/<path:api_path>")
+@app.route('/api/<path:api_path>')
 def api(api_path):
     # Get the referrer from the request, which has the full url + query string.
     # Split off the local server and keep just the url we want to parse
@@ -38,7 +38,7 @@ def api(api_path):
 
     unfurl_instance = Unfurl()
     unfurl_instance.add_to_queue(
-        data_type="url", key=None, extra_options={'widthConstraint': {'maximum': 1200}},
+        data_type='url', key=None, extra_options={'widthConstraint': {'maximum': 1200}},
         value=unfurl_this)
     unfurl_instance.parse_queue()
 

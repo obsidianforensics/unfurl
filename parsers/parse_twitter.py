@@ -39,17 +39,17 @@ def parse_twitter_snowflake(unfurl, node):
                  'target="_blank">[ref]</a>'
 
     unfurl.add_to_queue(
-        data_type='epoch-milliseconds', key=None, value=timestamp, label='Timestamp: {}'.format(timestamp),
+        data_type='epoch-milliseconds', key=None, value=timestamp, label=f'Timestamp: {timestamp}',
         hover='The first value in a Twitter Snowflake is a timestamp',
         parent_id=node.node_id, incoming_edge_config=twitter_edge)
 
     unfurl.add_to_queue(
-        data_type='integer', key=None, value=machine_id, label='Machine ID: {}'.format(machine_id),
+        data_type='integer', key=None, value=machine_id, label=f'Machine ID: {machine_id}',
         hover='The second value in a Twitter Snowflake is the machine ID',
         parent_id=node.node_id, incoming_edge_config=twitter_edge)
 
     unfurl.add_to_queue(
-        data_type='integer', key=None, value=sequence, label='Sequence: {}'.format(sequence),
+        data_type='integer', key=None, value=sequence, label=f'Sequence: {sequence}',
         hover='For every ID that is generated, this number is incremented and rolls over every 4096',
         parent_id=node.node_id, incoming_edge_config=twitter_edge)
 
