@@ -52,7 +52,7 @@ def parse_ei(ei):
       Kevin Jones - https://deedpolloffice.com/blog/articles/decoding-ei-parameter
     """
 
-    decoded = base64.urlsafe_b64decode(ei + '===')
+    decoded = base64.urlsafe_b64decode(ei)
 
     # grab 1st 4 bytes and treat as LE unsigned int
     timestamp = struct.unpack('<i', decoded[0:4])[0]
@@ -71,7 +71,7 @@ def run(unfurl, node):
     if node.data_type == 'url.query.pair':
         if 'google' in unfurl.find_preceding_domain(node):
             if node.key == 'ei':
-                parsed_ei = parse_ei(node.value)
+                parsed_ei = parse_ei(unfurl.add_b64_padding(node.value))
                 node.hover = 'The \'<b>ei</b>\' parameter is a base64-encoded protobuf containing four values. ' \
                              '<br>The first is thought to be the timestamp of when the search took place.' \
                              '<br><br>References:<ul>' \
@@ -150,7 +150,7 @@ def run(unfurl, node):
 
             elif node.key == 'uule':
                 # https://moz.com/ugc/geolocation-the-ultimate-tip-to-emulate-local-search
-                location_string = base64.b64decode(node.value[10:] + '===')
+                location_string = base64.b64decode(unfurl.add_b64_padding(node.value[10:]))
                 unfurl.add_to_queue(
                     data_type='descriptor', key=None, value=location_string, label=location_string,
                     parent_id=node.node_id, incoming_edge_config=google_edge)
@@ -186,7 +186,7 @@ def run(unfurl, node):
                 }
                 assert node.value.startswith('0'), 'The ved parameter should start with 0'
                 encoded_ved = node.value[1:]
-                encoded_ved = base64.urlsafe_b64decode(encoded_ved + '===')
+                encoded_ved = base64.urlsafe_b64decode(unfurl.add_b64_padding(encoded_ved))
                 ved = Ved().FromString(encoded_ved)
                 ved_dict = json_format.MessageToDict(ved)
                 for key, value in ved_dict.items():
