@@ -2,24 +2,32 @@ from unfurl import Unfurl
 
 import unittest
 
+
 class TestTwitter(unittest.TestCase):
 
     def test_twitter(self):
-        """ Test a tyipcal and a unique Discord url """
-        
-        # unit test for a unique Discord url.
+        """ Test a typical and a unique Twitter url """
+
         test = Unfurl()
-        test.add_to_queue(data_type='url', key=None, 
+        test.add_to_queue(
+            data_type='url', key=None,
             value='https://twitter.com/_RyanBenson/status/1098230906194546688')
         test.parse_queue()
 
-        # test number of nodes
+        # check the number of nodes
         self.assertEqual(len(test.nodes.keys()), 13)
         self.assertEqual(test.total_nodes, 13)
 
-        # is processing finished empty
+        # confirm that snowflake was detected
+        self.assertIn('Twitter Snowflakes', test.nodes[9].hover)
+
+        # embedded timestamp parses correctly
+        self.assertEqual('2019-02-20 14:40:26.837', test.nodes[13].value)
+
+        # make sure the queue finished empty
         self.assertTrue(test.queue.empty())
         self.assertEqual(len(test.edges), 0)
+
 
 if __name__ == '__main__':
     unittest.main()
