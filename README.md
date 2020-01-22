@@ -13,6 +13,8 @@ Unfurl is open source (Python 3) and has an extensible plugin system.
 No matter if you extracted a URL from a memory image, carved it from slack space, or pulled it from a browser’s history file, 
 Unfurl can help you get the most out of it. 
 
+<img src="docs/unfurl-demo.gif"/>
+
 ## How to use Unfurl
 
 ### Online Version
