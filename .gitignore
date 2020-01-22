@@ -131,3 +131,6 @@ dmypy.json
 
 # VSCode settings
 .vscode/
+
+# PyCharm
+/.idea/
