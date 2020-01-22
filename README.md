@@ -28,14 +28,14 @@ page with an interesting URL, you can click the bookmarklet and see the URL "unf
 1. Clone or download Unfurl from GitHub.
 1. Install Python 3 and the modules in `requirements.txt`
 1. Run `python unfurl_app.py`
-1. Browse to 127.0.0.1:5000/
+1. Browse to localhost:5000/ (editable via config file)
 1. Enter the URL to unfurl in the form, and 'Unfurl!'
 
 ### Testing 
 
-1. Units tests are dedicated for testing unique url.
-1. Integration tests concern testing multiple component of the webapp including a call for the API.
-1. To run all tests (units and integration) ``python -m unittest discover -s tests``
+1. All tests are run automatically on each PR by Travis CI. Tests need to pass before merging. 
+1. While not required, it is strongly encouraged to add tests that cover any new features in a PR. 
+1. To manually run all tests (units and integration): ``python -m unittest discover -s tests``
 
 ## Legal Bit
 This is not an officially supported Google product.

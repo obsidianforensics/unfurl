@@ -12,9 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import configparser
 from flask import Flask, render_template, request
 from flask_cors import CORS
 from unfurl import Unfurl
+
+config = configparser.ConfigParser()
+config.read('unfurl.ini')
+
+unfurl_host = config['UNFURL_APP'].get('host', 'localhost')
+unfurl_port = config['UNFURL_APP'].get('port', '5000')
+unfurl_debug = config['UNFURL_APP'].get('debug', True)
 
 app = Flask(__name__)
 CORS(app)
@@ -22,19 +30,19 @@ CORS(app)
 
 @app.route('/')
 def index():
-    return render_template('graph.html', url_to_unfurl='')
+    return render_template('graph.html', url_to_unfurl='', unfurl_host=unfurl_host, unfurl_port=unfurl_port)
 
 
 @app.route('/<path:url_to_unfurl>')
 def graph(url_to_unfurl):
-    return render_template('graph.html', url_to_unfurl=url_to_unfurl)
+    return render_template('graph.html', url_to_unfurl=url_to_unfurl, unfurl_host=unfurl_host, unfurl_port=unfurl_port)
 
 
 @app.route('/api/<path:api_path>')
 def api(api_path):
     # Get the referrer from the request, which has the full url + query string.
     # Split off the local server and keep just the url we want to parse
-    unfurl_this = request.referrer.split(':5000/', 1)[1]
+    unfurl_this = request.referrer.split(f':{unfurl_port}/', 1)[1]
 
     unfurl_instance = Unfurl()
     unfurl_instance.add_to_queue(
@@ -47,4 +55,4 @@ def api(api_path):
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=unfurl_debug, host=unfurl_host, port=unfurl_port)
