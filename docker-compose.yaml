@@ -1,0 +1,11 @@
+version: '2'
+services:
+  unfurl:
+    container_name: unfurl
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+
