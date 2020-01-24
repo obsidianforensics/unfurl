@@ -111,7 +111,7 @@
         }
     };
 
-    fetch('//{{unfurl_host}}:{{unfurl_port}}/api/{{ url_to_unfurl }}').then(response => {
+    fetch('//' + window.location.host + '/api/{{ url_to_unfurl }}').then(response => {
       return response.json();
     }).then(data => {
         console.log(data);

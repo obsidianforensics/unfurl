@@ -1,0 +1,13 @@
+version: '2'
+services:
+  unfurl:
+    container_name: unfurl
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    # Match the port defined in unfurl.ini
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./unfurl.ini:/unfurl/unfurl.ini:ro
+    restart: unless-stopped
