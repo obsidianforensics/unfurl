@@ -33,6 +33,13 @@ page with an interesting URL, you can click the bookmarklet and see the URL "unf
 1. Browse to localhost:5000/ (editable via config file)
 1. Enter the URL to unfurl in the form, and 'Unfurl!'
 
+#### Docker 
+
+1. `git clone https://github.com/obsidianforensics/unfurl`
+1. `cd unfurl`
+1. Modify `config.ini` with desired host and port, and `docker-compose.yaml` to match port defined in `config.ini`.
+1. `docker-compose up -d`
+
 ### Testing 
 
 1. All tests are run automatically on each PR by Travis CI. Tests need to pass before merging. 

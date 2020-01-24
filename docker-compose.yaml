@@ -8,5 +8,6 @@ services:
     # Match the port defined in config.ini
     ports:
       - "3000:3000"
+    volumes:
+      - ./unfurl.ini:/unfurl/unfurl.ini:ro
     restart: unless-stopped
-
