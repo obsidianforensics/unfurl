@@ -5,6 +5,7 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile
+    # Match the port defined in config.ini
     ports:
       - "3000:3000"
     restart: unless-stopped
