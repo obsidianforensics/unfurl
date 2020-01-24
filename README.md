@@ -33,7 +33,7 @@ page with an interesting URL, you can click the bookmarklet and see the URL "unf
 1. Browse to localhost:5000/ (editable via config file)
 1. Enter the URL to unfurl in the form, and 'Unfurl!'
 
-#### Docker 
+### Docker 
 
 1. `git clone https://github.com/obsidianforensics/unfurl`
 1. `cd unfurl`
