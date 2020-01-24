@@ -37,7 +37,7 @@ page with an interesting URL, you can click the bookmarklet and see the URL "unf
 
 1. `git clone https://github.com/obsidianforensics/unfurl`
 1. `cd unfurl`
-1. Modify `config.ini` with desired host and port, and `docker-compose.yaml` to match port defined in `config.ini`.
+1. Modify `unfurl.ini` with desired host and port, and `docker-compose.yaml` to match port defined in `unfurl.ini`.
 1. `docker-compose up -d`
 
 ### Testing 
