@@ -62,8 +62,7 @@ def run(unfurl, node):
                     data_type='url.query', key=None, value=parsed_url.query,
                     hover='This is the URL <b>query</b>, per <a href="'
                           'https://tools.ietf.org/html/rfc3986" target="_blank">RFC3986</a>',
-                    parent_id=node.node_id, incoming_edge_config=urlparse_edge,
-                    extra_options={'widthConstraint': {'maximum': 500}})
+                    parent_id=node.node_id, incoming_edge_config=urlparse_edge)
 
             if parsed_url.fragment:
                 unfurl.add_to_queue(

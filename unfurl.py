@@ -176,6 +176,10 @@ class Unfurl:
         if parent_id:
             new_item['parent_id'] = parent_id
 
+        if not extra_options:
+            max_row_length = len(str(value)) * 2.2
+            new_item['extra_options'] = {'widthConstraint': {'maximum': max(max_row_length, 200)}}
+
         self.queue.put(new_item)
 
     def run_plugins(self, node):
