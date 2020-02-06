@@ -14,8 +14,8 @@ class TestBing(unittest.TestCase):
         test.parse_queue()
 
         # test number of nodes
-        self.assertEqual(len(test.nodes.keys()), 19)
-        self.assertEqual(test.total_nodes, 19)
+        self.assertEqual(len(test.nodes.keys()), 20)
+        self.assertEqual(test.total_nodes, 20)
 
         # is processing finished empty
         self.assertTrue(test.queue.empty())
