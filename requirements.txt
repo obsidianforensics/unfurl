@@ -5,3 +5,4 @@ flask_cors
 networkx
 protobuf
 publicsuffix2
+Requests

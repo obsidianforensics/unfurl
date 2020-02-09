@@ -9,13 +9,12 @@ class TestBing(unittest.TestCase):
         
         # unit test for a unique Discord url.
         test = Unfurl()
-        test.add_to_queue(data_type='url', key=None, 
-            value='https://www.bing.com/search?q=digital+forensics&qs=n&form=QBLH&sp=-1&pq=digital+forensic&sc=8-16&sk=&cvid=97BF13B59CF84B98B13C067AAA3DB701')
+        test.add_to_queue(data_type='url', key=None, value='http://bit.ly/36XFLt9')
         test.parse_queue()
 
         # test number of nodes
-        self.assertEqual(len(test.nodes.keys()), 20)
-        self.assertEqual(test.total_nodes, 20)
+        self.assertEqual(len(test.nodes.keys()), 15)
+        self.assertEqual(test.total_nodes, 15)
 
         # is processing finished empty
         self.assertTrue(test.queue.empty())
