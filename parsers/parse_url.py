@@ -73,7 +73,7 @@ def run(unfurl, node):
 
     elif node.data_type == 'url.path':
         path_segments = node.value.split('/')
-        if len(path_segments) >= 2:
+        if len(path_segments) > 2:
             for segment_number, path_segment in enumerate(path_segments):
                 if path_segment != '':
                     unfurl.add_to_queue(

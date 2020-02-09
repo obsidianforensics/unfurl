@@ -1,4 +1,4 @@
-# Copyright 2019 Google LLC
+# Copyright 2020 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,45 +12,50 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os 
 import requests
 import json
 
 bitly_edge = {
     'color': {
-        'color': '#FFA500'
+        'color': '#E7572C'
     },
-    'title': 'Bitly URL Shortner ',
+    'title': 'Bitly URL Shortener',
     'label': '🔗'
 }
   
 
-def expand_bitly_url(unfurl, node):
+def expand_bitly_url(bitlink_id, api_key):
     # Ref: https://dev.bitly.com/v4/
 
-    # generic token to be set in .env or in environment variables.
-    token = os.getenv('token')
-    r = requests.post('https://api-ssl.bitly.com/v4/expand', data=json.dumps({'bitlink_id': f"bit.ly/{node.value}" }), headers={'Content-Type':'application/json', 'Authorization': f'Bearer {token}'})       
-    shortened_url = r.json()
+    r = requests.post(
+        'https://api-ssl.bitly.com/v4/expand',
+        data=json.dumps({'bitlink_id': f'bit.ly/{bitlink_id}'}),
+        headers={'Content-Type': 'application/json', 'Authorization': f'Bearer {api_key}'})
 
-    node.hover = 'Bitly URL Shortners contain a creation time.' \
-                 '<a href="https://dev.bitly.com/v4/#operation/expandBitlink" ' \
-                 'target="_blank">[ref]</a>'
-
-    unfurl.add_to_queue(
-        data_type='str', key=None, value=shortened_url["created_at"], label=f'Creation time: {shortened_url["created_at"]}',
-        hover='Created time',
-        parent_id=node.node_id, incoming_edge_config=bitly_edge)
-
-    unfurl.add_to_queue(
-        data_type='url', key=None, value=shortened_url["long_url"], label=f'Expanded URL: {shortened_url["long_url"]}',
-        hover='Expanded URL',
-        parent_id=node.node_id, incoming_edge_config=bitly_edge)
+    if r.status_code == 200:
+        return r.json()
+    else:
+        return False
 
 
 def run(unfurl, node):
 
-    # Known pattern from twitter.com site
-    if node.data_type == 'url.path.segment':
+    if node.data_type == 'url.path':
         if 'bit.ly' in unfurl.find_preceding_domain(node):
-            expand_bitly_url(unfurl, node)
+            expanded_info = expand_bitly_url(node.value[1:], unfurl.api_keys.get('bitly'))
+
+            node.hover = 'Bitly Short Links can be expanded via the Bitly API to show the ' \
+                         '"long" URL and the creation time of the short-link.' \
+                         '<a href="https://dev.bitly.com/v4/#operation/expandBitlink" ' \
+                         'target="_blank">[ref]</a>'
+
+            unfurl.add_to_queue(
+                data_type='description', key=None, value=expanded_info['created_at'],
+                label=f'Creation Time: {expanded_info["created_at"]}',
+                hover='Short-link creation time, retrieved from Bitly API',
+                parent_id=node.node_id, incoming_edge_config=bitly_edge)
+
+            unfurl.add_to_queue(
+                data_type='url', key=None, value=expanded_info['long_url'],
+                label=f'Expanded URL: {expanded_info["long_url"]}', hover='Expanded URL, retrieved from Bitly API',
+                parent_id=node.node_id, incoming_edge_config=bitly_edge)
