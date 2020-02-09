@@ -24,8 +24,6 @@ uuid_edge = {
     'label': '🖧'
 }
 
-MACADDRESS_IO_API_KEY = None
-
 
 def run(unfurl, node):
     if not node.data_type == 'mac-address':
@@ -47,8 +45,8 @@ def run(unfurl, node):
                 data_type='mac-address', key=None, value=pretty_mac, label=f'MAC address: {pretty_mac}',
                 parent_id=node.node_id, incoming_edge_config=uuid_edge)
 
-    elif node.data_type == 'mac-address' and MACADDRESS_IO_API_KEY:
-        client = maclookup.ApiClient(MACADDRESS_IO_API_KEY)
+    elif node.data_type == 'mac-address' and unfurl.api_keys.get('macaddress_io'):
+        client = maclookup.ApiClient(unfurl.api_keys.get('macaddress_io'))
         vendor_lookup = client.get_vendor(node.value).decode('utf-8')
 
         if vendor_lookup:

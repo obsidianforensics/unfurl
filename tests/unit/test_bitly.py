@@ -2,12 +2,12 @@ from unfurl import Unfurl
 
 import unittest
 
-class TestBing(unittest.TestCase):
 
-    def test_bing(self):
-        """ Test a tyipcal and a unique Bing url """
+class TestBitly(unittest.TestCase):
+
+    def test_bitly(self):
+        """ Test a Bitly url, including expansion via Bitly API """
         
-        # unit test for a unique Discord url.
         test = Unfurl()
         test.add_to_queue(data_type='url', key=None, value='http://bit.ly/36XFLt9')
         test.parse_queue()
@@ -19,6 +19,7 @@ class TestBing(unittest.TestCase):
         # is processing finished empty
         self.assertTrue(test.queue.empty())
         self.assertEqual(len(test.edges), 0)
+
 
 if __name__ == '__main__':
     unittest.main()
