@@ -52,9 +52,15 @@ def run(unfurl, node):
                          '<a href="https://dev.bitly.com/v4/#operation/expandBitlink" ' \
                          'target="_blank">[ref]</a>'
 
+            if expanded_info['created_at'].endswith('+0000'):
+                expanded_info['created_at'] = expanded_info['created_at'][:-5]
+
+            if expanded_info['created_at'][10] == 'T':
+                expanded_info['created_at'] = f'{expanded_info["created_at"][:10]} {expanded_info["created_at"][11:]}'
+
             unfurl.add_to_queue(
                 data_type='description', key=None, value=expanded_info['created_at'],
-                label=f'Creation Time: {expanded_info["created_at"]}',
+                label=f'Creation Time:\n{expanded_info["created_at"]}',
                 hover='Short-link creation time, retrieved from Bitly API',
                 parent_id=node.node_id, incoming_edge_config=bitly_edge)
 

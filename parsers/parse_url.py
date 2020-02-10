@@ -50,7 +50,7 @@ def run(unfurl, node):
                           'netloc), per <a href="https://tools.ietf.org/html/rfc3986" target="_blank">RFC3986</a>',
                     parent_id=node.node_id, incoming_edge_config=urlparse_edge)
 
-            if parsed_url.path:
+            if parsed_url.path and parsed_url.path != '/':
                 unfurl.add_to_queue(
                     data_type='url.path', key=None, value=parsed_url.path,
                     hover='This is the URL <b>path</b>, per <a href="'
