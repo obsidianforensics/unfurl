@@ -39,9 +39,9 @@ def expand_bitly_url(bitlink_id, api_key):
 
 
 def run(unfurl, node):
-
+    bitly_domains = ['bit.ly', 'bitly.com', 'j.mp']
     if node.data_type == 'url.path':
-        if 'bit.ly' in unfurl.find_preceding_domain(node):
+        if any(bitly_domain in unfurl.find_preceding_domain(node) for bitly_domain in bitly_domains):
             expanded_info = expand_bitly_url(node.value[1:], unfurl.api_keys.get('bitly'))
 
             if not expanded_info:
