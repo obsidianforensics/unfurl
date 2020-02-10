@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import configparser
 import networkx
 import os
 import queue
@@ -27,6 +28,10 @@ class Unfurl:
         self.next_id = 1
         self.graph = networkx.DiGraph()
         self.total_nodes = 0
+
+        config = configparser.ConfigParser()
+        config.read('unfurl.ini')
+        self.api_keys = config['API_KEYS']
 
     class Node:
         def __init__(self, node_id, data_type, key, value, label=None, hover=None, parent_id=None,
@@ -255,27 +260,3 @@ class Unfurl:
             data_json['edges'].append(self.transform_edge(orig_edge))
 
         return data_json
-
-
-def testing():
-    test = Unfurl()
-    # Discord
-    test.add_to_queue(
-        data_type='url', key=None,
-        value='https://discordapp.com/channels/427876741990711298/551531058039095296')
-
-    # Twitter
-    test.add_to_queue(
-        data_type="url", key=None, extra_options={'widthConstraint': {'maximum': 1200}},
-        value='https://twitter.com/_RyanBenson/status/1098230906194546688')
-
-    # URLs
-    test.add_to_queue(
-        data_type="url", key=None,
-        value="https://www.bing.com/search?q=digital+forensics&qs=n&form=QBLH&sp=-1&pq=digital+forensic&sc=8-16&sk=&cvid=97BF13B59CF84B98B13C067AAA3DB701")
-
-    test.parse_queue()
-    print(test.generate_json())
-
-
-# testing()
