@@ -44,6 +44,9 @@ def run(unfurl, node):
         if 'bit.ly' in unfurl.find_preceding_domain(node):
             expanded_info = expand_bitly_url(node.value[1:], unfurl.api_keys.get('bitly'))
 
+            if not expanded_info:
+                return
+
             node.hover = 'Bitly Short Links can be expanded via the Bitly API to show the ' \
                          '"long" URL and the creation time of the short-link.' \
                          '<a href="https://dev.bitly.com/v4/#operation/expandBitlink" ' \
