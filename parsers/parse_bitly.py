@@ -15,11 +15,11 @@
 import requests
 import json
 
-bitly_edge = {
+shortlink_edge = {
     'color': {
         'color': '#E7572C'
     },
-    'title': 'Bitly URL Shortener',
+    'title': 'URL Shortener Parser',
     'label': '🔗'
 }
   
@@ -34,6 +34,15 @@ def expand_bitly_url(bitlink_id, api_key):
 
     if r.status_code == 200:
         return r.json()
+    else:
+        return False
+
+
+def expand_tinyurl(tinyurl):
+    r = requests.get(f'https://tinyurl.com/{tinyurl}', allow_redirects=False)
+
+    if r.status_code == 301:
+        return r.headers['Location']
     else:
         return False
 
@@ -62,9 +71,17 @@ def run(unfurl, node):
                 data_type='description', key=None, value=expanded_info['created_at'],
                 label=f'Creation Time:\n{expanded_info["created_at"]}',
                 hover='Short-link creation time, retrieved from Bitly API',
-                parent_id=node.node_id, incoming_edge_config=bitly_edge)
+                parent_id=node.node_id, incoming_edge_config=shortlink_edge)
 
             unfurl.add_to_queue(
                 data_type='url', key=None, value=expanded_info['long_url'],
                 label=f'Expanded URL: {expanded_info["long_url"]}', hover='Expanded URL, retrieved from Bitly API',
-                parent_id=node.node_id, incoming_edge_config=bitly_edge)
+                parent_id=node.node_id, incoming_edge_config=shortlink_edge)
+
+        elif 'tinyurl.com' in unfurl.find_preceding_domain(node):
+            expanded_url = expand_tinyurl(node.value)
+            if expanded_url:
+                unfurl.add_to_queue(
+                    data_type='url', key=None, value=expanded_url,
+                    label=f'Expanded URL: {expanded_url}', hover='Expanded URL, retrieved from TinyURL',
+                    parent_id=node.node_id, incoming_edge_config=shortlink_edge)
