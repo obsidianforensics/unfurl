@@ -38,10 +38,10 @@ def expand_bitly_url(bitlink_id, api_key):
         return False
 
 
-def expand_tinyurl(tinyurl):
-    r = requests.get(f'https://tinyurl.com/{tinyurl}', allow_redirects=False)
+def expand_url_via_redirect_header(base_url, shortcode):
+    r = requests.get(f'{base_url}{shortcode}', allow_redirects=False)
 
-    if r.status_code == 301:
+    if r.status_code in [301, 302]:
         return r.headers['Location']
     else:
         return False
@@ -78,10 +78,23 @@ def run(unfurl, node):
                 label=f'Expanded URL: {expanded_info["long_url"]}', hover='Expanded URL, retrieved from Bitly API',
                 parent_id=node.node_id, incoming_edge_config=shortlink_edge)
 
-        elif 'tinyurl.com' in unfurl.find_preceding_domain(node):
-            expanded_url = expand_tinyurl(node.value)
-            if expanded_url:
-                unfurl.add_to_queue(
-                    data_type='url', key=None, value=expanded_url,
-                    label=f'Expanded URL: {expanded_url}', hover='Expanded URL, retrieved from TinyURL',
-                    parent_id=node.node_id, incoming_edge_config=shortlink_edge)
+            return
+
+        redirect_expands = [
+            {'domain': 't.co', 'base_url': 'https://t.co'},
+            {'domain': 'tinyurl.com', 'base_url': 'https://tinyurl.com'},
+            {'domain': 'ow.ly', 'base_url': 'http://ow.ly'},
+            {'domain': 'goo.gl', 'base_url': 'https://goo.gl'},
+            {'domain': 'is.gd', 'base_url': 'https://is.gd'},
+            {'domain': 'bit.do', 'base_url': 'https://bit.do'},
+        ]
+
+        for redirect_expand in redirect_expands:
+            if redirect_expand['domain'] in unfurl.find_preceding_domain(node):
+                expanded_url = expand_url_via_redirect_header(redirect_expand['base_url'], node.value)
+                if expanded_url:
+                    unfurl.add_to_queue(
+                        data_type='url', key=None, value=expanded_url,
+                        label=f'Expanded URL: {expanded_url}',
+                        hover=f'Expanded URL, retrieved from {redirect_expand["domain"]} via "Location" header',
+                        parent_id=node.node_id, incoming_edge_config=shortlink_edge)
