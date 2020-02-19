@@ -29,7 +29,8 @@ known_sources = {
     'hp': 'Home Page',
     'serp': 'Search Engine Results Page',
     'img': 'Image Search',
-    'psy-ab': 'Address Bar'
+    'psy-ab': 'Address Bar',
+    'hangouts': 'Hangouts Chat'
 }
 
 
