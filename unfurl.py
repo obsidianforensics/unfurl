@@ -259,4 +259,11 @@ class Unfurl:
         for orig_edge in self.graph.edges():
             data_json['edges'].append(self.transform_edge(orig_edge))
 
+        edge_summary = {}
+        for edge in data_json.get('edges'):
+            edge_summary.setdefault(edge.get('title'), 0)
+            edge_summary[edge.get('title')] += 1
+
+        data_json['summary'] = edge_summary
+
         return data_json

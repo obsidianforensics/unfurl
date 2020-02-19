@@ -15,11 +15,11 @@
 import requests
 import json
 
-bitly_edge = {
+shortlink_edge = {
     'color': {
         'color': '#E7572C'
     },
-    'title': 'Bitly URL Shortener',
+    'title': 'URL Shortener Parser',
     'label': '🔗'
 }
   
@@ -34,6 +34,15 @@ def expand_bitly_url(bitlink_id, api_key):
 
     if r.status_code == 200:
         return r.json()
+    else:
+        return False
+
+
+def expand_url_via_redirect_header(base_url, shortcode):
+    r = requests.get(f'{base_url}{shortcode}', allow_redirects=False)
+
+    if r.status_code in [301, 302]:
+        return r.headers['Location']
     else:
         return False
 
@@ -62,9 +71,31 @@ def run(unfurl, node):
                 data_type='description', key=None, value=expanded_info['created_at'],
                 label=f'Creation Time:\n{expanded_info["created_at"]}',
                 hover='Short-link creation time, retrieved from Bitly API',
-                parent_id=node.node_id, incoming_edge_config=bitly_edge)
+                parent_id=node.node_id, incoming_edge_config=shortlink_edge)
 
             unfurl.add_to_queue(
                 data_type='url', key=None, value=expanded_info['long_url'],
                 label=f'Expanded URL: {expanded_info["long_url"]}', hover='Expanded URL, retrieved from Bitly API',
-                parent_id=node.node_id, incoming_edge_config=bitly_edge)
+                parent_id=node.node_id, incoming_edge_config=shortlink_edge)
+
+            return
+
+        redirect_expands = [
+            {'domain': 'bit.do', 'base_url': 'https://bit.do'},
+            {'domain': 'buff.ly', 'base_url': 'https://buff.ly'},
+            {'domain': 'goo.gl', 'base_url': 'https://goo.gl'},
+            {'domain': 'is.gd', 'base_url': 'https://is.gd'},
+            {'domain': 'ow.ly', 'base_url': 'http://ow.ly'},
+            {'domain': 't.co', 'base_url': 'https://t.co'},
+            {'domain': 'tinyurl.com', 'base_url': 'https://tinyurl.com'},
+        ]
+
+        for redirect_expand in redirect_expands:
+            if redirect_expand['domain'] in unfurl.find_preceding_domain(node):
+                expanded_url = expand_url_via_redirect_header(redirect_expand['base_url'], node.value)
+                if expanded_url:
+                    unfurl.add_to_queue(
+                        data_type='url', key=None, value=expanded_url,
+                        label=f'Expanded URL: {expanded_url}',
+                        hover=f'Expanded URL, retrieved from {redirect_expand["domain"]} via "Location" header',
+                        parent_id=node.node_id, incoming_edge_config=shortlink_edge)
