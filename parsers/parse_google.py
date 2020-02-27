@@ -185,7 +185,7 @@ def run(unfurl, node):
                         '<a href="https://deedpolloffice.com/blog/articles/decoding-ved-parameter" '
                         'target="_blank">[ref]</a>',
                 }
-                assert node.value.startswith('0'), 'The ved parameter should start with 0'
+                assert node.value[0] in ['0', '2'], 'The ved parameter should start with 0 or 2'
                 encoded_ved = node.value[1:]
                 encoded_ved = base64.urlsafe_b64decode(unfurl.add_b64_padding(encoded_ved))
                 ved = Ved().FromString(encoded_ved)
@@ -207,14 +207,30 @@ def run(unfurl, node):
                             unfurl.add_to_queue(
                                 data_type='google.ved', key='13-2', value=v13_unknown_2,
                                 parent_id=node.node_id, incoming_edge_config=google_edge,
-                                hover='Inside the ved parameter, the meanings of<br> 13-2 and 13-3 is not known.')
+                                hover='Inside the ved parameter, the meanings of<br> 13-2 and 13-3 are not known.')
 
                         v13_unknown_3 = value['v13Inner'].get('v133')
                         if v13_unknown_3:
                             unfurl.add_to_queue(
-                                data_type='google.ved', key='13-2', value=v13_unknown_3,
+                                data_type='google.ved', key='13-3', value=v13_unknown_3,
                                 parent_id=node.node_id, incoming_edge_config=google_edge,
-                                hover='Inside the ved parameter, the meanings of<br> 13-2 and 13-3 is not known.')
+                                hover='Inside the ved parameter, the meanings of<br> 13-2 and 13-3 are not known.')
+
+                    elif key == 'v15':
+                        assert isinstance(value, dict), 'ved-15 should be a dict'
+                        v15_1 = value.get('v151')
+                        v15_2 = value.get('v152')
+
+                        if v15_1:
+                            unfurl.add_to_queue(
+                                data_type='google.ved', key='15-1', value=v15_1,
+                                parent_id=node.node_id, incoming_edge_config=google_edge,
+                                hover='Inside the ved parameter, the meanings of<br> 15-1 and 15-2 are not known.')
+                        if v15_2:
+                            unfurl.add_to_queue(
+                                data_type='google.ved', key='15-2', value=v15_2,
+                                parent_id=node.node_id, incoming_edge_config=google_edge,
+                                hover='Inside the ved parameter, the meanings of<br> 15-1 and 15-2 are not known.')
 
                     else:
                         unfurl.add_to_queue(
