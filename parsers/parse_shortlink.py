@@ -83,11 +83,15 @@ def run(unfurl, node):
         redirect_expands = [
             {'domain': 'bit.do', 'base_url': 'https://bit.do'},
             {'domain': 'buff.ly', 'base_url': 'https://buff.ly'},
+            {'domain': 'dlvr.it', 'base_url': 'https://dlvr.it'},
             {'domain': 'goo.gl', 'base_url': 'https://goo.gl'},
+            {'domain': 'ift.tt', 'base_url': 'https://ift.tt'},
             {'domain': 'is.gd', 'base_url': 'https://is.gd'},
             {'domain': 'ow.ly', 'base_url': 'http://ow.ly'},
             {'domain': 't.co', 'base_url': 'https://t.co'},
+            {'domain': 'tr.im', 'base_url': 'https://tr.im'},
             {'domain': 'tinyurl.com', 'base_url': 'https://tinyurl.com'},
+            {'domain': 'x.co', 'base_url': 'https://x.co'},
         ]
 
         for redirect_expand in redirect_expands:
