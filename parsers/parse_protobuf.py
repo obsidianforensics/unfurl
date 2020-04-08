@@ -1,0 +1,105 @@
+import base64
+import re
+
+from parsers import blackboxprotobuf
+
+proto_edge = {
+    'color': {
+        'color': '#2D9A58'
+    },
+    'title': 'Protobuf Parsing Functions',
+    'label': 'proto'
+}
+
+hex_proto_edge = {
+    'color': {
+        'color': '#2D9A58'
+    },
+    'title': 'Parsed from hex bytes, then as a protobuf',
+    'label': 'hex+proto'
+}
+
+b64_proto_edge = {
+    'color': {
+        'color': '#2D9A58'
+    },
+    'title': 'Parsed from base64, then as a protobuf',
+    'label': 'b64+proto'
+}
+
+wire_types = {
+    'int': '<b>varint (0)</b>. <br><br>It is displayed here as an int, but it could orginially have '
+           'been <br>a int32, int64, uint32, uint64, sint32, sint64, bool, or enum.',
+    'fixed64': '<b>64-bit (1)</b>. <br><br>It is displayed here as a fixed64, but it could originally '
+               'have been <br>a fixed64, sfixed64, or double.',
+    'bytes': '<b>length-delimited (2)</b>. <br><br>It is displayed here as bytes, but it could originally '
+             'have been <br>a string, bytes, embedded messages, or packed repeated fields.',
+    'fixed32': '<b>32-bit (5)</b>. <br><br>It is displayed here as an int, but it could originally '
+               'have been <br>a fixed32, sfixed32, or float.'
+}
+
+
+def run(unfurl, node):
+
+    def parse_protobuf_into_nodes(pb_value_dict, pb_types, edge_type=None):
+        if len(pb_value_dict) > 0:
+            for field_number, field_value in pb_value_dict.items():
+                if isinstance(field_value, (str, int, float, bytes, bytearray)):
+                    unfurl.add_to_queue(
+                        data_type='proto', key=field_number, value=field_value,
+                        hover=f'Field number <b>{field_number}</b> has a wire '
+                              f'type of {wire_types[pb_types[field_number]["type"]]}',
+                        parent_id=node.node_id, incoming_edge_config=edge_type)
+                elif isinstance(field_value, dict):
+                    unfurl.add_to_queue(
+                        data_type='proto.dict', key=field_number, label=field_value,
+                        value={'field_values': field_value, 'field_types': pb_types[field_number]["message_typedef"]},
+                        hover=f'Field number <b>{field_number}</b> '
+                              f'is a nested message; it will be parsed further into more nodes',
+                        parent_id=node.node_id, incoming_edge_config=edge_type)
+
+    if node.data_type == 'proto.dict':
+        parse_protobuf_into_nodes(node.value.get('field_values'), node.value.get('field_types'), proto_edge)
+        return
+
+    if not isinstance(node.value, str):
+        return False
+
+    if len(node.value) % 4 == 1:
+        # A valid b64 string will not be this length
+        return False
+
+    urlsafe_b64_m = re.fullmatch(r'[A-Za-z0-9_=\-]{16,}', node.value)
+    standard_b64_m = re.fullmatch(r'[A-Za-z0-9+/=]{16,}', node.value)
+    hex_m = re.fullmatch(r'([A-Fa-f0-9]{2} ?){8,}', node.value)
+    long_int = re.fullmatch(r'\d{16,}', node.value)
+
+    if hex_m and not long_int:
+        decoded = bytes.fromhex(node.value)
+        try:
+            protobuf_values, protobuf_values_types = blackboxprotobuf.decode_message(decoded)
+        # This will often fail for a wide array of reasons, when it tries to parse a non-pb as a pb
+        except Exception:
+            return
+
+        parse_protobuf_into_nodes(protobuf_values, protobuf_values_types, hex_proto_edge)
+
+    elif urlsafe_b64_m and not long_int:
+        decoded = base64.urlsafe_b64decode(unfurl.add_b64_padding(node.value))
+        try:
+            protobuf_values, protobuf_values_types = blackboxprotobuf.decode_message(decoded)
+        # This will often fail for a wide array of reasons, when it tries to parse a non-pb as a pb
+        except Exception:
+            return
+
+        parse_protobuf_into_nodes(protobuf_values, protobuf_values_types, b64_proto_edge)
+
+    elif standard_b64_m and not long_int:
+        decoded = base64.b64decode(unfurl.add_b64_padding(node.value))
+        try:
+            protobuf_values, protobuf_values_types = blackboxprotobuf.decode_message(decoded)
+        # This will often fail for a wide array of reasons, when it tries to parse a non-pb as a pb
+        except Exception:
+            return
+
+        parse_protobuf_into_nodes(protobuf_values, protobuf_values_types, b64_proto_edge)
