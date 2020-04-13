@@ -14,6 +14,8 @@
 
 import requests
 import json
+import os
+
 
 shortlink_edge = {
     'color': {
@@ -51,7 +53,7 @@ def run(unfurl, node):
     bitly_domains = ['bit.ly', 'bitly.com', 'j.mp']
     if node.data_type == 'url.path':
         if any(bitly_domain in unfurl.find_preceding_domain(node) for bitly_domain in bitly_domains):
-            expanded_info = expand_bitly_url(node.value[1:], unfurl.api_keys.get('bitly'))
+            expanded_info = expand_bitly_url(node.value[1:], unfurl.api_keys.get('bitly', os.environ.get('bitly')))
 
             if not expanded_info:
                 return
@@ -83,6 +85,7 @@ def run(unfurl, node):
         redirect_expands = [
             {'domain': 'bit.do', 'base_url': 'https://bit.do'},
             {'domain': 'buff.ly', 'base_url': 'https://buff.ly'},
+            {'domain': 'db.tt', 'base_url': 'https://db.tt'},
             {'domain': 'dlvr.it', 'base_url': 'https://dlvr.it'},
             {'domain': 'goo.gl', 'base_url': 'https://goo.gl'},
             {'domain': 'ift.tt', 'base_url': 'https://ift.tt'},
