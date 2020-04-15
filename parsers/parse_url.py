@@ -135,7 +135,7 @@ def run(unfurl, node):
         try:
             # If we can recognize another URL inside a value, parse it
             parsed_url = urllib.parse.urlparse(node.value)
-            if parsed_url.netloc and parsed_url.path:
+            if (parsed_url.netloc and parsed_url.path) or (parsed_url.scheme and parsed_url.netloc):
                 unfurl.add_to_queue(
                     data_type='url', key=None, value=node.value, parent_id=node.node_id,
                     incoming_edge_config=urlparse_edge)
