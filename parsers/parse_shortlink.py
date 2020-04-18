@@ -93,6 +93,7 @@ def run(unfurl, node):
             {'domain': 'ow.ly', 'base_url': 'http://ow.ly'},
             {'domain': 't.co', 'base_url': 'https://t.co'},
             {'domain': 'tr.im', 'base_url': 'https://tr.im'},
+            {'domain': 'trib.al', 'base_url': 'https://trib.al'},
             {'domain': 'tinyurl.com', 'base_url': 'https://tinyurl.com'},
             {'domain': 'x.co', 'base_url': 'https://x.co'},
         ]
