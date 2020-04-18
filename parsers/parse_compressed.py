@@ -28,8 +28,8 @@ def run(unfurl, node):
     if node.data_type == 'zlib':
         inflated_str = zlib.decompress(node.value)
         unfurl.add_to_queue(
-            data_type='This data was inflated using zlib', key=None, value=inflated_str, parent_id=node.node_id,
-            incoming_edge_config=zip_edge)
+            data_type='zlib-inflate', key=None, value=inflated_str, hover='This data was inflated using zlib',
+            parent_id=node.node_id, incoming_edge_config=zip_edge)
         return
 
     # This checks for base64 encoding, which is often used before compression. Initially, the base64 decoding was
@@ -49,13 +49,14 @@ def run(unfurl, node):
 
         try:
             inflated_str = inflated_bytes.decode('ascii', errors='strict')
-            unfurl.add_to_queue(
-                data_type='string', key=None, value=inflated_str, parent_id=node.node_id,
-                hover='This data was base64-decoded, then zlib inflated', incoming_edge_config=b64_zip_edge)
-            return
-        except:
+            if re.fullmatch(r'\w+', inflated_str):
+                unfurl.add_to_queue(
+                    data_type='string', key=None, value=inflated_str, parent_id=node.node_id,
+                    hover='This data was base64-decoded, then zlib inflated', incoming_edge_config=b64_zip_edge)
+                return
+        except Exception as e:
             pass
 
         unfurl.add_to_queue(
-            data_type='string', key=None, value=inflated_bytes, parent_id=node.node_id,
-            hover='This data was inflated using zlib', incoming_edge_config=zip_edge)
+            data_type='bytes', key=None, value=inflated_bytes, parent_id=node.node_id,
+            hover='This data was inflated using zlib', incoming_edge_config=b64_zip_edge)
