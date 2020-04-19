@@ -83,24 +83,26 @@ def run(unfurl, node):
             return
 
         redirect_expands = [
-            {'domain': 'bit.do', 'base_url': 'https://bit.do'},
-            {'domain': 'buff.ly', 'base_url': 'https://buff.ly'},
-            {'domain': 'db.tt', 'base_url': 'https://db.tt'},
-            {'domain': 'dlvr.it', 'base_url': 'https://dlvr.it'},
-            {'domain': 'goo.gl', 'base_url': 'https://goo.gl'},
-            {'domain': 'ift.tt', 'base_url': 'https://ift.tt'},
-            {'domain': 'is.gd', 'base_url': 'https://is.gd'},
-            {'domain': 'ow.ly', 'base_url': 'http://ow.ly'},
-            {'domain': 't.co', 'base_url': 'https://t.co'},
-            {'domain': 'tr.im', 'base_url': 'https://tr.im'},
-            {'domain': 'trib.al', 'base_url': 'https://trib.al'},
-            {'domain': 'tinyurl.com', 'base_url': 'https://tinyurl.com'},
-            {'domain': 'x.co', 'base_url': 'https://x.co'},
+            {'domain': 'bit.do', 'base_url': 'https://bit.do/'},
+            {'domain': 'buff.ly', 'base_url': 'https://buff.ly/'},
+            {'domain': 'db.tt', 'base_url': 'https://db.tt/'},
+            {'domain': 'dlvr.it', 'base_url': 'https://dlvr.it/'},
+            {'domain': 'goo.gl', 'base_url': 'https://goo.gl/'},
+            {'domain': 'ift.tt', 'base_url': 'https://ift.tt/'},
+            {'domain': 'is.gd', 'base_url': 'https://is.gd/'},
+            {'domain': 'lnkd.in', 'base_url': 'https://www.linkedin.com/slink?code='},
+            {'domain': 'ow.ly', 'base_url': 'http://ow.ly/'},
+            {'domain': 'reut.rs', 'base_url': 'https://reut.rs/'},
+            {'domain': 't.co', 'base_url': 'https://t.co/'},
+            {'domain': 'tr.im', 'base_url': 'https://tr.im/'},
+            {'domain': 'trib.al', 'base_url': 'https://trib.al/'},
+            {'domain': 'tinyurl.com', 'base_url': 'https://tinyurl.com/'},
+            {'domain': 'x.co', 'base_url': 'https://x.co/'},
         ]
 
         for redirect_expand in redirect_expands:
             if redirect_expand['domain'] in unfurl.find_preceding_domain(node):
-                expanded_url = expand_url_via_redirect_header(redirect_expand['base_url'], node.value)
+                expanded_url = expand_url_via_redirect_header(redirect_expand['base_url'], node.value[1:])
                 if expanded_url:
                     unfurl.add_to_queue(
                         data_type='url', key=None, value=expanded_url,
