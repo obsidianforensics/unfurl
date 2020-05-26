@@ -73,13 +73,17 @@ def run(unfurl, node):
         if 'google' in unfurl.find_preceding_domain(node):
             if node.key == 'ei':
                 parsed_ei = parse_ei(unfurl.add_b64_padding(node.value))
-                node.hover = 'The \'<b>ei</b>\' parameter is a base64-encoded protobuf containing four values. ' \
-                             '<br>The first is thought to be the timestamp of when the search took place.' \
+                node.hover = 'The \'<b>ei</b>\' parameter is base64-encoded and contains four values. ' \
+                             '<br>The first is thought to be the timestamp of when the session started. ' \
+                             '<br>This may be seconds (but could be days!) before the URL was generated.' \
                              '<br><br>References:<ul>' \
                              '<li><a href="https://deedpolloffice.com/blog/articles/decoding-ei-parameter" ' \
                              'target="_blank">Kevin Jones: How to decode the ei parameter in Google search</a></li>' \
                              '<li><a href="http://cheeky4n6monkey.blogspot.com/2014/10/google-eid.html" ' \
-                             'target="_blank">Cheeky4n6Monkey: Google-ei\'d ?!</a></li></ul>'
+                             'target="_blank">Cheeky4n6Monkey: Google-ei\'d ?!</a></li>' \
+                             '<li><a href="https://github.com/obsidianforensics/unfurl/issues/56" ' \
+                             'target="_blank">Rasmus-Riis: Search Experiment with ei parameter</a></li>' \
+                             '</ul>'
                 node.extra_options = {'widthConstraint': {'maximum': 300}}
 
                 assert len(parsed_ei) == 4, \
@@ -87,8 +91,8 @@ def run(unfurl, node):
 
                 unfurl.add_to_queue(
                     data_type='epoch-seconds', key=None, value=parsed_ei[0], label=f'ei-0: {parsed_ei[0]}',
-                    hover='The first value in the \'ei\' parameter is thought to be the timestamp of when the search '
-                          'took place.', parent_id=node.node_id, incoming_edge_config=google_edge)
+                    hover='The first value in the \'ei\' parameter is thought to be the timestamp of when the session '
+                          'began.', parent_id=node.node_id, incoming_edge_config=google_edge)
 
                 for index in [1, 2, 3]:
                     unfurl.add_to_queue(
