@@ -64,8 +64,9 @@ def parse_twitter_snowflake(unfurl, node):
 
 def run(unfurl, node):
     if 'twitter.com' in unfurl.find_preceding_domain(node):
+        # Make sure potential snowflake is reasonable: between 2015-02-01 & 2022-03-05
         if node.data_type == 'url.path.segment' and \
-                unfurl.check_if_int_between(node.value, 561675293291446272, 1245138807813046272):
+                unfurl.check_if_int_between(node.value, 561675293291446272, 1500000000000000001):
             parse_twitter_snowflake(unfurl, node)
 
         elif node.data_type == 'url.query.pair':
