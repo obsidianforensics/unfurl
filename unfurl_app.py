@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # Copyright 2019 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,7 +24,7 @@ config.read('unfurl.ini')
 
 unfurl_host = config['UNFURL_APP'].get('host', 'localhost')
 unfurl_port = config['UNFURL_APP'].get('port', '5000')
-unfurl_debug = config['UNFURL_APP'].get('debug', True)
+unfurl_debug = config['UNFURL_APP'].get('debug', 'True')
 
 app = Flask(__name__)
 CORS(app)
@@ -30,12 +32,16 @@ CORS(app)
 
 @app.route('/')
 def index():
-    return render_template('graph.html', url_to_unfurl='', unfurl_host=unfurl_host, unfurl_port=unfurl_port)
+    return render_template(
+        'graph.html', url_to_unfurl='', unfurl_host=unfurl_host,
+        unfurl_port=unfurl_port)
 
 
 @app.route('/<path:url_to_unfurl>')
 def graph(url_to_unfurl):
-    return render_template('graph.html', url_to_unfurl=url_to_unfurl, unfurl_host=unfurl_host, unfurl_port=unfurl_port)
+    return render_template(
+        'graph.html', url_to_unfurl=url_to_unfurl,
+        unfurl_host=unfurl_host, unfurl_port=unfurl_port)
 
 
 @app.route('/api/<path:api_path>')
@@ -46,7 +52,8 @@ def api(api_path):
 
     unfurl_instance = Unfurl()
     unfurl_instance.add_to_queue(
-        data_type='url', key=None, extra_options={'widthConstraint': {'maximum': 1200}},
+        data_type='url', key=None,
+        extra_options={'widthConstraint': {'maximum': 1200}},
         value=unfurl_this)
     unfurl_instance.parse_queue()
 
@@ -54,5 +61,5 @@ def api(api_path):
     return unfurl_json
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     app.run(debug=unfurl_debug, host=unfurl_host, port=unfurl_port)
