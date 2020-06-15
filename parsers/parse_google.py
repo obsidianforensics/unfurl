@@ -129,9 +129,10 @@ def run(unfurl, node):
                     hover='Terms used in the Google search', parent_id=node.node_id, incoming_edge_config=google_edge)
 
             elif node.key == 'source':
-                unfurl.add_to_queue(
-                    data_type='descriptor', key=None, value=f'Source: {known_sources[node.value]}',
-                    hover='Source of the Google search', parent_id=node.node_id, incoming_edge_config=google_edge)
+                if node.value in known_sources.keys():
+                    unfurl.add_to_queue(
+                        data_type='descriptor', key=None, value=f'Source: {known_sources[node.value]}',
+                        hover='Source of the Google search', parent_id=node.node_id, incoming_edge_config=google_edge)
 
             elif node.key == 'start':
                 unfurl.add_to_queue(

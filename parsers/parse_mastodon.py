@@ -44,7 +44,7 @@ def parse_mastodon_snowflake(unfurl, node):
 
     unfurl.add_to_queue(
          data_type='integer', key=None, value=seq_data, label=f'Sequence data: {seq_data}',
-         hover="The 'sequence data' is intended to be unique within a given millisecond. It is a 2 bytes value.",
+         hover="The 'sequence data' is intended to be unique within a given millisecond. It is a 2 byte value.",
          parent_id=node.node_id, incoming_edge_config=mastodon_edge)
 
 

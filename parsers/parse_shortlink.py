@@ -101,7 +101,7 @@ def run(unfurl, node):
         ]
 
         for redirect_expand in redirect_expands:
-            if redirect_expand['domain'] in unfurl.find_preceding_domain(node):
+            if redirect_expand['domain'] == unfurl.find_preceding_domain(node):
                 expanded_url = expand_url_via_redirect_header(redirect_expand['base_url'], node.value[1:])
                 if expanded_url:
                     unfurl.add_to_queue(
