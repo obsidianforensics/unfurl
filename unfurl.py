@@ -18,6 +18,7 @@ import os
 import queue
 import sys
 import importlib
+import re
 
 
 class Unfurl:
@@ -266,4 +267,62 @@ class Unfurl:
 
         data_json['summary'] = edge_summary
 
+        return data_json
+
+    @staticmethod
+    def transform_3d_node(node):
+        def val_func(node_id):
+            if node_id == 1:
+                return 15
+            elif node_id < 10:
+                return 10
+            else:
+                return 5
+
+        def shorten_name(node_string):
+            node_string = str(node_string)
+            if len(node_string) > 60:
+                return f'{node_string[:25]}...{node_string[-25:]}'
+            else:
+                return node_string
+
+        node_color = '#aabfad'
+        if node.incoming_edge_config:
+            if node.incoming_edge_config['color']:
+                node_color = node.incoming_edge_config['color']['color']
+
+        transformed = {
+                'id': str(node.node_id),
+                'name': shorten_name(node.label),
+                'fullName': f'{node.label}',
+                'dataType': f'{node.data_type}',
+                'val': val_func(node.node_id),
+                'color': node_color
+        }
+
+        if node.hover:
+            transformed['description'] = re.sub(r'<.*?>|\[.*?\]', '', node.hover)
+
+        return transformed
+
+    @staticmethod
+    def transform_3d_edge(edge):
+        transformed = {
+            'source': str(edge[0].node_id),
+            'target': str(edge[1].node_id)
+        }
+
+        if edge[1].incoming_edge_config:
+            transformed.update(edge[1].incoming_edge_config)
+
+        if transformed.get('color', {}).get('color'):
+            transformed['color'] = transformed['color']['color']
+        return transformed
+
+    def generate_3d_json(self):
+        data_json = {'nodes': [], 'links': []}
+        for orig_node in self.graph.nodes():
+            data_json['nodes'].append(self.transform_3d_node(orig_node))
+        for orig_edge in self.graph.edges():
+            data_json['links'].append(self.transform_3d_edge(orig_edge))
         return data_json
