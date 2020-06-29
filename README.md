@@ -1,4 +1,4 @@
-![Unfurl Logo](/static/unfurl.png)
+![Unfurl Logo](/unfurl/static/unfurl.png)
 
 # Extract and Visualize Data from URLs using Unfurl
 Unfurl takes a URL and expands ("unfurls") it into a directed graph, extracting every bit of information from the URL and 

@@ -1,7 +1,5 @@
 import unittest
 
-from flask import Flask
-from flask_cors import CORS
 from unfurl_app import app as my_app
 
 class TestApi(unittest.TestCase):

@@ -14,15 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import argparse
 import configparser
 import importlib
 import networkx
-import os
 import queue
 import re
-import sys
-import importlib
+import unfurl.parsers
+from flask import Flask, render_template, request
+from flask_cors import CORS
 
 
 class Unfurl:
@@ -33,10 +32,12 @@ class Unfurl:
         self.next_id = 1
         self.graph = networkx.DiGraph()
         self.total_nodes = 0
+        self.api_keys = {}
 
         config = configparser.ConfigParser()
         config.read('unfurl.ini')
-        self.api_keys = config['API_KEYS']
+        if config.has_section('API_KEYS'):
+            self.api_keys = config['API_KEYS']
 
     class Node:
         def __init__(self, node_id, data_type, key, value, label=None, hover=None,
@@ -199,30 +200,17 @@ class Unfurl:
 
     def run_plugins(self, node):
 
-        parser_path = os.path.join(os.getcwd(), 'parsers')
-        if os.path.isdir(parser_path):
-            sys.path.insert(0, parser_path)
+        for unfurl_parser in unfurl.parsers.__all__:
             try:
-                # Get list of available parsers and run them
-                parser_listing = os.listdir(parser_path)
+                parser = importlib.import_module(f'unfurl.parsers.{unfurl_parser}')
+            except ImportError as e:
+                print(f'Failed to import {unfurl_parser}: {e}; {e.args}')
+                continue
 
-                for plugin in parser_listing:
-                    if plugin[-3:] == '.py' and plugin[0] != '_':
-                        plugin = plugin.replace('.py', '')
-
-                        try:
-                            plugin = importlib.import_module(
-                                plugin, package='parsers')
-                        except ImportError as e:
-                            print(f'ImportError: {e}')
-                            continue
-                        try:
-                            plugin.run(self, node)
-                        except Exception as e:
-                            print(f'Exception in {plugin}: {e}; {e.args}')
-
+            try:
+                parser.run(self, node)
             except Exception as e:
-                print(f'Error loading parsers: {e}')
+                print(f'Exception in {unfurl_parser}: {e}; {e.args}')
 
     def parse(self, queued_item):
         item = queued_item
@@ -408,32 +396,53 @@ class Unfurl:
         return text_output
 
 
-def main():
-    parser = argparse.ArgumentParser(
-        description='unfurl takes a URL and expands ("unfurls") it into a directed graph, extracting every '
-                    'bit of information from the URL and exposing the obscured.')
-    parser.add_argument(
-        'what_to_unfurl',
-        help='what to unfurl. typically this is a URL, but it also supports integers (timestamps), '
-             'encoded protobufs, and more.')
-    parser.add_argument(
-        '-d', '--detailed', help='show more detailed explanations.', action='store_true')
-    parser.add_argument(
-        '-f', '--filter',
-        help='only output lines that match this filter.')
-    parser.add_argument(
-        '-v', '-V', '--version', action='version', version='unfurl v20200613')
-    args = parser.parse_args()
+unfurl_app_host = None
+unfurl_app_port = None
+app = Flask(__name__)
+CORS(app)
+
+
+class UnfurlApp:
+    def __init__(self, unfurl_debug='True', unfurl_host='localhost', unfurl_port='5000'):
+        self.unfurl_debug = unfurl_debug
+        self.unfurl_host = unfurl_host
+        self.unfurl_port = unfurl_port
+
+        global unfurl_app_host
+        global unfurl_app_port
+        unfurl_app_host = unfurl_host
+        unfurl_app_port = unfurl_port
+
+        app.run(debug=unfurl_debug, host=unfurl_host, port=unfurl_port)
+
+
+@app.route('/')
+def index():
+    x = app
+    return render_template(
+        'graph.html', url_to_unfurl='', unfurl_host=unfurl_app_host,
+        unfurl_port=unfurl_app_port)
+
+
+@app.route('/<path:url_to_unfurl>')
+def graph(url_to_unfurl):
+    return render_template(
+        'graph.html', url_to_unfurl=url_to_unfurl,
+        unfurl_host=unfurl_app_host, unfurl_port=unfurl_app_port)
+
+
+@app.route('/api/<path:api_path>')
+def api(api_path):
+    # Get the referrer from the request, which has the full url + query string.
+    # Split off the local server and keep just the url we want to parse
+    unfurl_this = request.referrer.split(f':{unfurl_app_port}/', 1)[1]
 
     unfurl_instance = Unfurl()
     unfurl_instance.add_to_queue(
         data_type='url', key=None,
-        value=args.what_to_unfurl)
+        extra_options={'widthConstraint': {'maximum': 1200}},
+        value=unfurl_this)
     unfurl_instance.parse_queue()
 
-    print(unfurl_instance.generate_text_tree(
-        detailed=args.detailed, output_filter=args.filter))
-
-
-if __name__ == "__main__":
-    main()
+    unfurl_json = unfurl_instance.generate_json()
+    return unfurl_json

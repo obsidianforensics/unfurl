@@ -14,7 +14,6 @@
 
 import maclookup
 import re
-import uuid
 
 uuid_edge = {
     'color': {

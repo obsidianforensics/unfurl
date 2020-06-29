@@ -1,7 +1,7 @@
 import base64
 import re
 
-from parsers import blackboxprotobuf
+from unfurl.parsers import blackboxprotobuf
 
 proto_edge = {
     'color': {
