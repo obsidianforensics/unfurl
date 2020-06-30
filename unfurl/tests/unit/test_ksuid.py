@@ -1,5 +1,4 @@
-from unfurl import Unfurl
-
+from unfurl.unfurl import Unfurl
 import unittest
 
 
@@ -10,7 +9,8 @@ class TestKsuid(unittest.TestCase):
 
         # unit test for a unique ksuid.
         test = Unfurl()
-        test.add_to_queue(data_type='url', key=None, value='0o5Fs0EELR0fUjHjbCnEtdUwQe3')
+        test.add_to_queue(
+            data_type='url', key=None, value='0o5Fs0EELR0fUjHjbCnEtdUwQe3')
         test.parse_queue()
 
         # test number of nodes

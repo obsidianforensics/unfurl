@@ -14,7 +14,7 @@
 
 import base64
 import struct
-from parsers.proto.google_search_pb2 import Ved
+from unfurl.parsers.proto.google_search_pb2 import Ved
 from google.protobuf import json_format
 
 google_edge = {

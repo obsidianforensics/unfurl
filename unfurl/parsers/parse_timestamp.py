@@ -43,10 +43,28 @@ def decode_epoch_seconds(seconds):
     return datetime.datetime.utcfromtimestamp(float(seconds)), 'Epoch seconds'
 
 
+def decode_epoch_centiseconds(centiseconds):
+    """Decode a numeric timestamp in Epoch centiseconds (10 ms) format to a human-readable timestamp.
+
+    An Epoch centisecond timestamp (1-12 digits) is an integer that counts the number of centiseconds (10 ms)
+    since Jan 1 1970.
+
+    Useful values for ranges (all Jan-1 00:00:00):
+      1970: 0
+      2015: 142007040000
+      2025: 173568960000
+      2030: 190000000000
+
+    """
+    # Trim off the 3 trailing 0s (don't add precision that wasn't in the timestamp)
+    converted_ts = str(datetime.datetime.utcfromtimestamp(float(centiseconds) / 100))[:-4]
+    return converted_ts, 'Epoch centiseconds'
+
+
 def decode_epoch_milliseconds(milliseconds):
     """Decode a numeric timestamp in Epoch milliseconds format to a human-readable timestamp.
 
-    An Epoch millisecond timestamp (1-10 digits) is an integer that counts the number of milliseconds since Jan 1 1970.
+    An Epoch millisecond timestamp (1-13 digits) is an integer that counts the number of milliseconds since Jan 1 1970.
 
     Useful values for ranges (all Jan-1 00:00:00):
       1970: 0
@@ -153,6 +171,9 @@ def run(unfurl, node):
 
     if node.data_type == 'epoch-seconds':
         new_timestamp = decode_epoch_seconds(node.value)
+
+    elif node.data_type == 'epoch-centiseconds':
+        new_timestamp = decode_epoch_centiseconds(node.value)
 
     elif node.data_type == 'epoch-milliseconds':
         new_timestamp = decode_epoch_milliseconds(node.value)

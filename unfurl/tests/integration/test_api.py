@@ -1,8 +1,7 @@
 import unittest
 
-from flask import Flask
-from flask_cors import CORS
-from unfurl_app import app as my_app
+from unfurl.unfurl import app as my_app
+
 
 class TestApi(unittest.TestCase):
 
@@ -23,5 +22,6 @@ class TestApi(unittest.TestCase):
     def tearDown(self):
         pass
 
+
 if __name__ == '__main__':
-    unittest.main() 
+    unittest.main()
