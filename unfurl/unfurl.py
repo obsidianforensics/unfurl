@@ -352,10 +352,11 @@ class Unfurl:
     def text_tree(tree_data, indent='', last_child=False, text_output='', detailed=False):
 
         node = tree_data['id']
+        label = re.sub(r'\n', ' ', str(node.label))
 
         if node.node_id == 1:
             # This is the root node; don't indent to save space
-            text_output += f'[{node.node_id}] {node.label}'
+            text_output += f'[{node.node_id}] {label}'
             if detailed:
                 text_output += f' (type: {node.data_type})'
                 if node.hover:
@@ -365,7 +366,7 @@ class Unfurl:
             indent += ' '
 
         elif not last_child:
-            text_output += f'\n{indent}├─({node.incoming_edge_config["label"]})─[{node.node_id}] {node.label}'
+            text_output += f'\n{indent}├─({node.incoming_edge_config["label"]})─[{node.node_id}] {label}'
             if detailed:
                 text_output += f' (type: {node.data_type})'
                 if node.hover:
@@ -374,7 +375,7 @@ class Unfurl:
 
             indent += '|  '
         else:
-            text_output += f'\n{indent}└─({node.incoming_edge_config["label"]})─[{node.node_id}] {node.label}'
+            text_output += f'\n{indent}└─({node.incoming_edge_config["label"]})─[{node.node_id}] {label}'
             if detailed:
                 text_output += f' (type: {node.data_type})'
                 if node.hover:
