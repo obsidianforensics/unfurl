@@ -25,13 +25,36 @@ click 'Unfurl!'.
 `javascript:window.location.href='https://dfir.blog/unfurl/?url='+window.location.href;` as the location. Then when on any
 page with an interesting URL, you can click the bookmarklet and see the URL "unfurled".
 
-### Local Install
+### Local Python Install
 
-1. Clone or download Unfurl from GitHub.
-1. Install Python 3 and the modules in `requirements.txt`
+1. Install via pip: `pip install dfir-unfurl`
+
+After Unfurl is installed, you can run use it via the web app or command-line:
+
 1. Run `python unfurl_app.py`
 1. Browse to localhost:5000/ (editable via config file)
 1. Enter the URL to unfurl in the form, and 'Unfurl!'
+
+OR
+
+1. Run `python unfurl_cli.py https://twitter.com/_RyanBenson/status/1205161015177961473`
+1. Output: 
+```
+[1] https://twitter.com/_RyanBenson/status/1205161015177961473
+ ├─(u)─[2] Scheme: https
+ ├─(u)─[3] twitter.com
+ |  ├─(u)─[5] Domain Name: twitter.com
+ |  └─(u)─[6] TLD: com
+ └─(u)─[4] /_RyanBenson/status/1205161015177961473
+    ├─(u)─[7] 1: _RyanBenson
+    ├─(u)─[8] 2: status
+    └─(u)─[9] 3: 1205161015177961473
+       ├─(❄)─[10] Timestamp: 1576167751484
+       |  └─(�)─[13] 2019-12-12 16:22:31.484
+       ├─(❄)─[11] Machine ID: 334
+       └─(❄)─[12] Sequence: 1
+
+```
 
 ### Docker 
 
@@ -40,7 +63,7 @@ page with an interesting URL, you can click the bookmarklet and see the URL "unf
 1. Modify `unfurl.ini` with desired host and port, and `docker-compose.yaml` to match port defined in `unfurl.ini`.
 1. `docker-compose up -d`
 
-### Testing 
+## Testing 
 
 1. All tests are run automatically on each PR by Travis CI. Tests need to pass before merging. 
 1. While not required, it is strongly encouraged to add tests that cover any new features in a PR. 
