@@ -67,7 +67,7 @@ OR
 
 1. All tests are run automatically on each PR by Travis CI. Tests need to pass before merging. 
 1. While not required, it is strongly encouraged to add tests that cover any new features in a PR. 
-1. To manually run all tests (units and integration): ``python -m unittest discover -s tests``
+1. To manually run all tests (units and integration): ``python -m unittest discover -s unfurl/tests``
 
 ## Legal Bit
 This is not an officially supported Google product.
