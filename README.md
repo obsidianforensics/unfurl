@@ -56,6 +56,8 @@ OR
 
 ```
 
+If the URL has special characters (like "&") that your shell might interpret as a command, put the URL in quotes. Example: `python unfurl_cli.py "https://www.google.com/search?&ei=yTLGXeyKN_2y0PEP2smVuAg&q=dfir.blog&oq=dfir.blog&ved=0ahUKEwisk-WjmNzlAhV9GTQIHdpkBYcQ4dUDCAg"`
+
 ### Docker 
 
 1. `git clone https://github.com/obsidianforensics/unfurl`
