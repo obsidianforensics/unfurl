@@ -53,10 +53,22 @@ OR
        |  └─(🕓)─[13] 2019-12-12 16:22:31.484
        ├─(❄)─[11] Machine ID: 334
        └─(❄)─[12] Sequence: 1 
-
 ```
 
-If the URL has special characters (like "&") that your shell might interpret as a command, put the URL in quotes. Example: `python unfurl_cli.py "https://www.google.com/search?&ei=yTLGXeyKN_2y0PEP2smVuAg&q=dfir.blog&oq=dfir.blog&ved=0ahUKEwisk-WjmNzlAhV9GTQIHdpkBYcQ4dUDCAg"`
+If the URL has special characters (like "&") that your shell might interpret as a command, put the URL in quotes. 
+Example: `python unfurl_cli.py "https://www.google.com/search?&ei=yTLGXeyKN_2y0PEP2smVuAg&q=dfir.blog&oq=dfir.blog&ved=0ahUKEwisk-WjmNzlAhV9GTQIHdpkBYcQ4dUDCAg"`
+
+`unfurl_cli` has a number of command line options to modify its behavior:
+```
+optional arguments:
+  -h, --help            show this help message and exit
+  -d, --detailed        show more detailed explanations.
+  -f FILTER, --filter FILTER
+                        only output lines that match this filter.
+  -o OUTPUT, --output OUTPUT
+                        file to save output (as CSV) to. if omitted, output is sent to stdout (typically this means displayed in the console).
+  -v, -V, --version     show program's version number and exit
+```
 
 ### Docker 
 
