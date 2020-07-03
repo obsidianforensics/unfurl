@@ -419,7 +419,6 @@ class UnfurlApp:
 
 @app.route('/')
 def index():
-    x = app
     return render_template(
         'graph.html', url_to_unfurl='', unfurl_host=unfurl_app_host,
         unfurl_port=unfurl_app_port)

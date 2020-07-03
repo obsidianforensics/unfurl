@@ -38,7 +38,7 @@ def main():
         help='file to save output (as CSV) to. if omitted, output is sent to '
              'stdout (typically this means displayed in the console).')
     parser.add_argument(
-        '-v', '-V', '--version', action='version', version='unfurl v20200613')
+        '-v', '-V', '--version', action='version', version=f'unfurl v{unfurl.unfurl.__version__}')
     args = parser.parse_args()
 
     items_to_unfurl = []
