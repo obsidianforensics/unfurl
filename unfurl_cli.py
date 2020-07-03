@@ -52,7 +52,7 @@ def main():
         items_to_unfurl.append(args.what_to_unfurl)
 
     if args.output:
-        with open(args.output, 'w', newline='') as csv_file:
+        with open(args.output, 'w', newline='', encoding='utf-8') as csv_file:
             csv_writer = csv.writer(csv_file, quoting=csv.QUOTE_ALL)
             csv_writer.writerow(['url', 'unfurled'])
 
