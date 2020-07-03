@@ -28,7 +28,8 @@ def run(unfurl, node):
     if node.data_type == 'zlib':
         inflated_str = zlib.decompress(node.value)
         unfurl.add_to_queue(
-            data_type='zlib-inflate', key=None, value=inflated_str, hover='This data was inflated using zlib',
+            data_type='zlib-inflate', key=None, value=inflated_str,
+            hover='This data was inflated using zlib',
             parent_id=node.node_id, incoming_edge_config=zip_edge)
         return
 
@@ -39,24 +40,43 @@ def run(unfurl, node):
         # A valid b64 string will not be this length
         return False
 
-    m = re.match(r'^[A-Za-z0-9_=\-]{16,}$', node.value)
-    if m:
+    urlsafe_b64_m = re.fullmatch(r'[A-Za-z0-9_=\-]{8,}', node.value)
+    standard_b64_m = re.fullmatch(r'[A-Za-z0-9+/=]{8,}', node.value)
+    long_int = re.fullmatch(r'\d{8,}', node.value)
+
+    # Long integers pass the b64 regex, but we don't want those here.
+    if long_int:
+        return
+
+    decoded = None
+    if urlsafe_b64_m:
         decoded = base64.urlsafe_b64decode(unfurl.add_b64_padding(node.value))
-        try:
-            inflated_bytes = zlib.decompress(decoded)
-        except:
+    elif standard_b64_m:
+        decoded = base64.b64decode(unfurl.add_b64_padding(node.value))
+
+    if decoded == node.value or not decoded:
+        return
+
+    try:
+        inflated_bytes = zlib.decompress(decoded)
+    except:
+        # If we can't inflate it, bail on this parser.
+        return
+
+    try:
+        inflated_str = inflated_bytes.decode('ascii', errors='strict')
+        if re.fullmatch(r'\w+', inflated_str):
+            unfurl.add_to_queue(
+                data_type='string', key=None, value=inflated_str,
+                parent_id=node.node_id,
+                hover='This data was base64-decoded, then zlib inflated',
+                incoming_edge_config=b64_zip_edge)
             return
+    except:
+        # If we couldn't decode the inflated bytes as ASCII, that's ok; we'll
+        # just show the raw inflated bytes below.
+        pass
 
-        try:
-            inflated_str = inflated_bytes.decode('ascii', errors='strict')
-            if re.fullmatch(r'\w+', inflated_str):
-                unfurl.add_to_queue(
-                    data_type='string', key=None, value=inflated_str, parent_id=node.node_id,
-                    hover='This data was base64-decoded, then zlib inflated', incoming_edge_config=b64_zip_edge)
-                return
-        except Exception as e:
-            pass
-
-        unfurl.add_to_queue(
-            data_type='bytes', key=None, value=inflated_bytes, parent_id=node.node_id,
-            hover='This data was inflated using zlib', incoming_edge_config=b64_zip_edge)
+    unfurl.add_to_queue(
+        data_type='bytes', key=None, value=inflated_bytes, parent_id=node.node_id,
+        hover='This data was inflated using zlib', incoming_edge_config=b64_zip_edge)
