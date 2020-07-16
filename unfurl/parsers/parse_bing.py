@@ -22,6 +22,7 @@ bing_edge = {
 
 
 def run(unfurl, node):
+    # Additional documentation available here: https://docs.microsoft.com/en-us/rest/api/cognitiveservices-bingsearch/bing-web-api-v7-reference#query-parameters
     if node.data_type == 'url.query.pair':
         if 'bing' in unfurl.find_preceding_domain(node):
             if node.key == 'pq':
