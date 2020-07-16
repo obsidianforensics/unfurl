@@ -8,5 +8,9 @@ RUN apk update && apk add --no-cache git python3 && \
     git clone https://github.com/obsidianforensics/unfurl && \
     cd unfurl && \
     pip3 install -r requirements.txt
+
+COPY unfurl.ini /unfurl/unfurl.ini
+RUN sed -i 's/^host.*/host = 0.0.0.0/' /unfurl/unfurl.ini
+
 WORKDIR /unfurl
 ENTRYPOINT ["/usr/bin/python3", "unfurl_app.py"]
