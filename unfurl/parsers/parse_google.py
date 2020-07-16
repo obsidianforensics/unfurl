@@ -161,7 +161,7 @@ def run(unfurl, node):
                     'flm': "Google Flights",
                     'isch':"Google Images",
                     'nws': "Google News",
-                    'shop':"Google Shopping"
+                    'shop':"Google Shopping",
                     'vid': "Google Videos",
                 }
                 value = tbm_mappings.get(node.value, "Unknown")
