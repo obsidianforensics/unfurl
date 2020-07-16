@@ -158,7 +158,7 @@ def run(unfurl, node):
                 tbm_mappings = {
                     'bks': "Google Books",
                     'fin': "Google Finance",
-                    'flm': "Google Flights"
+                    'flm': "Google Flights",
                     'isch':"Google Images",
                     'nws': "Google News",
                     'shop':"Google Shopping"
