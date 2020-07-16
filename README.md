@@ -74,7 +74,6 @@ optional arguments:
 
 1. `git clone https://github.com/obsidianforensics/unfurl`
 1. `cd unfurl`
-1. Modify `unfurl.ini` with desired host and port, and `docker-compose.yaml` to match port defined in `unfurl.ini`.
 1. `docker-compose up -d`
 
 ## Testing 
@@ -82,6 +81,9 @@ optional arguments:
 1. All tests are run automatically on each PR by Travis CI. Tests need to pass before merging. 
 1. While not required, it is strongly encouraged to add tests that cover any new features in a PR. 
 1. To manually run all tests (units and integration): ``python -m unittest discover -s unfurl/tests``
+
+If using Docker as above, run: 
+``docker exec unfurl python -m unittest discover -s unfurl/tests``
 
 ## Legal Bit
 This is not an officially supported Google product.
