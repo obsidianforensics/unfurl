@@ -154,6 +154,21 @@ def run(unfurl, node):
                           'Phill Moore on Twitter</a></li></ul>', parent_id=node.node_id,
                     incoming_edge_config=google_edge)
 
+            elif node.key == 'tbm':
+                tbm_mappings = {
+                    'bks': "Google Books",
+                    'fin': "Google Finance",
+                    'flm': "Google Flights"
+                    'isch':"Google Images",
+                    'nws': "Google News",
+                    'shop':"Google Shopping"
+                    'vid': "Google Videos",
+                }
+                value = tbm_mappings.get(node.value, "Unknown")
+                unfurl.add_to_queue(
+                    data_type='descriptor', key=None, value=f'Search Type: {value}',
+                    hover='Google search Type', parent_id=node.node_id, incoming_edge_config=google_edge)
+
             elif node.key == 'uule':
                 # https://moz.com/ugc/geolocation-the-ultimate-tip-to-emulate-local-search
                 location_string = base64.b64decode(unfurl.add_b64_padding(node.value[10:]))
