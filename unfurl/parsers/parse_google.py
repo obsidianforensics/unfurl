@@ -167,7 +167,7 @@ def run(unfurl, node):
                 value = tbm_mappings.get(node.value, "Unknown")
                 unfurl.add_to_queue(
                     data_type='descriptor', key=None, value=f'Search Type: {value}',
-                    hover='Google search Type', parent_id=node.node_id, incoming_edge_config=google_edge)
+                    hover='Google Search Type', parent_id=node.node_id, incoming_edge_config=google_edge)
 
             elif node.key == 'uule':
                 # https://moz.com/ugc/geolocation-the-ultimate-tip-to-emulate-local-search
