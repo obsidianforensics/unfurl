@@ -38,7 +38,7 @@ def run(unfurl, node):
                 if "," in v:
                     data_type = "mailto.email.multiple"
                 else:
-                    data_type = "mailto.email"
+                    data_type = "email"
                 unfurl_val = v
             else:
                 data_type = "url.query"
