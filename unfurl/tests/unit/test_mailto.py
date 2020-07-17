@@ -15,10 +15,6 @@ class TestMailto(unittest.TestCase):
         )
         test.parse_queue()
 
-        # test number of nodes
-        self.assertEqual(len(test.nodes.keys()), 5)
-        self.assertEqual(test.total_nodes, 5)
-
         self.assertEqual(test.nodes[2].label, "to: to@example.com")
 
         self.assertEqual(test.nodes[3].label, "cc: cc@second.example")
@@ -29,7 +25,7 @@ class TestMailto(unittest.TestCase):
         self.assertEqual(test.nodes[4].value, "bcc@third.example")
 
         self.assertEqual(test.nodes[5].key, "subject")
-        self.assertEqual(test.nodes[5].value, "Big News")
+        self.assertEqual(test.nodes[5].value, "subject=Big%20News")
 
         # is processing finished empty
         self.assertTrue(test.queue.empty())
