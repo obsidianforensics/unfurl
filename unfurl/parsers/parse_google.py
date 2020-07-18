@@ -1,4 +1,4 @@
-# Copyright 2019 Google LLC
+# Copyright 2020 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -286,15 +286,16 @@ def run(unfurl, node):
 
             elif node.key == 'tbm':
                 tbm_mappings = {
-                    'bks': "Google Books",
-                    'fin': "Google Finance",
-                    'flm': "Google Flights",
-                    'isch':"Google Images",
-                    'nws': "Google News",
-                    'shop':"Google Shopping",
-                    'vid': "Google Videos",
+                    'bks': 'Google Books',
+                    'fin': 'Google Finance',
+                    'flm': 'Google Flights',
+                    'isch': 'Google Images',
+                    'nws': 'Google News',
+                    'shop': 'Google Shopping',
+                    'vid': 'Google Videos',
                 }
-                value = tbm_mappings.get(node.value, "Unknown")
+
+                value = tbm_mappings.get(node.value, 'Unknown')
                 unfurl.add_to_queue(
                     data_type='descriptor', key=None, value=f'Search Type: {value}',
                     hover='Google Search Type', parent_id=node.node_id, incoming_edge_config=google_edge)
@@ -382,7 +383,8 @@ def run(unfurl, node):
                             unfurl.add_to_queue(
                                 data_type='google.ved', key='13-3', value=v13_unknown_3,
                                 parent_id=node.node_id, incoming_edge_config=google_edge,
-                                hover='Inside the ved parameter, the meanings of<br> 13-2 and 13-3 are not known.')
+                                hover='Inside the ved parameter, the meanings of 13-2 and 13-3 are not known, <br>'
+                                      'but the values in <b>ved 13-3</b> and <b>ei-3</b> match.')
 
                     elif key == 'v15':
                         assert isinstance(value, dict), 'ved-15 should be a dict'
