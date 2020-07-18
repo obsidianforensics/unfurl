@@ -192,7 +192,8 @@ def run(unfurl, node):
             if node.key == 'ei':
                 parsed_ei = parse_ei(unfurl.add_b64_padding(node.value))
                 node.hover = 'The \'<b>ei</b>\' parameter is base64-encoded and contains four values. ' \
-                             '<br>The first is thought to be the timestamp of when the session started. ' \
+                             '<br>The first two are thought to be the timestamp of when the session started ' \
+                             '<br>(first value is full seconds, second is microsecond component)' \
                              '<br>This may be seconds (but could be days!) before the URL was generated.' \
                              '<br><br>References:<ul>' \
                              '<li><a href="https://deedpolloffice.com/blog/articles/decoding-ei-parameter" ' \
@@ -200,24 +201,35 @@ def run(unfurl, node):
                              '<li><a href="http://cheeky4n6monkey.blogspot.com/2014/10/google-eid.html" ' \
                              'target="_blank">Cheeky4n6Monkey: Google-ei\'d ?!</a></li>' \
                              '<li><a href="https://github.com/obsidianforensics/unfurl/issues/56" ' \
-                             'target="_blank">Rasmus-Riis: Search Experiment with ei parameter</a></li>' \
-                             '</ul>'
+                             'target="_blank">Rasmus-Riis: Search Experiment with ei parameter</a></li>'\
+                             '<li>Adam Mazack: noticed the 2nd ei value contained fractional seconds ' \
+                             '<br> that match the ved</li></ul>'
                 node.extra_options = {'widthConstraint': {'maximum': 300}}
 
                 assert len(parsed_ei) == 4, \
                     f'There should be 4 decoded ei values, but we have {len(parsed_ei)}!'
 
-                unfurl.add_to_queue(
-                    data_type='epoch-seconds', key=None, value=parsed_ei[0], label=f'ei-0: {parsed_ei[0]}',
-                    hover='The first value in the \'ei\' parameter is thought to be the timestamp of when the session '
-                          'began.', parent_id=node.node_id, incoming_edge_config=google_edge)
+                # The first ei value is epoch seconds, the second has the fractional (micro) seconds.
+                # Concatenating them here as strings lets the timestamp parser convert it later.
+                ei_timestamp = str(parsed_ei[0]) + str(parsed_ei[1])
 
-                for index in [1, 2, 3]:
-                    unfurl.add_to_queue(
-                        data_type="integer", key=None, value=parsed_ei[index],
-                        label=f'ei-{index}: {parsed_ei[index]}',
-                        hover="The meaning of the last three 'ei' values is not known.",
-                        parent_id=node.node_id, incoming_edge_config=google_edge)
+                unfurl.add_to_queue(
+                    data_type='epoch-microseconds', key=None, value=ei_timestamp, label=f'ei Timestamp: {ei_timestamp}',
+                    hover='The first two values combined in the <b>ei</b> parameter are thought to be the timestamp of '
+                          'when the session began.', parent_id=node.node_id, incoming_edge_config=google_edge)
+
+                unfurl.add_to_queue(
+                    data_type='integer', key=None, value=parsed_ei[2],
+                    label=f'ei-2: {parsed_ei[2]}',
+                    hover='The meaning of the third <b>ei</b> value is not known.',
+                    parent_id=node.node_id, incoming_edge_config=google_edge)
+
+                unfurl.add_to_queue(
+                    data_type='integer', key=None, value=parsed_ei[3],
+                    label=f'ei-3: {parsed_ei[3]}',
+                    hover='The meaning of the fourth <b>ei</b> value is not known, '
+                          'but it matches the <b>ved</b> "13-3" value.',
+                    parent_id=node.node_id, incoming_edge_config=google_edge)
 
             elif node.key == 'gs_l':
                 node.hover = 'The <b>gs_l</b> parameter contains multiple values, delimited by <b>.</b>. <br>' \
