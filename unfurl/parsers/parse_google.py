@@ -248,25 +248,25 @@ def run(unfurl, node):
 
             elif node.key == 'oq':
                 unfurl.add_to_queue(
-                    data_type='descriptor', key=None, value=f'"Original" Search Query: {node.value}',
+                    data_type='google.oq', key=None, value=f'"Original" Search Query: {node.value}',
                     hover='Original terms entered by the user; auto-complete or suggestions <br>'
                           'may have been used to reach the actual search terms (in <b>q</b>)',
                     parent_id=node.node_id, incoming_edge_config=google_edge)
 
             elif node.key == 'q':
                 unfurl.add_to_queue(
-                    data_type='descriptor', key=None, value=f'Search Query: {node.value}',
+                    data_type='google.q', key=None, value=f'Search Query: {node.value}',
                     hover='Terms used in the Google search', parent_id=node.node_id, incoming_edge_config=google_edge)
 
             elif node.key == 'source':
                 if node.value in known_sources.keys():
                     unfurl.add_to_queue(
-                        data_type='descriptor', key=None, value=f'Source: {known_sources[node.value]}',
+                        data_type='google.source', key=None, value=f'Source: {known_sources[node.value]}',
                         hover='Source of the Google search', parent_id=node.node_id, incoming_edge_config=google_edge)
 
             elif node.key == 'start':
                 unfurl.add_to_queue(
-                    data_type='descriptor', key=None, value=f'Starting Result: {node.value}',
+                    data_type='google.start', key=None, value=f'Starting Result: {node.value}',
                     hover='Google search by default shows 10 results per page; higher <br>'
                           '"start" values may indicate browsing more subsequent results pages.',
                     parent_id=node.node_id, incoming_edge_config=google_edge)
@@ -297,14 +297,14 @@ def run(unfurl, node):
 
                 value = tbm_mappings.get(node.value, 'Unknown')
                 unfurl.add_to_queue(
-                    data_type='descriptor', key=None, value=f'Search Type: {value}',
+                    data_type='google.tbm', key=None, value=f'Search Type: {value}',
                     hover='Google Search Type', parent_id=node.node_id, incoming_edge_config=google_edge)
 
             elif node.key == 'uule':
                 # https://moz.com/ugc/geolocation-the-ultimate-tip-to-emulate-local-search
                 location_string = base64.b64decode(unfurl.add_b64_padding(node.value[10:]))
                 unfurl.add_to_queue(
-                    data_type='descriptor', key=None, value=location_string, label=location_string,
+                    data_type='google.uule', key=None, value=location_string, label=location_string,
                     parent_id=node.node_id, incoming_edge_config=google_edge)
 
             elif node.key == 'rlz':
@@ -408,7 +408,7 @@ def run(unfurl, node):
                             hover=known_ved_descriptions.get(key, ''),
                             parent_id=node.node_id, incoming_edge_config=google_edge)
 
-    if node.data_type == "google.gs_l":
+    if node.data_type == 'google.gs_l':
         known_values = {
             '0': known_sources,
             '1': {

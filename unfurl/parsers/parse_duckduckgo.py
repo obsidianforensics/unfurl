@@ -14,7 +14,7 @@
 
 duckduckgo = {
     'color': {
-        'color': '#228372'
+        'color': '#D74F38'
     },
     'title': 'DuckDuckGo-related Parsing Functions',
     'label': '🦆'
@@ -26,30 +26,42 @@ def run(unfurl, node):
     if node.data_type == 'url.query.pair':
         if 'duckduckgo' in unfurl.find_preceding_domain(node):
 
-            if node.key == 'ia':
-                ia_mappings = {
-                    'images': "Image Search",
-                    'news'  : "News Search",
-                    'videos': "Video Search",
-                    'web'   : "Web Search",
-                }
-                value = ia_mappings.get(node.value, "Unknown")
-                unfurl.add_to_queue(
-                    data_type='descriptor', key=None, value=f'Search Type: {value}',
-                    hover='DuckDuckGo Search Type', parent_id=node.node_id, incoming_edge_config=duckduckgo)
-            
-            elif node.key == 'df':
+            if node.key == 'df':
                 df_mappings = {
-                    'd': "Past Day",
-                    'm': "Past Month",
-                    'w': "Past Week",
+                    'd': 'Past Day',
+                    'm': 'Past Month',
+                    'w': 'Past Week',
+                    'y': 'Past Year'
                 }
-                value = df_mappings.get(node.value, "Unknown")
+                value = df_mappings.get(node.value, 'Unknown')
                 unfurl.add_to_queue(
                     data_type='descriptor', key=None, value=f'Time Period: {value}',
                     hover='DuckDuckGo Search Period', parent_id=node.node_id, incoming_edge_config=duckduckgo)
-            
+
+            elif node.key == 'ia':
+                ia_mappings = {
+                    'images': 'Image Search',
+                    'news': 'News Search',
+                    'videos': 'Video Search',
+                    'web': 'Web Search',
+                    'definition': 'Definition',
+                    'shopping': 'Shopping Search'
+                }
+                value = ia_mappings.get(node.value, 'Unknown')
+                unfurl.add_to_queue(
+                    data_type='descriptor', key=None, value=f'Search Type: {value}',
+                    hover='DuckDuckGo Search Type', parent_id=node.node_id, incoming_edge_config=duckduckgo)
+
             elif node.key == 'q':
                 unfurl.add_to_queue(
                     data_type='descriptor', key=None, value=f'Search Query: {node.value}',
                     hover='Terms used in the DuckDuckGo search', parent_id=node.node_id, incoming_edge_config=duckduckgo)
+
+            # ref: https://help.duckduckgo.com/privacy/t/
+            elif node.key == 't':
+                unfurl.add_to_queue(
+                    data_type='descriptor', key=None, value=f'Tracking Code: {node.value}',
+                    hover='To assign advertising revenue and collect anonymous aggregate usage <br>information, '
+                          'developers add a unique "&t=" parameter to searches <br>made through their applications. '
+                          '<a href="https://help.duckduckgo.com/privacy/t/" target="_blank">[ref]</a>',
+                    parent_id=node.node_id, incoming_edge_config=duckduckgo)
