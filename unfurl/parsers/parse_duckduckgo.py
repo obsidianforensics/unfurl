@@ -17,7 +17,7 @@ duckduckgo = {
         'color': '#228372'
     },
     'title': 'DuckDuckGo-related Parsing Functions',
-    'label': 'G'
+    'label': '🦆'
 }
 
 
@@ -38,7 +38,7 @@ def run(unfurl, node):
                     data_type='descriptor', key=None, value=f'Search Type: {value}',
                     hover='DuckDuckGo Search Type', parent_id=node.node_id, incoming_edge_config=duckduckgo)
             
-            if node.key == 'df':
+            elif node.key == 'df':
                 df_mappings = {
                     'd': "Past Day",
                     'm': "Past Month",
