@@ -4,6 +4,7 @@ __all__ = [
     "parse_compressed",
     "parse_discord",
     "parse_domain",
+    "parse_duckduckgo",
     "parse_google",
     "parse_json",
     "parse_ksuid",
