@@ -11,6 +11,7 @@ __all__ = [
     "parse_mac_addr",
     "parse_magnet",
     "parse_mastodon",
+    "parse_mailto",
     "parse_protobuf",
     "parse_shortlink",
     "parse_timestamp",
@@ -18,5 +19,4 @@ __all__ = [
     "parse_ulid",
     "parse_url",
     "parse_uuid",
-    "parse_mailto",
 ]
