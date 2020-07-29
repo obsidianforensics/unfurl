@@ -16,7 +16,6 @@ import base64
 import datetime
 import struct
 import pycountry
-import langcodes
 from unfurl.parsers.proto.google_search_pb2 import Ved
 from google.protobuf import json_format
 
@@ -122,17 +121,25 @@ def parse_rlz(rlz_string):
         if rlz_string[10] == '-':
             language_code = rlz_string[rlz_pointer:rlz_pointer+5]
             rlz_pointer += 5
-            language_name = langcodes.Language.get(language_code).language_name()
+            # langcodes was having install issues on macOS; not using it for now in
+            # order to not complicate Unfurl's install. Pycountry's languages isn't
+            # as good (only alpha_2 and alpha_3) but better than nothing for now.
+            # Old implementation:
+            # language_name = langcodes.Language.get(language_code).language_name()
+            language_name = pycountry.languages.get(alpha_2=language_code[:2]).name
+
         else:
             language_code = rlz_string[rlz_pointer:rlz_pointer+2]
-            language_name = langcodes.Language.get(language_code).language_name()
+            # language_name = langcodes.Language.get(language_code).language_name()
+            language_name = pycountry.languages.get(alpha_2=language_code).name
             rlz_pointer += 2
 
     # Example of RLZ value without cohorts
     #   1C1GCEV_en
     elif len(rlz_string) == 10:
         language_code = rlz_string[rlz_pointer:rlz_pointer + 2]
-        language_name = langcodes.Language.get(language_code).language_name()
+        # language_name = langcodes.Language.get(language_code).language_name()
+        language_name = pycountry.languages.get(alpha_2=language_code).name
         rlz_pointer += 2
 
     else:

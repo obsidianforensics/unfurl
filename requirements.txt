@@ -3,7 +3,6 @@ maclookup
 ulid-py
 flask
 flask_cors
-langcodes
 networkx
 protobuf
 publicsuffix2
