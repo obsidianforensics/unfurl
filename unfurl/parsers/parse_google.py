@@ -1,4 +1,4 @@
-# Copyright 2019 Google LLC
+# Copyright 2020 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +13,9 @@
 # limitations under the License.
 
 import base64
+import datetime
 import struct
+import pycountry
 from unfurl.parsers.proto.google_search_pb2 import Ved
 from google.protobuf import json_format
 
@@ -68,13 +70,137 @@ def parse_ei(ei):
     return parsed
 
 
+def parse_rlz(rlz_string):
+    # Reference: https://github.com/rogerta/rlz/blob/wiki/HowToReadAnRlzString.md
+
+    rlz = {}
+    assert rlz_string[0] == '1', 'Only v1 of RLZ is known'
+
+    rlz['version'] = {
+            'data_type': 'google.rlz.version',
+            'key': 'RLZ version',
+            'value': rlz_string[0],
+            'hover': 'Only v1 of RLZ is known'}
+
+    rlz['ap'] = {
+        'data_type': 'google.rlz.ap',
+        'key': 'Application',
+        'value': rlz_string[1:3],
+        'hover': 'Application (or "access point") used to do the Google Search'}
+
+    rlz['brand_code'] = {
+        'data_type': 'google.rlz.brand_code',
+        'key': 'Brand Code',
+        'value': rlz_string[3:7],
+        'hover': 'The brand code identifies the distribution channel (it may be a partner or internal marketing). <br>'
+                 'This correlates to how the user got the software (ie. they downloaded it by itself vs. it came <br>'
+                 'pre-installed on their new computer vs. it came with a partner\'s software.'}
+
+    cannibal_string = rlz_string[7]
+    if cannibal_string == 'c':
+        cannibal_value = 'Yes'
+    elif cannibal_string == '_':
+        cannibal_value = 'No'
+    else:
+        raise ValueError(f'Invalid "cannibal" value in RLZ string: {cannibal_string}')
+
+    rlz['cannibal'] = {
+        'data_type': 'google.rlz.cannibal',
+        'key': 'Cannibalized',
+        'value': cannibal_value,
+        'hover': '"Cannibal" tells if the library has evidence that the user was a user prior <br>'
+                 'to installing the software, and thus "cannibalized" a previous installation.'}
+
+    rlz_pointer = 8
+
+    # Examples of longer RLZ values (2- and 5-char lang codes):
+    #   1C1CHBF_en-GBGB901GB901
+    #   1C1GCEU_enUS820US820
+    if len(rlz_string) >= 11:
+        # If a dash is in this position, it means it is a 5 char lang code, not the 2 char code
+        if rlz_string[10] == '-':
+            language_code = rlz_string[rlz_pointer:rlz_pointer+5]
+            rlz_pointer += 5
+            # langcodes was having install issues on macOS; not using it for now in
+            # order to not complicate Unfurl's install. Pycountry's languages isn't
+            # as good (only alpha_2 and alpha_3) but better than nothing for now.
+            # Old implementation:
+            # language_name = langcodes.Language.get(language_code).language_name()
+            language_name = pycountry.languages.get(alpha_2=language_code[:2]).name
+
+        else:
+            language_code = rlz_string[rlz_pointer:rlz_pointer+2]
+            # language_name = langcodes.Language.get(language_code).language_name()
+            language_name = pycountry.languages.get(alpha_2=language_code).name
+            rlz_pointer += 2
+
+    # Example of RLZ value without cohorts
+    #   1C1GCEV_en
+    elif len(rlz_string) == 10:
+        language_code = rlz_string[rlz_pointer:rlz_pointer + 2]
+        # language_name = langcodes.Language.get(language_code).language_name()
+        language_name = pycountry.languages.get(alpha_2=language_code).name
+        rlz_pointer += 2
+
+    else:
+        raise ValueError('Couldn\'t parse RLZ language code')
+
+    rlz['language'] = {
+        'data_type': 'google.rlz.language',
+        'key': 'Language',
+        'value': f'{language_name} ({language_code})',
+        'hover': 'The two- (en) or five-character (zh-CN) language code of the application. <br>'
+                 'Valid values depend on the specific app.'}
+
+    # The cohorts are optional, so if this is the end of the RLZ string, return what we've parsed
+    if not len(rlz_string) >= rlz_pointer+5:
+        return rlz
+
+    install_cohort = rlz_string[rlz_pointer:rlz_pointer+5]
+    rlz_pointer += 5
+
+    install_country_code = install_cohort[:2]
+    install_country = pycountry.countries.get(alpha_2=install_country_code).name
+    install_date = datetime.timedelta(weeks=int(install_cohort[2:])) + datetime.date(year=2003, month=2, day=3)
+
+    rlz['install_cohort'] = {
+        'data_type': 'google.rlz.install_cohort',
+        'key': 'Install Cohort',
+        'value': f'Installed in {install_country} the week of {install_date}',
+        'hover': 'The country and week of the user\'s installation event. <br>'
+                 'Country is determined by the server, using IP address. <br>'
+                 'Week is measured as number of weeks since Feb 3, 2003.'}
+
+    # Both cohorts do not need to be present, so if the 2nd one (search) is missing, return what we have
+    # Example: 1CAGZLV_enGB898
+    if not len(rlz_string) >= rlz_pointer + 5:
+        return rlz
+
+    search_cohort = rlz_string[rlz_pointer:rlz_pointer + 5]
+
+    search_country_code = search_cohort[:2]
+    search_country = pycountry.countries.get(alpha_2=search_country_code).name
+    search_date = datetime.timedelta(weeks=int(search_cohort[2:])) + datetime.date(year=2003, month=2, day=3)
+
+    rlz['search_cohort'] = {
+        'data_type': 'google.rlz.search_cohort',
+        'key': 'Search Cohort',
+        'value': f'First search was in {search_country} the week of {search_date}',
+        'hover': 'The country and week of the user\'s first search. <br>'
+                 'Country is determined by the server, using IP address. <br>'
+                 'Week is measured as number of weeks since Feb 3, 2003.'}
+
+    return rlz
+
+
 def run(unfurl, node):
     if node.data_type == 'url.query.pair':
         if 'google' in unfurl.find_preceding_domain(node):
             if node.key == 'ei':
                 parsed_ei = parse_ei(unfurl.add_b64_padding(node.value))
                 node.hover = 'The \'<b>ei</b>\' parameter is base64-encoded and contains four values. ' \
-                             '<br>The first is thought to be the timestamp of when the session started. ' \
+                             '<br>The first two are thought to be the timestamp of when the session started ' \
+                             '<br>(first value is full seconds, second is microsecond component)' \
                              '<br>This may be seconds (but could be days!) before the URL was generated.' \
                              '<br><br>References:<ul>' \
                              '<li><a href="https://deedpolloffice.com/blog/articles/decoding-ei-parameter" ' \
@@ -82,24 +208,35 @@ def run(unfurl, node):
                              '<li><a href="http://cheeky4n6monkey.blogspot.com/2014/10/google-eid.html" ' \
                              'target="_blank">Cheeky4n6Monkey: Google-ei\'d ?!</a></li>' \
                              '<li><a href="https://github.com/obsidianforensics/unfurl/issues/56" ' \
-                             'target="_blank">Rasmus-Riis: Search Experiment with ei parameter</a></li>' \
-                             '</ul>'
+                             'target="_blank">Rasmus-Riis: Search Experiment with ei parameter</a></li>'\
+                             '<li>Adam Mazack: noticed the 2nd ei value contained fractional seconds ' \
+                             '<br> that match the ved</li></ul>'
                 node.extra_options = {'widthConstraint': {'maximum': 300}}
 
                 assert len(parsed_ei) == 4, \
                     f'There should be 4 decoded ei values, but we have {len(parsed_ei)}!'
 
-                unfurl.add_to_queue(
-                    data_type='epoch-seconds', key=None, value=parsed_ei[0], label=f'ei-0: {parsed_ei[0]}',
-                    hover='The first value in the \'ei\' parameter is thought to be the timestamp of when the session '
-                          'began.', parent_id=node.node_id, incoming_edge_config=google_edge)
+                # The first ei value is epoch seconds, the second has the fractional (micro) seconds.
+                # Concatenating them here as strings lets the timestamp parser convert it later.
+                ei_timestamp = str(parsed_ei[0]) + str(parsed_ei[1])
 
-                for index in [1, 2, 3]:
-                    unfurl.add_to_queue(
-                        data_type="integer", key=None, value=parsed_ei[index],
-                        label=f'ei-{index}: {parsed_ei[index]}',
-                        hover="The meaning of the last three 'ei' values is not known.",
-                        parent_id=node.node_id, incoming_edge_config=google_edge)
+                unfurl.add_to_queue(
+                    data_type='epoch-microseconds', key=None, value=ei_timestamp, label=f'ei Timestamp: {ei_timestamp}',
+                    hover='The first two values combined in the <b>ei</b> parameter are thought to be the timestamp of '
+                          'when the session began.', parent_id=node.node_id, incoming_edge_config=google_edge)
+
+                unfurl.add_to_queue(
+                    data_type='integer', key=None, value=parsed_ei[2],
+                    label=f'ei-2: {parsed_ei[2]}',
+                    hover='The meaning of the third <b>ei</b> value is not known.',
+                    parent_id=node.node_id, incoming_edge_config=google_edge)
+
+                unfurl.add_to_queue(
+                    data_type='integer', key=None, value=parsed_ei[3],
+                    label=f'ei-3: {parsed_ei[3]}',
+                    hover='The meaning of the fourth <b>ei</b> value is not known, '
+                          'but it matches the <b>ved</b> "13-3" value.',
+                    parent_id=node.node_id, incoming_edge_config=google_edge)
 
             elif node.key == 'gs_l':
                 node.hover = 'The <b>gs_l</b> parameter contains multiple values, delimited by <b>.</b>. <br>' \
@@ -118,25 +255,25 @@ def run(unfurl, node):
 
             elif node.key == 'oq':
                 unfurl.add_to_queue(
-                    data_type='descriptor', key=None, value=f'"Original" Search Query: {node.value}',
+                    data_type='google.oq', key=None, value=f'"Original" Search Query: {node.value}',
                     hover='Original terms entered by the user; auto-complete or suggestions <br>'
                           'may have been used to reach the actual search terms (in <b>q</b>)',
                     parent_id=node.node_id, incoming_edge_config=google_edge)
 
             elif node.key == 'q':
                 unfurl.add_to_queue(
-                    data_type='descriptor', key=None, value=f'Search Query: {node.value}',
+                    data_type='google.q', key=None, value=f'Search Query: {node.value}',
                     hover='Terms used in the Google search', parent_id=node.node_id, incoming_edge_config=google_edge)
 
             elif node.key == 'source':
                 if node.value in known_sources.keys():
                     unfurl.add_to_queue(
-                        data_type='descriptor', key=None, value=f'Source: {known_sources[node.value]}',
+                        data_type='google.source', key=None, value=f'Source: {known_sources[node.value]}',
                         hover='Source of the Google search', parent_id=node.node_id, incoming_edge_config=google_edge)
 
             elif node.key == 'start':
                 unfurl.add_to_queue(
-                    data_type='descriptor', key=None, value=f'Starting Result: {node.value}',
+                    data_type='google.start', key=None, value=f'Starting Result: {node.value}',
                     hover='Google search by default shows 10 results per page; higher <br>'
                           '"start" values may indicate browsing more subsequent results pages.',
                     parent_id=node.node_id, incoming_edge_config=google_edge)
@@ -154,12 +291,46 @@ def run(unfurl, node):
                           'Phill Moore on Twitter</a></li></ul>', parent_id=node.node_id,
                     incoming_edge_config=google_edge)
 
+            elif node.key == 'tbm':
+                tbm_mappings = {
+                    'bks': 'Google Books',
+                    'fin': 'Google Finance',
+                    'flm': 'Google Flights',
+                    'isch': 'Google Images',
+                    'nws': 'Google News',
+                    'shop': 'Google Shopping',
+                    'vid': 'Google Videos',
+                }
+
+                value = tbm_mappings.get(node.value, 'Unknown')
+                unfurl.add_to_queue(
+                    data_type='google.tbm', key=None, value=f'Search Type: {value}',
+                    hover='Google Search Type', parent_id=node.node_id, incoming_edge_config=google_edge)
+
             elif node.key == 'uule':
                 # https://moz.com/ugc/geolocation-the-ultimate-tip-to-emulate-local-search
                 location_string = base64.b64decode(unfurl.add_b64_padding(node.value[10:]))
                 unfurl.add_to_queue(
-                    data_type='descriptor', key=None, value=location_string, label=location_string,
+                    data_type='google.uule', key=None, value=location_string, label=location_string,
                     parent_id=node.node_id, incoming_edge_config=google_edge)
+
+            elif node.key == 'rlz':
+                unfurl.add_to_queue(
+                    data_type='descriptor', key=None,
+                    value='RLZ used for grouping promotion event signals and anonymous user cohorts',
+                    parent_id=node.node_id, incoming_edge_config=google_edge)
+
+                try:
+                    rlz = parse_rlz(node.value)
+
+                    for component in rlz.values():
+                        unfurl.add_to_queue(
+                            data_type=component['data_type'], key=component['key'],
+                            value=component['value'], hover=component['hover'],
+                            parent_id=node.node_id, incoming_edge_config=google_edge)
+
+                except ValueError as e:
+                    print(f'Exception parsing RLZ: {e}')
 
             elif node.key == 'ved':
                 node.extra_options = {'widthConstraint': {'maximum': 400}}
@@ -219,7 +390,8 @@ def run(unfurl, node):
                             unfurl.add_to_queue(
                                 data_type='google.ved', key='13-3', value=v13_unknown_3,
                                 parent_id=node.node_id, incoming_edge_config=google_edge,
-                                hover='Inside the ved parameter, the meanings of<br> 13-2 and 13-3 are not known.')
+                                hover='Inside the ved parameter, the meanings of 13-2 and 13-3 are not known, <br>'
+                                      'but the values in <b>ved 13-3</b> and <b>ei-3</b> match.')
 
                     elif key == 'v15':
                         assert isinstance(value, dict), 'ved-15 should be a dict'
@@ -243,7 +415,7 @@ def run(unfurl, node):
                             hover=known_ved_descriptions.get(key, ''),
                             parent_id=node.node_id, incoming_edge_config=google_edge)
 
-    if node.data_type == "google.gs_l":
+    if node.data_type == 'google.gs_l':
         known_values = {
             '0': known_sources,
             '1': {
@@ -377,3 +549,95 @@ def run(unfurl, node):
                           '<a href="https://github.com/beschulz/ved-decoder" target="_blank">'
                           'Benjamin Schulz\'s work</a>',
                     parent_id=node.node_id, incoming_edge_config=google_edge)
+
+    elif node.data_type == 'google.rlz.ap':
+        # From https://source.chromium.org/chromium/chromium/src/+/master:rlz/lib/lib_values.cc
+        rlz_aps = {
+            # 'I7': 'IE_DEFAULT_SEARCH',
+            'I7': 'IE Default search',
+            # 'W1': 'IE_HOME_PAGE',
+            'W1': 'IE Home Page',
+            # 'T4': 'IETB_SEARCH_BOX',
+            'T4': 'IE Toolbar Search Box',
+            'Q1': 'QUICK_SEARCqH_BOX',
+            'D1': 'GD_DESKBAND',
+            'D2': 'GD_SEARCH_GADGET',
+            'D3': 'GD_WEB_SERVER',
+            'D4': 'GD_OUTLOOK',
+            # 'C1': 'CHROME_OMNIBOX',
+            'C1': 'Chrome Omnibox',
+            # 'C2': 'CHROME_HOME_PAGE',
+            'C2': 'Chrome Home Page',
+            # 'B2': 'FFTB2_BOX',
+            'B2': 'Firefox Toolbar v2',
+            # 'B3': 'FFTB3_BOX',
+            'B3': 'Firefox Toolbar v3',
+            'N1': 'PINYIN_IME_BHO',
+            'G1': 'IGOOGLE_WEBPAGE',
+            'H1': 'MOBILE_IDLE_SCREEN_BLACKBERRY',
+            'H2': 'MOBILE_IDLE_SCREEN_WINMOB',
+            'H3': 'MOBILE_IDLE_SCREEN_SYMBIAN',
+            # 'R0': 'FF_HOME_PAGE',
+            'R0': 'Firefox Home Page',
+            # 'R1': 'FF_SEARCH_BOX',
+            'R1': 'Firefox Search box',
+            'R2': 'IE_BROWSED_PAGE',
+            'R3': 'QSB_WIN_BOX',
+            'R4': 'WEBAPPS_CALENDAR',
+            'R5': 'WEBAPPS_DOCS',
+            'R6': 'WEBAPPS_GMAIL',
+            'R7': 'IETB_LINKDOCTOR',
+            'R8': 'FFTB_LINKDOCTOR',
+            'T7': 'IETB7_SEARCH_BOX',
+            'T8': 'TB8_SEARCH_BOX',
+            'C3': 'CHROME_FRAME',
+            'V1': 'PARTNER_AP_1',
+            'V2': 'PARTNER_AP_2',
+            'V3': 'PARTNER_AP_3',
+            'V4': 'PARTNER_AP_4',
+            'V5': 'PARTNER_AP_5',
+            # 'C5': 'CHROME_MAC_OMNIBOX',
+            'C5': 'Chrome Omnibox on Mac',
+            # 'C6': 'CHROME_MAC_HOME_PAGE',
+            'C6': 'Chrome home page on Mac',
+            # 'CA': 'CHROMEOS_OMNIBOX',
+            'CA': 'ChromeOS Omnibox',
+            # 'CB': 'CHROMEOS_HOME_PAGE',
+            'CB': 'ChromeOS Home Page',
+            'CC': 'CHROMEOS_APP_LIST',
+            # 'C9': 'CHROME_IOS_OMNIBOX_TABLET',
+            'C9': 'Chrome Omnibox on iOS Tablet',
+            # 'CD': 'CHROME_IOS_OMNIBOX_MOBILE',
+            'CD': 'Chrome Omnibox on iOS Mobile',
+            'C7': 'CHROME_APP_LIST',
+            'C8': 'CHROME_MAC_APP_LIST',
+            'RQ': 'UNDEFINED_AP_Q',
+            'RR': 'UNDEFINED_AP_R',
+            'RS': 'UNDEFINED_AP_S',
+            'RT': 'UNDEFINED_AP_T',
+            'RU': 'UNDEFINED_AP_U',
+            'RV': 'UNDEFINED_AP_V',
+            'RW': 'UNDEFINED_AP_W',
+            'RX': 'UNDEFINED_AP_X',
+            'RY': 'UNDEFINED_AP_Y',
+            'RZ': 'UNDEFINED_AP_Z',
+            'U0': 'PACK_AP0',
+            'U1': 'PACK_AP1',
+            'U2': 'PACK_AP2',
+            'U3': 'PACK_AP3',
+            'U4': 'PACK_AP4',
+            'U5': 'PACK_AP5',
+            'U6': 'PACK_AP6',
+            'U7': 'PACK_AP7',
+            'U8': 'PACK_AP8',
+            'U9': 'PACK_AP9',
+            'UA': 'PACK_AP10',
+            'UB': 'PACK_AP11',
+            'UC': 'PACK_AP12',
+            'UD': 'PACK_AP13'
+        }
+
+        unfurl.add_to_queue(
+            data_type='descriptor', key=node.value, value=rlz_aps.get(node.value, 'Unknown'),
+            label=f'Search performed using {rlz_aps.get(node.value, "unknown application")}',
+            parent_id=node.node_id, incoming_edge_config=google_edge)
