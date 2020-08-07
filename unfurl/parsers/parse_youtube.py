@@ -46,7 +46,7 @@ def run(unfurl, node):
                     parent_id=node.node_id, incoming_edge_config=youtube_edge)
             except:
                 pass
-        if node.key == 'v' or (node.data_type == 'url.path.segment' and (not 'watch' in node.value and not 'embed' in node.value)) or (node.data_type == 'url.path' and len(node.value[1:].split('/')) == 1 and not '/watch' in node.value and not '/embed' in node.value):
+        if node.key == 'v' or (node.data_type == 'url.path.segment' and len(node.value) == 11) or (node.data_type == 'url.path' and len(node.value[1:].split('/')) == 1 and len(node.value) == 12):
             video_id = node.value
             if node.data_type == 'url.path':
                 video_id = video_id[1:]
