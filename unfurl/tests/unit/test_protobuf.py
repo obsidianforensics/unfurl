@@ -1,4 +1,4 @@
-from unfurl.unfurl import Unfurl
+from unfurl.core import Unfurl
 import unittest
 
 
