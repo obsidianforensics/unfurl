@@ -1,6 +1,6 @@
 import unittest
 
-from unfurl.unfurl import app as my_app
+from unfurl.core import app as my_app
 
 
 class TestApi(unittest.TestCase):

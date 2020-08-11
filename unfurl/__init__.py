@@ -13,5 +13,5 @@
 # limitations under the License.
 
 __author__ = "Ryan Benson"
-__version__ = "20200729"
+__version__ = "20200812"
 __email__ = "ryan@dfir.blog"
