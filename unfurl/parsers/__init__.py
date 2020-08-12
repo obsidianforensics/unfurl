@@ -14,6 +14,7 @@ __all__ = [
     "parse_mailto",
     "parse_protobuf",
     "parse_shortlink",
+    "parse_sonyflake",
     "parse_tiktok",
     "parse_timestamp",
     "parse_twitter",
