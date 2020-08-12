@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import urllib.parse
+import pycountry
 import re
+import urllib.parse
 
 urlparse_edge = {
     'color': {
@@ -126,6 +127,21 @@ def run(unfurl, node):
                 data_type='url.port', key='Port', value=parsed_authority.port,
                 hover='This is the <b>port</b> subcomponent of authority, '
                       'per <a href="https://tools.ietf.org/html/rfc3986" target="_blank">RFC3986</a>',
+                parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+
+    elif node.data_type == 'url.query.pair' and node.key in ['lang', 'language']:
+
+        if len(node.value) == 2:
+            language = pycountry.languages.get(alpha_2=node.value)
+        elif len(node.value) == 3:
+            language = pycountry.languages.get(alpha_3=node.value)
+        else:
+            return
+
+        if language:
+            unfurl.add_to_queue(
+                data_type='descriptor', key=None, value=f'Language: {language.name}',
+                hover='This is a generic parser based on common query-string patterns across websites',
                 parent_id=node.node_id, incoming_edge_config=urlparse_edge)
 
     else:
