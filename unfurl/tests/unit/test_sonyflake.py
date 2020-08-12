@@ -4,7 +4,7 @@ import unittest
 
 class TestSonyflake(unittest.TestCase):
 
-    def test_ksuid(self):
+    def test_sonyflake(self):
         """ Test of a Sonyflake """
 
         test = Unfurl()
