@@ -26,8 +26,9 @@ uuid_edge = {
 
 def run(unfurl, node):
     if not node.data_type == 'mac-address':
+        long_int = re.fullmatch(r'\d{12,}', str(node.value))
         m = re.match(r'(?P<mac_addr>[0-9A-Fa-f]{12}|([0-9A-Fa-f]:){6})$', str(node.value))
-        if m:
+        if m and not long_int:
             u = m.group('mac_addr')
 
             # Check if we need to add colons
