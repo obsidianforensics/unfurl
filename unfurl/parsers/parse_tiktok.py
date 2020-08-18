@@ -37,7 +37,7 @@ def parse_tiktok_id(unfurl, node):
     unfurl.add_to_queue(
         data_type='epoch-seconds', key=None, value=timestamp, label=f'Timestamp: {timestamp}',
         hover='The leading 31 bits in a TikTok ID are a timestamp, '
-              '<br>thought to represent when an item was posted.',
+              '<br>thought to represent when an item was posted or created.',
         parent_id=node.node_id, incoming_edge_config=tiktok_edge)
 
 
@@ -46,7 +46,6 @@ def run(unfurl, node):
     if node.data_type == 'url.path.segment':
 
         if 'tiktok.com' in unfurl.find_preceding_domain(node):
-
             if node.key == 1:
                 if node.value.startswith('@'):
                     unfurl.add_to_queue(
@@ -60,3 +59,8 @@ def run(unfurl, node):
             # Check if TikTok ID timestamp would be between 2017-12 and 2025-05
             elif unfurl.check_if_int_between(node.value, 6500000000000000000, 7500000000000000000):
                 parse_tiktok_id(unfurl, node)
+
+    # If it's the "root" node and a plausible TikTok ID, parse it.
+    # This case covers someone parsing just a TikTok ID, not a full URL.
+    elif node.node_id == 1 and unfurl.check_if_int_between(node.value, 6500000000000000000, 7500000000000000000):
+        parse_tiktok_id(unfurl, node)
