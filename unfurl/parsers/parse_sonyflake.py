@@ -38,8 +38,8 @@ def parse_sonyflake(unfurl, node):
         print(e)
         return
 
-    node.hover = 'Twitter Snowflakes are time-based IDs. ' \
-                 '<a href="https://blog.twitter.com/engineering/en_us/a/2010/announcing-snowflake.html" ' \
+    node.hover = 'Sonyflake is a distributed unique ID generator inspired by ' \
+                 'Twitter\'s Snowflake. <a href="https://github.com/sony/sonyflake" ' \
                  'target="_blank">[ref]</a>'
 
     unfurl.add_to_queue(

@@ -25,7 +25,7 @@ timestamp_edge = {
 
 digits_re = re.compile(r'^\d+$')
 float_re = re.compile(r'^\d+\.\d+$')
-hex_re = re.compile(r'^[A-F0-9]+$', flags=re.IGNORECASE)
+hex_re = re.compile(r'^[A-F0-9:]+$', flags=re.IGNORECASE)
 
 
 def decode_epoch_seconds(seconds):
@@ -166,6 +166,39 @@ def decode_mac_absolute_time(seconds):
     return datetime.datetime.utcfromtimestamp(float(seconds)+978307200), 'Mac Absolute Time / Cocoa'
 
 
+def decode_epoch_hex(seconds):
+    """Decode a hex string (big endian) of an Epoch seconds integer to a human-readable timestamp.
+
+    An Epoch timestamp (1-10 digits) is an integer that counts the number of seconds since Jan 1 1970.
+
+    Useful values for ranges (all Jan-1 00:00:00):
+      2015: 54A48E00
+      2025: 67748580
+      2030: 713FB300
+
+    """
+    timestamp, _ = decode_epoch_seconds(int(seconds, 16))
+    return timestamp, 'Epoch seconds (hex)'
+
+
+def decode_windows_filetime_hex(intervals):
+    """Decode a hex timestamp in Windows FileTime format to a human-readable timestamp.
+
+    A Windows FileTime timestamp (18 digits) is a 64-bit value that represents the number of 100-nanosecond intervals
+    since 12:00AM Jan 1 1601 UTC.
+
+    Useful values for ranges (all Jan-1 00:00:00):
+      1970: 19DB1DED53E8000
+      2015: 1D02555E2B98000
+      2025: 1DB5BE019BA4000
+      2065: 2083476A0E9C000
+
+    """
+    int_right = int(intervals, 16)
+    timestamp, _ = decode_windows_filetime(int_right)
+    return timestamp, 'Windows FileTime (hex)'
+
+
 def run(unfurl, node):
     new_timestamp = (None, 'unknown')
 
@@ -192,6 +225,9 @@ def run(unfurl, node):
 
     elif node.data_type == 'mac-absolute-time':
         new_timestamp = decode_mac_absolute_time(node.value)
+
+    elif node.data_type == 'epoch-hex-seconds':
+        new_timestamp = decode_epoch_hex(node.value)
 
     else:
         matches_digits = re.match(digits_re, str(node.value))
@@ -241,8 +277,15 @@ def run(unfurl, node):
                 new_timestamp = decode_mac_absolute_time(timestamp)
 
         elif matches_hex:
-            # TODO: Do some parsing for timestamps that are in hex formats
-            pass
+            timestamp = node.value.replace(':', '')
+
+            # Epoch hex seconds (8 hex chars)
+            if 1420070400 <= int(timestamp, 16) <= 1735689600:  # 2015 <= ts <= 2025
+                new_timestamp = decode_epoch_hex(timestamp)
+
+            # Windows FileTime hex (16 hex digits)
+            elif 130645440000000000 <= int(timestamp, 16) <= 133801632000000000:  # 2015 <= ts <= 2025
+                new_timestamp = decode_windows_filetime_hex(timestamp)
 
     if new_timestamp != (None, 'unknown'):
         unfurl.add_to_queue(
