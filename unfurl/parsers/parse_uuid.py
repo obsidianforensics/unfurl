@@ -26,7 +26,7 @@ uuid_edge = {
 
 def run(unfurl, node):
     if not node.data_type.startswith('uuid'):
-        m = re.fullmatch(r'(?P<uuid>[0-9A-Fa-f]{8}-?([0-9A-Fa-f]{4}-?){3}(?P<mac>[0-9A-Fa-f]{12}))', str(node.value))
+        m = re.fullmatch(r'/?(?P<uuid>[0-9A-Fa-f]{8}-?([0-9A-Fa-f]{4}-?){3}(?P<mac>[0-9A-Fa-f]{12}))', str(node.value))
         if m:
             u = m.group('uuid')
             u = u.replace('-', '')
