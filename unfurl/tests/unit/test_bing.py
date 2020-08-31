@@ -16,8 +16,11 @@ class TestBing(unittest.TestCase):
         test.parse_queue()
 
         # test number of nodes
-        self.assertEqual(len(test.nodes.keys()), 19)
-        self.assertEqual(test.total_nodes, 19)
+        self.assertEqual(len(test.nodes.keys()), 23)
+        self.assertEqual(test.total_nodes, 23)
+
+        # Test query parsing
+        self.assertEqual('q: digital forensics', test.nodes[9].label)
 
         # is processing finished empty
         self.assertTrue(test.queue.empty())
