@@ -21,32 +21,40 @@ youtube_edge = {
         'color': '#ff0000'
     },
     'title': 'Youtube Parsing Functions',
-    'label': 'Y'
+    'label': 'YT'
 }
 
 
 def format_seconds(seconds):
+    if seconds.endswith('s'):
+        seconds = seconds[:-1]
+    try:
+        seconds = int(seconds)
+    except ValueError:
+        return None
+
     if seconds < 60:
-        return f"{seconds} seconds"
+        return f'{seconds} seconds'
     elif seconds < 3600:
-        return time.strftime("%M:%S", time.gmtime(seconds)) + " minutes"
+        return time.strftime('%M:%S', time.gmtime(seconds)) + ' (mm:ss)'
     else:
-        return time.strftime("%H:%M:%S", time.gmtime(seconds)) + " hours"
+        return time.strftime('%H:%M:%S', time.gmtime(seconds)) + ' (hh:mm:ss)'
 
 
 def run(unfurl, node):
     youtube_domains = ['youtube.com', 'youtu.be']
     if any(youtube_domain in unfurl.find_preceding_domain(node) for youtube_domain in youtube_domains):
         if node.key == 't' or node.key == 'time_continue' or node.key == 'start':
-            try:
-                time_formatted = format_seconds(int(node.value))
-                param_text = f'The youtube video will begin playing at {time_formatted}.'
+            time_formatted = format_seconds(node.value)
+
+            if time_formatted:
+                param_text = f'Video will start playing at {time_formatted}'
                 unfurl.add_to_queue(
                     data_type='descriptor', key=None, value=node.value, label=param_text,
                     parent_id=node.node_id, incoming_edge_config=youtube_edge)
-            except:
-                pass
-        if node.key == 'v' or (node.data_type == 'url.path.segment' and len(node.value) == 11) or (node.data_type == 'url.path' and len(node.value[1:].split('/')) == 1 and len(node.value) == 12):
+
+        if node.key == 'v' or (node.data_type == 'url.path.segment' and len(node.value) == 11) or \
+                (node.data_type == 'url.path' and len(node.value[1:].split('/')) == 1 and len(node.value) == 12):
             video_id = node.value
             if node.data_type == 'url.path':
                 video_id = video_id[1:]
