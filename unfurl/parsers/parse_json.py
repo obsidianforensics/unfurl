@@ -16,7 +16,7 @@ import json
 
 json_edge = {
     'color': {
-        'color': '#d7ffaf'
+        'color': '#A7A7A7'
     },
     'title': 'JSON Parsing Functions',
     'label': 'JSON'
@@ -25,7 +25,7 @@ json_edge = {
 
 def run(unfurl, node):
 
-    if node.data_type == 'url.query.pair':
+    if node.data_type in ('url.query.pair', 'string'):
         try:
             json_obj = json.loads(node.value)
             assert isinstance(json_obj, dict), 'Loaded object should be a dict'
@@ -42,8 +42,8 @@ def run(unfurl, node):
             for json_key, json_value in json_obj.items():
                 unfurl.add_to_queue(
                     data_type='json', key=json_key, value=json_value, label=f'{json_key}: {json_value}',
-                    hover='This is the URL <b>network location</b> (or netloc), per <a href="'
-                          'https://tools.ietf.org/html/rfc1808.html" target="_blank">RFC1808</a>',
+                    hover='This was parsed as JavaScript Object Notation (JSON), <br>'
+                          'which uses human-readable text to store and transmit data objects',
                     parent_id=node.node_id, incoming_edge_config=json_edge)
 
         except Exception as e:
@@ -54,15 +54,16 @@ def run(unfurl, node):
         if isinstance(node_value, str):
             try:
                 node_value = json.loads(node_value)
-            except json.JSONDecodeError as jde:
+            except json.JSONDecodeError:
                 pass
+
         if isinstance(node_value, dict):
             try:
                 for key, value in node_value.items():
                     unfurl.add_to_queue(
                         data_type='json', key=key, value=value, label=f'{key}: {value}',
-                        hover='This is the URL <b>network location</b> (or netloc), per <a href="'
-                              'https://tools.ietf.org/html/rfc1808.html" target="_blank">RFC1808</a>',
+                        hover='This was parsed as JavaScript Object Notation (JSON), <br>'
+                              'which uses human-readable text to store and transmit data objects',
                         parent_id=node.node_id, incoming_edge_config=json_edge)
 
             except Exception as e:

@@ -17,8 +17,8 @@ class TestBase64(unittest.TestCase):
         self.assertEqual(len(test.nodes.keys()), 2)
         self.assertEqual(test.total_nodes, 2)
 
-        # confirm that it was detected as b64
-        self.assertEqual('b64', test.nodes[2].data_type)
+        # confirm that it was decoded from b64 to a string
+        self.assertEqual('string', test.nodes[2].data_type)
 
         # confirm that text decoded correctly
         self.assertEqual('testytesttest', test.nodes[2].value)
@@ -40,8 +40,8 @@ class TestBase64(unittest.TestCase):
         self.assertEqual(len(test.nodes.keys()), 2)
         self.assertEqual(test.total_nodes, 2)
 
-        # confirm that it was detected as b64
-        self.assertEqual('b64', test.nodes[2].data_type)
+        # confirm that it was decoded from b64 to a string
+        self.assertEqual('string', test.nodes[2].data_type)
 
         # confirm that text decoded correctly
         self.assertEqual('testytesttest', test.nodes[2].value)
@@ -63,8 +63,8 @@ class TestBase64(unittest.TestCase):
         self.assertEqual(len(test.nodes.keys()), 2)
         self.assertEqual(test.total_nodes, 2)
 
-        # confirm that it was detected as b64
-        self.assertEqual('b64', test.nodes[2].data_type)
+        # confirm that it was decoded from b64 to a string
+        self.assertEqual('string', test.nodes[2].data_type)
 
         # confirm that text decoded correctly
         self.assertEqual('testytesttest', test.nodes[2].value)

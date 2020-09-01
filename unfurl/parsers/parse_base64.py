@@ -66,5 +66,5 @@ def run(unfurl, node):
         #                parent_id=node.node_id, incoming_edge_config=b64_edge)
         return
 
-    unfurl.add_to_queue(data_type='b64', key=None, value=str_decoded,
+    unfurl.add_to_queue(data_type='string', key=None, value=str_decoded,
                         parent_id=node.node_id, incoming_edge_config=b64_edge)
