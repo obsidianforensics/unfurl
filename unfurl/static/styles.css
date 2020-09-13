@@ -13,14 +13,18 @@ See the License for the specific language governing permissions and
 limitations under the License.*/
 
 .collapsible {
-  background-color: #777;
-  color: white;
+  background-image: linear-gradient(to right, #C1D1AA , #5E8439);
+  color: black;
   cursor: pointer;
   padding: 18px;
   border: none;
   text-align: left;
   outline: none;
-  font-size: 15px;
+  font-size: 18px;
+}
+
+.spacer {
+    height:12px;
 }
 
 .active, .collapsible:hover {
