@@ -144,6 +144,21 @@ def run(unfurl, node):
                 hover='This is a generic parser based on common query-string patterns across websites',
                 parent_id=node.node_id, incoming_edge_config=urlparse_edge)
 
+    elif node.data_type == 'url.query.pair' and node.key in ['country', 'cc', 'country_code']:
+
+        if len(node.value) == 2:
+            country = pycountry.countries.get(alpha_2=node.value)
+        elif len(node.value) == 3:
+            country = pycountry.countries.get(alpha_3=node.value)
+        else:
+            return
+
+        if country:
+            unfurl.add_to_queue(
+                data_type='descriptor', key=None, value=f'Country: {country.name}',
+                hover='This is a generic parser based on common query-string patterns across websites',
+                parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+
     else:
         if not isinstance(node.value, str):
             return

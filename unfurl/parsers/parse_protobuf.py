@@ -118,6 +118,9 @@ def run(unfurl, node):
         # A valid b64 string will not be this length
         return False
 
+    if node.data_type.startswith('uuid'):
+        return False
+
     urlsafe_b64_m = re.fullmatch(r'[A-Za-z0-9_=\-]{16,}', node.value)
     standard_b64_m = re.fullmatch(r'[A-Za-z0-9+/=]{16,}', node.value)
     hex_m = re.fullmatch(r'([A-Fa-f0-9]{2} ?){8,}', node.value)
