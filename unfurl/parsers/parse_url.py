@@ -129,7 +129,7 @@ def run(unfurl, node):
                       'per <a href="https://tools.ietf.org/html/rfc3986" target="_blank">RFC3986</a>',
                 parent_id=node.node_id, incoming_edge_config=urlparse_edge)
 
-    elif node.data_type == 'url.query.pair' and node.key in ['lang', 'language']:
+    elif node.data_type == 'url.query.pair' and node.key in ['l', 'lang', 'language', 'set-lang']:
 
         if len(node.value) == 2:
             language = pycountry.languages.get(alpha_2=node.value)
@@ -144,7 +144,7 @@ def run(unfurl, node):
                 hover='This is a generic parser based on common query-string patterns across websites',
                 parent_id=node.node_id, incoming_edge_config=urlparse_edge)
 
-    elif node.data_type == 'url.query.pair' and node.key in ['country', 'cc', 'country_code']:
+    elif node.data_type == 'url.query.pair' and node.key in ['c', 'cc', 'country', 'country_code']:
 
         if len(node.value) == 2:
             country = pycountry.countries.get(alpha_2=node.value)
