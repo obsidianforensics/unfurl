@@ -308,12 +308,18 @@ h1 {
    border: 0px;
    text-align: center;
    display: block;
+   overflow: auto;
  }
+
+#optionsBox {
+    margin: 5px;
+}
 
 #unfurlOptions {
     display: none;
     margin: auto;
     width: 550px;
+    margin-bottom: 10px;
 }
 
 vis.vis-configuration-wrapper {
