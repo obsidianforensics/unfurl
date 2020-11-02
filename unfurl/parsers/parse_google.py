@@ -196,7 +196,21 @@ def parse_rlz(rlz_string):
 def run(unfurl, node):
     if node.data_type == 'url.query.pair':
         if 'google' in unfurl.find_preceding_domain(node):
-            if node.key == 'ei':
+            if node.key == 'bih':
+                unfurl.add_to_queue(
+                    data_type='google.bih', key='Browser Height', value=node.value,
+                    label=f'Browser height: {node.value}px',
+                    hover='Inner height of the browser window',
+                    parent_id=node.node_id, incoming_edge_config=google_edge)
+
+            elif node.key == 'biw':
+                unfurl.add_to_queue(
+                    data_type='google.biw', key='Browser Width', value=node.value,
+                    label=f'Browser width: {node.value}px',
+                    hover='Inner width of the browser window',
+                    parent_id=node.node_id, incoming_edge_config=google_edge)
+
+            elif node.key == 'ei':
                 parsed_ei = parse_ei(unfurl.add_b64_padding(node.value))
                 node.hover = 'The \'<b>ei</b>\' parameter is base64-encoded and contains four values. ' \
                              '<br>The first two are thought to be the timestamp of when the session started ' \
