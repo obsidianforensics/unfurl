@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import mimetypes
 import pycountry
 import re
 import urllib.parse
@@ -140,7 +141,7 @@ def run(unfurl, node):
 
         if language:
             unfurl.add_to_queue(
-                data_type='descriptor', key=None, value=f'Language: {language.name}',
+                data_type='descriptor', key='Language', value=language.name,
                 hover='This is a generic parser based on common query-string patterns across websites',
                 parent_id=node.node_id, incoming_edge_config=urlparse_edge)
 
@@ -155,9 +156,21 @@ def run(unfurl, node):
 
         if country:
             unfurl.add_to_queue(
-                data_type='descriptor', key=None, value=f'Country: {country.name}',
+                data_type='descriptor', key='Country', value=country.name,
                 hover='This is a generic parser based on common query-string patterns across websites',
                 parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+
+    elif node.data_type == 'url.path.segment':
+        for file_type in mimetypes.types_map.keys():
+            if node.value.endswith(file_type):
+                unfurl.add_to_queue(
+                    data_type='file.name', key='File Name', value=node.value[:-len(file_type)],
+                    parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+                unfurl.add_to_queue(
+                    data_type='file.ext', key='File Extension', value=node.value[-len(file_type):],
+                    hover=f'The data type typically associated with <b>{file_type}</b> '
+                          f'is <b>{mimetypes.types_map[file_type]}</b>',
+                    parent_id=node.node_id, incoming_edge_config=urlparse_edge)
 
     else:
         if not isinstance(node.value, str):
