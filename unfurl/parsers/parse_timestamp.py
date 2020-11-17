@@ -78,19 +78,36 @@ def decode_epoch_milliseconds(milliseconds):
     return converted_ts, 'Epoch milliseconds'
 
 
-def decode_epoch_microseconds(microseconds):
-    """Decode a numeric timestamp in Epoch milliseconds format to a human-readable timestamp.
+def decode_epoch_ten_microseconds(ten_microseconds):
+    """Decode a numeric timestamp in Epoch ten-millisecond increments to a human-readable timestamp.
 
-    An Epoch millisecond timestamp (1-10 digits) is an integer that counts the number of milliseconds since Jan 1 1970.
+    An Epoch ten-microsecond increments timestamp (1-15 digits) is an integer that counts the number of ten-microsecond
+    increments since Jan 1 1970.
 
     Useful values for ranges (all Jan-1 00:00:00):
       1970: 0
-      2015: 1420070400000
-      2025: 1735689600000
-      2030: 1900000000000
+      2015: 142007040000000
+      2025: 173568960000000
+      2030: 190000000000000
 
     """
-    # Trim off the 3 trailing 0s (don't add precision that wasn't in the timestamp)
+    # Trim off the trailing 0 (don't add precision that wasn't in the timestamp)
+    converted_ts = str(datetime.datetime.utcfromtimestamp(float(ten_microseconds) / 100000))[:-1]
+    return converted_ts, 'Epoch ten-microsecond increments'
+
+
+def decode_epoch_microseconds(microseconds):
+    """Decode a numeric timestamp in Epoch microseconds format to a human-readable timestamp.
+
+    An Epoch millisecond timestamp (1-16 digits) is an integer that counts the number of milliseconds since Jan 1 1970.
+
+    Useful values for ranges (all Jan-1 00:00:00):
+      1970: 0
+      2015: 1420070400000000
+      2025: 1735689600000000
+      2030: 1900000000000000
+
+    """
     converted_ts = str(datetime.datetime.utcfromtimestamp(float(microseconds) / 1000000))
     return converted_ts, 'Epoch microseconds'
 
@@ -211,6 +228,9 @@ def run(unfurl, node):
     elif node.data_type == 'epoch-milliseconds':
         new_timestamp = decode_epoch_milliseconds(node.value)
 
+    elif node.data_type == 'epoch-ten-microseconds':
+        new_timestamp = decode_epoch_ten_microseconds(node.value)
+
     elif node.data_type == 'epoch-microseconds':
         new_timestamp = decode_epoch_microseconds(node.value)
 
@@ -251,6 +271,10 @@ def run(unfurl, node):
 
             # Epoch microseconds (16 digits)
             elif 1420070400000000 <= timestamp <= 1735689600000000:  # 2015 <= ts <= 2025
+                new_timestamp = decode_epoch_microseconds(timestamp)
+
+            # Epoch ten microsecond increments (15 digits)
+            elif 142007040000000 <= timestamp <= 173568960000000:  # 2015 <= ts <= 2025
                 new_timestamp = decode_epoch_microseconds(timestamp)
 
             # Epoch milliseconds (13 digits)

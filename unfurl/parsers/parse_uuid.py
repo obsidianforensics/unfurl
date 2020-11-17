@@ -68,9 +68,28 @@ def run(unfurl, node):
                       'combined and hashed using MD5', parent_id=node.node_id, incoming_edge_config=uuid_edge)
 
         elif u.version == 4:
-            unfurl.add_to_queue(
-                data_type='uuid-parsed', key=None, value=node.value, label='Version 4 UUID is randomly generated',
-                parent_id=node.node_id, incoming_edge_config=uuid_edge)
+            # Limits to timestamp values between 2018-01 and 2025-05
+            if 0x8A <= int(node.value[:2], 16) <= 0x9F:
+                # Ref: https://itnext.io/laravel-the-mysterious-ordered-uuid-29e7500b4f8
+                unfurl.add_to_queue(
+                    data_type='descriptor', key=None,
+                    value='Laravel "Ordered UUIDs" are composed of a timestamp and random bits, '
+                          'but have a similar structure to UUIDv4.',
+                    hover='Laravel Ordered UUIDs appear similar to UUIDv4s, but they are outside RFC 4122 '
+                          '<a href="https://itnext.io/laravel-the-mysterious-ordered-uuid-29e7500b4f8">[ref]</a>.'
+                          'Unfurl differentiates between them based on potential timestamp values. There is a '
+                          'chance of misidentifying them, as they use the same structure.',
+                    parent_id=node.node_id, incoming_edge_config=uuid_edge)
+
+                unfurl.add_to_queue(
+                    data_type='epoch-ten-microseconds', key='Timestamp', value=int(node.value[:12], 16),
+                    hover='The first 48 bits of an Ordered UUID are a timestamp',
+                    parent_id=node.node_id, incoming_edge_config=uuid_edge)
+
+            else:
+                unfurl.add_to_queue(
+                    data_type='uuid-parsed', key=None, value=node.value, label='Version 4 UUID is randomly generated',
+                    parent_id=node.node_id, incoming_edge_config=uuid_edge)
 
         elif u.hex[12] == '5':
             unfurl.add_to_queue(
