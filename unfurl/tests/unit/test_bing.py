@@ -12,7 +12,7 @@ class TestBing(unittest.TestCase):
         test.add_to_queue(
             data_type='url', key=None,
             value='https://www.bing.com/search?q=digital+forensics&qs=n&form=QBLH&sp=-1'
-                  '&pq=digital+forensic&sc=8-16&sk=&cvid=97BF13B59CF84B98B13C067AAA3DB701')
+                  '&pq=digital+forensic&sc=8-16&sk=&cvid=77BF13B59CF84B98B13C067AAA3DB701')
         test.parse_queue()
 
         # test number of nodes
