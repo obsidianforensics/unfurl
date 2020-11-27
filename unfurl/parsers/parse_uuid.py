@@ -73,12 +73,16 @@ def run(unfurl, node):
                 # Ref: https://itnext.io/laravel-the-mysterious-ordered-uuid-29e7500b4f8
                 unfurl.add_to_queue(
                     data_type='descriptor', key=None,
-                    value='Laravel "Ordered UUIDs" are composed of a timestamp and random bits, '
-                          'but have a similar structure to UUIDv4.',
+                    value='This UUID matches the structure of both UUIDv4 (random) '
+                          '& Laravel "Ordered UUIDs".',
                     hover='Laravel Ordered UUIDs appear similar to UUIDv4s, but they are outside RFC 4122 '
                           '<a href="https://itnext.io/laravel-the-mysterious-ordered-uuid-29e7500b4f8">[ref]</a>.'
-                          'Unfurl differentiates between them based on potential timestamp values. There is a '
-                          'chance of misidentifying them, as they use the same structure.',
+                          '<br>The "Ordered UUID" is composed of a timestamp and random bits, while UUIDv4 is '
+                          '<br>random and does not contain a timestamp.'
+                          '<br><br>Unfurl differentiates between them based on potential timestamp values. There is '
+                          '<br>a chance of misidentifying them, as they use the same structure. UUIDv4 is more common, '
+                          '<br>but Unfurl is parsing this as an "Ordered UUID" to show the potential timestamp.',
+                    extra_options= {'widthConstraint': {'maximum': 250}},
                     parent_id=node.node_id, incoming_edge_config=uuid_edge)
 
                 unfurl.add_to_queue(
