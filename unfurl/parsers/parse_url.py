@@ -57,6 +57,13 @@ def run(unfurl, node):
                           'https://tools.ietf.org/html/rfc3986" target="_blank">RFC3986</a>',
                     parent_id=node.node_id, incoming_edge_config=urlparse_edge)
 
+            if parsed_url.params:
+                unfurl.add_to_queue(
+                    data_type='url.params', key=None, value=parsed_url.params,
+                    hover='This is the URL path <b>parameters</b>, per <a href="'
+                          'https://tools.ietf.org/html/rfc3986" target="_blank">RFC3986</a>',
+                    parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+
             if parsed_url.query:
                 unfurl.add_to_queue(
                     data_type='url.query', key=None, value=parsed_url.query,
@@ -91,6 +98,18 @@ def run(unfurl, node):
             for v in value:
                 unfurl.add_to_queue(
                     data_type='url.query.pair', key=key, value=v, label=f'{key}: {v}',
+                    parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+
+    elif node.data_type == 'url.params':
+        split_params_re = re.compile(r'^(?P<key>[^=]+?)=(?P<value>[^=?]+)(?P<delim>[;,|])')
+        split_params = split_params_re.match(node.value)
+        if split_params:
+            x = split_params.group('delim')
+            parsed_params = node.value.split(x)
+            for parsed_param in parsed_params:
+                key, value = parsed_param.split('=')
+                unfurl.add_to_queue(
+                    data_type='url.param.pair', key=key, value=value,
                     parent_id=node.node_id, incoming_edge_config=urlparse_edge)
 
     # This should only occur when a URL node was parsed previously and netloc != hostname, which means there are
