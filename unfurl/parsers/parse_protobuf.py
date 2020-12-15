@@ -13,9 +13,8 @@
 # limitations under the License.
 
 import base64
+import blackboxprotobuf
 import re
-
-from unfurl.parsers import blackboxprotobuf
 
 proto_edge = {
     'color': {
