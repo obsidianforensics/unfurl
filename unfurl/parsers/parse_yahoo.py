@@ -14,10 +14,10 @@
 
 yahoo = {
     'color': {
-        'color': '#228372'
+        'color': '#6001d2'
     },
     'title': 'Yahoo Search-related Parsing Functions',
-    'label': 'Y'
+    'label': 'Y!'
 }
 
 
@@ -27,60 +27,60 @@ def run(unfurl, node):
 
             if node.key == 'durs':
                 durs_mappings = {
-                    'short' : "Short (less than 5 minutes)",
-                    'medium': "Medium (5-20 minutes)",
-                    'long' : "Long (more than 20 minutes)",
+                    'short': 'Short (less than 5 minutes)',
+                    'medium': 'Medium (5-20 minutes)',
+                    'long': 'Long (more than 20 minutes)',
                 }
-                value = durs_mappings.get(node.value, "Unknown")
+                value = durs_mappings.get(node.value, 'Unknown')
                 unfurl.add_to_queue(
                     data_type='descriptor', key=None, value=f'Video Duration: {value}',
                     hover='Yahoo Video Search Duration', parent_id=node.node_id, incoming_edge_config=yahoo)
 
             elif node.key == 'imgc':
                 imgc_mappings = {
-                    'black' : "Black",
-                    'blue' : "Blue",
-                    'brown' : "Brown",
-                    'bw' : "Black & White",
-                    'gray' : "Gray",
-                    'green' : "Green",
-                    'orange': "Orange",
-                    'pink' : "Pink",
-                    'purple' : "Purple",
-                    'red' : "Red",
-                    'teal' : "Teal",
-                    'white' : "White",
-                    'yellow' : "Yellow",
+                    'black': 'Black',
+                    'blue': 'Blue',
+                    'brown': 'Brown',
+                    'bw': 'Black & White',
+                    'gray': 'Gray',
+                    'green': 'Green',
+                    'orange': 'Orange',
+                    'pink': 'Pink',
+                    'purple': 'Purple',
+                    'red': 'Red',
+                    'teal': 'Teal',
+                    'white': 'White',
+                    'yellow': 'Yellow',
 
                 }
-                value = imgc_mappings.get(node.value, "Unknown")
+                value = imgc_mappings.get(node.value, 'Unknown')
                 unfurl.add_to_queue(
                     data_type='descriptor', key=None, value=f'Image Size: {value}',
                     hover='Yahoo Image Search Size', parent_id=node.node_id, incoming_edge_config=yahoo)                    
 
             elif node.key == 'imgsz':
                 imgsz_mappings = {
-                    'small' : "Small",
-                    'medium': "Medium",
-                    'large' : "Large",
+                    'small': 'Small',
+                    'medium': 'Medium',
+                    'large': 'Large',
                 }
-                value = imgsz_mappings.get(node.value, "Unknown")
+                value = imgsz_mappings.get(node.value, 'Unknown')
                 unfurl.add_to_queue(
                     data_type='descriptor', key=None, value=f'Image Size: {value}',
                     hover='Yahoo Image Search Size', parent_id=node.node_id, incoming_edge_config=yahoo)
                     
             elif node.key == 'imgty':
                 imgty_mappings = {
-                    'clipart' : "Clipart",
-                    'face' : "Face",
-                    'gif' : "GIF",
-                    'graphics': "Graphics",
-                    'linedrawing' : "Line Drawing",
-                    'nonportrait' : "Non Portrait",
-                    'photo' : "Photo",
-                    'portrait' : "Portrait",
+                    'clipart': 'Clipart',
+                    'face': 'Face',
+                    'gif': 'GIF',
+                    'graphics': 'Graphics',
+                    'linedrawing': 'Line Drawing',
+                    'nonportrait': 'Non Portrait',
+                    'photo': 'Photo',
+                    'portrait': 'Portrait',
                 }
-                value = imgty_mappings.get(node.value, "Unknown")
+                value = imgty_mappings.get(node.value, 'Unknown')
                 unfurl.add_to_queue(
                     data_type='descriptor', key=None, value=f'Image Type: {value}',
                     hover='Yahoo Image Search Type', parent_id=node.node_id, incoming_edge_config=yahoo)       
@@ -88,15 +88,15 @@ def run(unfurl, node):
             elif node.key == 'p':
                 unfurl.add_to_queue(
                     data_type='descriptor', key=None, value=f'Search Query: {node.value}',
-                    hover='Terms used in the Bing search', parent_id=node.node_id, incoming_edge_config=yahoo)
+                    hover='Terms used in the Yahoo search', parent_id=node.node_id, incoming_edge_config=yahoo)
 
             elif node.key == 'vage':
                 vage_mappings = {
-                    'day'  : "Past 24 hours",
-                    'month': "Past month",
-                    'year' : "Past year",
+                    'day': 'Past 24 hours',
+                    'month': 'Past month',
+                    'year': 'Past year',
                 }
-                value = vage_mappings.get(node.value, "Unknown")
+                value = vage_mappings.get(node.value, 'Unknown')
                 unfurl.add_to_queue(
                     data_type='descriptor', key=None, value=f'Video Duration: {value}',
                     hover='Yahoo Video Search Duration', parent_id=node.node_id, incoming_edge_config=yahoo)
