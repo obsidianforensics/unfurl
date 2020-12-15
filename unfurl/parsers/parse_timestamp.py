@@ -1,4 +1,4 @@
-# Copyright 2019 Google LLC
+# Copyright 2020 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ timestamp_edge = {
 
 digits_re = re.compile(r'^\d+$')
 float_re = re.compile(r'^\d+\.\d+$')
-hex_re = re.compile(r'^[A-F0-9]+$', flags=re.IGNORECASE)
+hex_re = re.compile(r'^[A-F0-9:]+$', flags=re.IGNORECASE)
 
 
 def decode_epoch_seconds(seconds):
@@ -78,19 +78,36 @@ def decode_epoch_milliseconds(milliseconds):
     return converted_ts, 'Epoch milliseconds'
 
 
-def decode_epoch_microseconds(microseconds):
-    """Decode a numeric timestamp in Epoch milliseconds format to a human-readable timestamp.
+def decode_epoch_ten_microseconds(ten_microseconds):
+    """Decode a numeric timestamp in Epoch ten-millisecond increments to a human-readable timestamp.
 
-    An Epoch millisecond timestamp (1-10 digits) is an integer that counts the number of milliseconds since Jan 1 1970.
+    An Epoch ten-microsecond increments timestamp (1-15 digits) is an integer that counts the number of ten-microsecond
+    increments since Jan 1 1970.
 
     Useful values for ranges (all Jan-1 00:00:00):
       1970: 0
-      2015: 1420070400000
-      2025: 1735689600000
-      2030: 1900000000000
+      2015: 142007040000000
+      2025: 173568960000000
+      2030: 190000000000000
 
     """
-    # Trim off the 3 trailing 0s (don't add precision that wasn't in the timestamp)
+    # Trim off the trailing 0 (don't add precision that wasn't in the timestamp)
+    converted_ts = str(datetime.datetime.utcfromtimestamp(float(ten_microseconds) / 100000))[:-1]
+    return converted_ts, 'Epoch ten-microsecond increments'
+
+
+def decode_epoch_microseconds(microseconds):
+    """Decode a numeric timestamp in Epoch microseconds format to a human-readable timestamp.
+
+    An Epoch millisecond timestamp (1-16 digits) is an integer that counts the number of milliseconds since Jan 1 1970.
+
+    Useful values for ranges (all Jan-1 00:00:00):
+      1970: 0
+      2015: 1420070400000000
+      2025: 1735689600000000
+      2030: 1900000000000000
+
+    """
     converted_ts = str(datetime.datetime.utcfromtimestamp(float(microseconds) / 1000000))
     return converted_ts, 'Epoch microseconds'
 
@@ -166,6 +183,39 @@ def decode_mac_absolute_time(seconds):
     return datetime.datetime.utcfromtimestamp(float(seconds)+978307200), 'Mac Absolute Time / Cocoa'
 
 
+def decode_epoch_hex(seconds):
+    """Decode a hex string (big endian) of an Epoch seconds integer to a human-readable timestamp.
+
+    An Epoch timestamp (1-10 digits) is an integer that counts the number of seconds since Jan 1 1970.
+
+    Useful values for ranges (all Jan-1 00:00:00):
+      2015: 54A48E00
+      2025: 67748580
+      2030: 713FB300
+
+    """
+    timestamp, _ = decode_epoch_seconds(int(seconds, 16))
+    return timestamp, 'Epoch seconds (hex)'
+
+
+def decode_windows_filetime_hex(intervals):
+    """Decode a hex timestamp in Windows FileTime format to a human-readable timestamp.
+
+    A Windows FileTime timestamp (18 digits) is a 64-bit value that represents the number of 100-nanosecond intervals
+    since 12:00AM Jan 1 1601 UTC.
+
+    Useful values for ranges (all Jan-1 00:00:00):
+      1970: 19DB1DED53E8000
+      2015: 1D02555E2B98000
+      2025: 1DB5BE019BA4000
+      2065: 2083476A0E9C000
+
+    """
+    int_right = int(intervals, 16)
+    timestamp, _ = decode_windows_filetime(int_right)
+    return timestamp, 'Windows FileTime (hex)'
+
+
 def run(unfurl, node):
     new_timestamp = (None, 'unknown')
 
@@ -177,6 +227,9 @@ def run(unfurl, node):
 
     elif node.data_type == 'epoch-milliseconds':
         new_timestamp = decode_epoch_milliseconds(node.value)
+
+    elif node.data_type == 'epoch-ten-microseconds':
+        new_timestamp = decode_epoch_ten_microseconds(node.value)
 
     elif node.data_type == 'epoch-microseconds':
         new_timestamp = decode_epoch_microseconds(node.value)
@@ -192,6 +245,9 @@ def run(unfurl, node):
 
     elif node.data_type == 'mac-absolute-time':
         new_timestamp = decode_mac_absolute_time(node.value)
+
+    elif node.data_type == 'epoch-hex-seconds':
+        new_timestamp = decode_epoch_hex(node.value)
 
     else:
         matches_digits = re.match(digits_re, str(node.value))
@@ -215,6 +271,10 @@ def run(unfurl, node):
 
             # Epoch microseconds (16 digits)
             elif 1420070400000000 <= timestamp <= 1735689600000000:  # 2015 <= ts <= 2025
+                new_timestamp = decode_epoch_microseconds(timestamp)
+
+            # Epoch ten microsecond increments (15 digits)
+            elif 142007040000000 <= timestamp <= 173568960000000:  # 2015 <= ts <= 2025
                 new_timestamp = decode_epoch_microseconds(timestamp)
 
             # Epoch milliseconds (13 digits)
@@ -241,8 +301,15 @@ def run(unfurl, node):
                 new_timestamp = decode_mac_absolute_time(timestamp)
 
         elif matches_hex:
-            # TODO: Do some parsing for timestamps that are in hex formats
-            pass
+            timestamp = node.value.replace(':', '')
+
+            # Epoch hex seconds (8 hex chars)
+            if 1420070400 <= int(timestamp, 16) <= 1735689600:  # 2015 <= ts <= 2025
+                new_timestamp = decode_epoch_hex(timestamp)
+
+            # Windows FileTime hex (16 hex digits)
+            elif 130645440000000000 <= int(timestamp, 16) <= 133801632000000000:  # 2015 <= ts <= 2025
+                new_timestamp = decode_windows_filetime_hex(timestamp)
 
     if new_timestamp != (None, 'unknown'):
         unfurl.add_to_queue(

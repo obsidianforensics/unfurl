@@ -17,7 +17,7 @@
 import argparse
 import csv
 import os
-from unfurl import unfurl
+from unfurl import core
 
 
 def main():
@@ -38,7 +38,7 @@ def main():
         help='file to save output (as CSV) to. if omitted, output is sent to '
              'stdout (typically this means displayed in the console).')
     parser.add_argument(
-        '-v', '-V', '--version', action='version', version=f'unfurl v{unfurl.unfurl.__version__}')
+        '-v', '-V', '--version', action='version', version=f'unfurl v{core.unfurl.__version__}')
     args = parser.parse_args()
 
     items_to_unfurl = []
@@ -57,7 +57,7 @@ def main():
             csv_writer.writerow(['url', 'unfurled'])
 
             for item in items_to_unfurl:
-                unfurl_instance = unfurl.Unfurl()
+                unfurl_instance = core.Unfurl()
                 unfurl_instance.add_to_queue(
                     data_type='url', key=None,
                     value=item)
@@ -69,7 +69,7 @@ def main():
 
     else:
         for item in items_to_unfurl:
-            unfurl_instance = unfurl.Unfurl()
+            unfurl_instance = core.Unfurl()
             unfurl_instance.add_to_queue(
                 data_type='url', key=None,
                 value=item)

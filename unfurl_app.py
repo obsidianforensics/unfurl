@@ -15,7 +15,7 @@
 # limitations under the License.
 
 import configparser
-from unfurl import unfurl
+from unfurl import core
 
 config = configparser.ConfigParser()
 config.read('unfurl.ini')
@@ -31,7 +31,7 @@ if config.has_section('UNFURL_APP'):
 
 
 if __name__ == '__main__':
-    unfurl.UnfurlApp(
+    core.UnfurlApp(
         unfurl_debug=unfurl_debug,
         unfurl_host=unfurl_host,
         unfurl_port=unfurl_port)

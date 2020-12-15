@@ -26,7 +26,7 @@ uuid_edge = {
 
 def run(unfurl, node):
     if not node.data_type.startswith('uuid'):
-        m = re.fullmatch(r'(?P<uuid>[0-9A-Fa-f]{8}-?([0-9A-Fa-f]{4}-?){3}(?P<mac>[0-9A-Fa-f]{12}))', str(node.value))
+        m = re.fullmatch(r'/?(?P<uuid>[0-9A-Fa-f]{8}-?([0-9A-Fa-f]{4}-?){3}(?P<mac>[0-9A-Fa-f]{12}))', str(node.value))
         if m:
             u = m.group('uuid')
             u = u.replace('-', '')
@@ -68,9 +68,32 @@ def run(unfurl, node):
                       'combined and hashed using MD5', parent_id=node.node_id, incoming_edge_config=uuid_edge)
 
         elif u.version == 4:
-            unfurl.add_to_queue(
-                data_type='uuid-parsed', key=None, value=node.value, label='Version 4 UUID is randomly generated',
-                parent_id=node.node_id, incoming_edge_config=uuid_edge)
+            # Limits to timestamp values between 2018-01 and 2025-05
+            if 0x8A <= int(node.value[:2], 16) <= 0x9F:
+                # Ref: https://itnext.io/laravel-the-mysterious-ordered-uuid-29e7500b4f8
+                unfurl.add_to_queue(
+                    data_type='descriptor', key=None,
+                    value='This UUID matches the structure of both UUIDv4 (random) '
+                          '& Laravel "Ordered UUIDs".',
+                    hover='Laravel Ordered UUIDs appear similar to UUIDv4s, but they are outside RFC 4122 '
+                          '<a href="https://itnext.io/laravel-the-mysterious-ordered-uuid-29e7500b4f8">[ref]</a>.'
+                          '<br>The "Ordered UUID" is composed of a timestamp and random bits, while UUIDv4 is '
+                          '<br>random and does not contain a timestamp.'
+                          '<br><br>Unfurl differentiates between them based on potential timestamp values. There is '
+                          '<br>a chance of misidentifying them, as they use the same structure. UUIDv4 is more common, '
+                          '<br>but Unfurl is parsing this as an "Ordered UUID" to show the potential timestamp.',
+                    extra_options= {'widthConstraint': {'maximum': 250}},
+                    parent_id=node.node_id, incoming_edge_config=uuid_edge)
+
+                unfurl.add_to_queue(
+                    data_type='epoch-ten-microseconds', key='Timestamp', value=int(node.value[:12], 16),
+                    hover='The first 48 bits of an Ordered UUID are a timestamp',
+                    parent_id=node.node_id, incoming_edge_config=uuid_edge)
+
+            else:
+                unfurl.add_to_queue(
+                    data_type='uuid-parsed', key=None, value=node.value, label='Version 4 UUID is randomly generated',
+                    parent_id=node.node_id, incoming_edge_config=uuid_edge)
 
         elif u.hex[12] == '5':
             unfurl.add_to_queue(

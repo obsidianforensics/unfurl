@@ -7,7 +7,5 @@ services:
       dockerfile: Dockerfile
     # Match the port defined in unfurl.ini
     ports:
-      - "3000:3000"
-    volumes:
-      - ./unfurl.ini:/unfurl/unfurl.ini:ro
+      - "5000:5000"
     restart: unless-stopped

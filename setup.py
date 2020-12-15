@@ -5,7 +5,7 @@ setup(
   packages=find_packages(),
   include_package_data=True,
   scripts=['unfurl_app.py', 'unfurl_cli.py'],
-  version='20200703',
+  version='20201102',
   description='Unfurl takes a URL and expands ("unfurls") it into a directed graph',
   url='https://github.com/obsidianforensics/unfurl',
   author='Ryan Benson',
@@ -20,6 +20,7 @@ setup(
     'networkx',
     'protobuf',
     'publicsuffix2',
+    'pycountry',
     'Requests',
     'torf',
     'ulid-py'
