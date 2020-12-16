@@ -3,7 +3,7 @@ flask ~= 1.1.2
 flask_cors ~= 3.0.9
 maclookup
 networkx
-protobuf ~= 3.14.0
+protobuf ~= 3.10.0
 publicsuffix2
 pycountry
 Requests ~= 2.25.0
