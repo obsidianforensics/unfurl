@@ -1,10 +1,12 @@
-torf
+blackboxprotobuf ~= 1.0.1
+flask ~= 1.1.2
+flask_cors ~= 3.0.9
 maclookup
-ulid-py
-flask
-flask_cors
 networkx
-protobuf
+protobuf ~= 3.10.0
 publicsuffix2
 pycountry
-Requests
+Requests ~= 2.25.0
+setuptools
+torf
+ulid-py
