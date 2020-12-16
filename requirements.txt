@@ -6,7 +6,7 @@ networkx
 protobuf ~= 3.14.0
 publicsuffix2
 pycountry
-Requests
+Requests ~= 2.25.0
 setuptools
 torf
 ulid-py
