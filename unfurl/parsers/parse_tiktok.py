@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
+log = logging.getLogger(__name__)
+
 tiktok_edge = {
     'color': {
         'color': '#F60051'
@@ -29,7 +32,7 @@ def parse_tiktok_id(unfurl, node):
         timestamp = (tiktok_id >> 32)
 
     except Exception as e:
-        print(e)
+        log.exception(f'Exception parsing TikTok ID: {e}')
         return
 
     node.hover = 'TikTok IDs are time-based IDs similar to those of Twitter Snowflakes.'

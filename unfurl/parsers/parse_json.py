@@ -14,6 +14,9 @@
 
 import json
 
+import logging
+log = logging.getLogger(__name__)
+
 json_edge = {
     'color': {
         'color': '#A7A7A7'
@@ -47,7 +50,7 @@ def run(unfurl, node):
                     parent_id=node.node_id, incoming_edge_config=json_edge)
 
         except Exception as e:
-            print(f'Exception parsing JSON string: {e}')
+            log.exception(f'Exception parsing JSON string: {e}')
 
     elif node.data_type == 'json':
         node_value = node.value
@@ -67,4 +70,4 @@ def run(unfurl, node):
                         parent_id=node.node_id, incoming_edge_config=json_edge)
 
             except Exception as e:
-                print(f'Exception parsing JSON: {e}')
+                log.exception(f'Exception parsing JSON: {e}')
