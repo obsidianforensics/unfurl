@@ -23,6 +23,9 @@ import unfurl.parsers
 from flask import Flask, render_template, request
 from flask_cors import CORS
 
+import logging
+log = logging.getLogger(__name__)
+
 
 class Unfurl:
     def __init__(self):
@@ -196,6 +199,7 @@ class Unfurl:
             new_item['extra_options'] = \
                 {'widthConstraint': {'maximum': max(max_row_length, 200)}}
 
+        log.info(f'Added to queue: {new_item}')
         self.queue.put(new_item)
 
     def run_plugins(self, node):
@@ -204,13 +208,13 @@ class Unfurl:
             try:
                 parser = importlib.import_module(f'unfurl.parsers.{unfurl_parser}')
             except ImportError as e:
-                print(f'Failed to import {unfurl_parser}: {e}; {e.args}')
+                log.exception(f'Failed to import {unfurl_parser}: {e}')
                 continue
 
             try:
                 parser.run(self, node)
             except Exception as e:
-                print(f'Exception in {unfurl_parser}: {e}; {e.args}')
+                log.exception(f'Exception in {unfurl_parser}: {e}')
 
     def parse(self, queued_item):
         item = queued_item

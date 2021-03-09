@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
+log = logging.getLogger(__name__)
+
 twitter_snowflake_edge = {
     'color': {
         'color': '#1da1f2'
@@ -39,7 +42,7 @@ def parse_twitter_snowflake(unfurl, node):
         sequence = snowflake & 0xFFF
 
     except Exception as e:
-        print(e)
+        log.exception(f'Exception parsing snowflake: {e}')
         return
 
     node.hover = 'Twitter Snowflakes are time-based IDs. ' \
