@@ -13,16 +13,17 @@
 # limitations under the License.
 
 __author__ = "Ryan Benson"
-__version__ = "20210310"
+__version__ = "2021.03.11"
 __email__ = "ryan@dfir.blog"
 
 import logging
 import sys
 
 log = logging.getLogger(__name__)
-log.setLevel('WARNING')
+log.setLevel('INFO')
 handler = logging.StreamHandler(sys.stdout)
 handler.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s.%(msecs).03d | %(name)s | %(levelname)s | %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+formatter = logging.Formatter(
+    '%(asctime)s.%(msecs).03d | %(name)s | %(levelname)s | %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 handler.setFormatter(formatter)
 log.addHandler(handler)
