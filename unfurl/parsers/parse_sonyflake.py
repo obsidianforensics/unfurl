@@ -14,6 +14,9 @@
 
 import re
 
+import logging
+log = logging.getLogger(__name__)
+
 sonyflake_edge = {
     'color': {
         'color': 'red'
@@ -35,7 +38,7 @@ def parse_sonyflake(unfurl, node):
         machine_id_2 = snowflake & 0xFF
 
     except Exception as e:
-        print(e)
+        log.exception(f'Exception parsing snowflake: {e}')
         return
 
     node.hover = 'Sonyflake is a distributed unique ID generator inspired by ' \
