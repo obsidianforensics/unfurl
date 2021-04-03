@@ -17,6 +17,7 @@ setup(
     'flask',
     'flask_cors',
     'maclookup',
+    'name-that-hash',
     'networkx',
     'protobuf',
     'publicsuffix2',

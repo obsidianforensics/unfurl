@@ -7,6 +7,7 @@ __all__ = [
     "parse_dropbox",
     "parse_duckduckgo",
     "parse_google",
+    "parse_hash",
     "parse_json",
     "parse_ksuid",
     "parse_mac_addr",
