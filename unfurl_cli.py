@@ -44,7 +44,7 @@ def main():
     items_to_unfurl = []
 
     if os.path.isfile(args.what_to_unfurl):
-        with open(args.what_to_unfurl) as f:
+        with open(args.what_to_unfurl, errors='ignore') as f:
             for input_url in f:
                 items_to_unfurl.append(input_url)
 

@@ -183,7 +183,8 @@ def run(unfurl, node):
         for file_type in mimetypes.types_map.keys():
             if node.value.endswith(file_type):
                 unfurl.add_to_queue(
-                    data_type='file.name', key='File Name', value=node.value[:-len(file_type)],
+                    data_type='file.name', key='File Name',
+                    value=urllib.parse.unquote_plus(node.value[:-len(file_type)]),
                     parent_id=node.node_id, incoming_edge_config=urlparse_edge)
                 unfurl.add_to_queue(
                     data_type='file.ext', key='File Extension', value=node.value[-len(file_type):],

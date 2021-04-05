@@ -75,7 +75,7 @@ def run(unfurl, node):
                 incoming_edge_config=magnet_edge)
 
         unfurl.add_to_queue(
-            data_type='hash', key='xt.hash', value=xt_hash,
+            data_type='xt.hash', key='xt.hash', value=xt_hash,
             hover='This <b>xt hash</b> is used to find and verify the files specified in the Magnet link.',
             parent_id=node.node_id, incoming_edge_config=magnet_edge)
 

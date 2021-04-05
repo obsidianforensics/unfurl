@@ -63,7 +63,7 @@ def parse_sonyflake(unfurl, node):
 
 
 def run(unfurl, node):
-    if not node.data_type.startswith('sonyflake'):
+    if not node.data_type.startswith(('sonyflake', 'hash')):
 
         long_int = re.fullmatch(r'\d{15}', str(node.value))
         # Sonyflakes should be 15 hex digits long; limiting them to first digit 1-9 limits time frame from 2016 to 2026.
