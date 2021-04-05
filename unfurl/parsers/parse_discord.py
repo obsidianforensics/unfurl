@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
+log = logging.getLogger(__name__)
+
 discord_edge = {
     'color': {
         'color': '#7289da'
@@ -31,7 +34,7 @@ def parse_discord_snowflake(unfurl, node):
         increment = snowflake & 0xFFF
 
     except Exception as e:
-        print(e)
+        log.exception(f'Exception parsing Discord snowflake: {e}')
         return
 
     node.hover = 'Discord Snowflakes are unique, time-based IDs. ' \
@@ -114,6 +117,6 @@ def run(unfurl, node):
                         data_type='description', key=None, value=None, label='Attachment File Name',
                         parent_id=node.node_id, incoming_edge_config=discord_edge)
 
-            # Check if the node's value would correspond to a Snowflake with timestamp between 2015-02 and 2020-04
-            elif unfurl.check_if_int_between(node.value, 15000000000000000, 700000000000000000):
+            # Check if the node's value would correspond to a Snowflake with timestamp between 2015-02 and 2022-07
+            elif unfurl.check_if_int_between(node.value, 15000000000000000, 1000000000000000001):
                 parse_discord_snowflake(unfurl, node)
