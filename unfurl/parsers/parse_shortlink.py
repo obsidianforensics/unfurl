@@ -100,9 +100,11 @@ def run(unfurl, node):
             {'domain': 'sansurl.com', 'base_url': 'https://sansurl.com/'},
             {'domain': 'snip.ly', 'base_url': 'https://snip.ly/'},
             {'domain': 't.co', 'base_url': 'https://t.co/'},
+            {'domain': 't.ly', 'base_url': 'https://t.ly/'},
             {'domain': 'tr.im', 'base_url': 'https://tr.im/'},
             {'domain': 'trib.al', 'base_url': 'https://trib.al/'},
             {'domain': 'tinyurl.com', 'base_url': 'https://tinyurl.com/'},
+            {'domain': 'urlwee.com', 'base_url': 'https://urlwee.com/'},
             {'domain': 'urlzs.com', 'base_url': 'https://urlzs.com/'},
             {'domain': 'x.co', 'base_url': 'https://x.co/'},
         ]
