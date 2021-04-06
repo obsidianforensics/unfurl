@@ -14,6 +14,7 @@ __all__ = [
     "parse_magnet",
     "parse_mastodon",
     "parse_mailto",
+    "parse_metasploit",
     "parse_protobuf",
     "parse_shortlink",
     "parse_sonyflake",
