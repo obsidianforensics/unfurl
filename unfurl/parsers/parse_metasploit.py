@@ -14,6 +14,7 @@
 
 import base64
 import struct
+from unfurl import utils
 
 metasploit_edge = {
     'color': {
@@ -144,12 +145,10 @@ def run(unfurl, node):
     #  - uuid.rb (https://github.com/rapid7/metasploit-framework/blob/master/lib/msf/core/payload/uuid.rb)
 
     if node.data_type == 'url.path' and len(node.value) >= 23:
-        import re
-        digits_re = re.compile(r'\d')
-        letters_re = re.compile(r'[A-Z]', flags=re.IGNORECASE)
-        base64_re = re.compile(r'^[A-Z\d_-]+$', flags=re.IGNORECASE)
 
-        if not (digits_re.search(node.value) and letters_re.search(node.value) and base64_re.match(node.value[1:])):
+        # URL path should be base64 encoded
+        if not (utils.digits_re.search(node.value) and utils.letters_re.search(node.value)
+                and utils.urlsafe_b64_re.fullmatch(node.value[1:])):
             return
 
         decoded = base64.urlsafe_b64decode(node.value[1:23] + '==')

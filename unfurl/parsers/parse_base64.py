@@ -14,7 +14,7 @@
 
 import base64
 import re
-
+from unfurl import utils
 
 b64_edge = {
     'color': {
@@ -34,12 +34,12 @@ def run(unfurl, node):
         # A valid b64 string will not be this length
         return False
 
-    urlsafe_b64_m = re.fullmatch(r'[A-Za-z0-9_=\-]{8,}', node.value)
-    standard_b64_m = re.fullmatch(r'[A-Za-z0-9+/=]{8,}', node.value)
-    long_int = re.fullmatch(r'\d{8,}', node.value)
+    urlsafe_b64_m = utils.urlsafe_b64_re.fullmatch(node.value)
+    standard_b64_m = utils.standard_b64_re.fullmatch(node.value)
+    long_int_m = utils.long_int_re.fullmatch(node.value)
 
     # Long integers pass the b64 regex, but we don't want those here.
-    if long_int:
+    if long_int_m:
         return
 
     decoded = None
