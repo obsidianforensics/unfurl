@@ -150,6 +150,9 @@ def run(unfurl, node):
                 # MD5 hashes, but it will filter out many more UUIDs. I think the tradeoff is worth it for Unfurl.
                 return
 
+            if hash_results[0]['name'] == 'MySQL323':
+                return
+
             hash_hover = f'This is potentially a <b>{hash_results[0]["name"]}</b> hash.'
             if len(hash_results) > 3:
                 hash_hover = f'This is potentially a <b>{hash_results[0]["name"]}</b> hash, but it also matches '\
