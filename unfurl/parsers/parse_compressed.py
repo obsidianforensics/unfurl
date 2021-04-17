@@ -15,7 +15,7 @@
 import base64
 import re
 import zlib
-
+from unfurl import utils
 
 zip_edge = {
     'color': {
@@ -47,6 +47,9 @@ def run(unfurl, node):
             parent_id=node.node_id, incoming_edge_config=zip_edge)
         return
 
+    if node.data_type in ('url.scheme', 'url.host', 'url.domain', 'url.tld'):
+        return
+
     # This checks for base64 encoding, which is often used before compression. Initially, the base64 decoding was
     # in parse_base64.py, but the intermediary node seemed like not useful clutter. I moved it here and combined
     # the parser into b64+zlib
@@ -54,12 +57,12 @@ def run(unfurl, node):
         # A valid b64 string will not be this length
         return False
 
-    urlsafe_b64_m = re.fullmatch(r'[A-Za-z0-9_=\-]{8,}', node.value)
-    standard_b64_m = re.fullmatch(r'[A-Za-z0-9+/=]{8,}', node.value)
-    long_int = re.fullmatch(r'\d{8,}', node.value)
+    urlsafe_b64_m = utils.urlsafe_b64_re.fullmatch(node.value)
+    standard_b64_m = utils.standard_b64_re.fullmatch(node.value)
+    long_int_m = utils.long_int_re.fullmatch(node.value)
 
     # Long integers pass the b64 regex, but we don't want those here.
-    if long_int:
+    if long_int_m:
         return
 
     decoded = None

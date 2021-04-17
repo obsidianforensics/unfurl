@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import datetime
-import re
+from unfurl import utils
 
 timestamp_edge = {
     'color': {
@@ -22,10 +22,6 @@ timestamp_edge = {
     'title': 'Date & Time Parsing Functions',
     'label': '🕓'
 }
-
-digits_re = re.compile(r'^\d+$')
-float_re = re.compile(r'^\d+\.\d+$')
-hex_re = re.compile(r'^[A-F0-9:]+$', flags=re.IGNORECASE)
 
 
 def decode_epoch_seconds(seconds):
@@ -250,9 +246,9 @@ def run(unfurl, node):
         new_timestamp = decode_epoch_hex(node.value)
 
     else:
-        matches_digits = re.match(digits_re, str(node.value))
-        matches_float = re.match(float_re, str(node.value))
-        matches_hex = re.match(hex_re, str(node.value))
+        matches_digits = utils.digits_re.fullmatch(str(node.value))
+        matches_float = utils.float_re.fullmatch(str(node.value))
+        matches_hex = utils.hex_re.fullmatch(str(node.value))
 
         if matches_digits:
             timestamp = int(node.value)

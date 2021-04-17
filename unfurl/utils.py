@@ -1,4 +1,6 @@
-# Copyright 2019 Google LLC
+#!/usr/bin/env python3
+
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,18 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__author__ = "Ryan Benson"
-__version__ = "2021.03.11"
-__email__ = "ryan@dfir.blog"
+import re
 
-import logging
-import sys
-
-log = logging.getLogger(__name__)
-log.setLevel('WARNING')
-handler = logging.StreamHandler(sys.stdout)
-handler.setLevel(logging.DEBUG)
-formatter = logging.Formatter(
-    '%(asctime)s.%(msecs).03d | %(name)s | %(levelname)s | %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
-handler.setFormatter(formatter)
-log.addHandler(handler)
+long_int_re = re.compile(r'\d{8,}')
+urlsafe_b64_re = re.compile(r'[A-Za-z0-9_\-]{8,}={0,2}')
+standard_b64_re = re.compile(r'[A-Za-z0-9+/]{8,}={0,2}')
+hex_re = re.compile(r'[A-F0-9]+', flags=re.IGNORECASE)
+digits_re = re.compile(r'\d+')
+letters_re = re.compile(r'[A-Z]+', flags=re.IGNORECASE)
+float_re = re.compile(r'\d+\.\d+')
+mac_addr_re = re.compile(r'(?P<mac_addr>[0-9A-Fa-f]{12}|([0-9A-Fa-f]:){6})')

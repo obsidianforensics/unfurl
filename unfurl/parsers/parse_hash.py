@@ -13,8 +13,8 @@
 # limitations under the License.
 
 import name_that_hash
-import re
 import requests
+from unfurl import utils
 
 hash_edge = {
     'color': {
@@ -57,8 +57,6 @@ def virustotal_lookup(unfurl, hash_value):
 
 def run(unfurl, node):
 
-    # if node.data_type in ('url.query.pair', 'string'):
-    # if node.data_type.startswith(('uuid', 'hash')):
     if node.data_type.startswith('uuid'):
         return
 
@@ -93,16 +91,13 @@ def run(unfurl, node):
                     parent_id=node.node_id, incoming_edge_config=hash_lookup_edge)
 
     else:
-        if not isinstance(node.value, (bytes, str)):
+        if not isinstance(node.value, str):
             return
-
-        digits_re = re.compile(r'\d')
-        letters_re = re.compile(r'[A-Z]', flags=re.IGNORECASE)
-        hex_re = re.compile(r'^[A-F0-9]+$', flags=re.IGNORECASE)
 
         # Filter for values that are only hex chars (A-F,0-9) and contains both a letter and number.
         # This could conceivably filter out valid hashes, but will filter out many more invalid values.
-        if hex_re.match(node.value) and digits_re.search(node.value) and letters_re.search(node.value):
+        if utils.hex_re.fullmatch(node.value) and \
+                utils.digits_re.search(node.value) and utils.letters_re.search(node.value):
 
             name_that_hash_results = name_that_hash.runner.api_return_hashes_as_dict([node.value])
 
@@ -117,7 +112,11 @@ def run(unfurl, node):
             # Ref: https://passlib.readthedocs.io/en/stable/lib/passlib.hash.cisco_type7.html
             if hash_results[0]['name'] == 'Cisco Type 7':
                 cisco_constant = b"dsfd;kfoA,.iyewrkldJKDHSUBsgvca69834ncxv9873254k;fg87"
-                salt = int(node.value[0:2])
+                try:
+                    salt = int(node.value[0:2])
+                except ValueError:
+                    # Valid salts should be ints; if not, move on.
+                    return
 
                 try:
                     encoded = bytearray.fromhex(node.value[2:])
