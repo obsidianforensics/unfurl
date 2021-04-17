@@ -20,7 +20,7 @@ import logging
 import sys
 
 log = logging.getLogger(__name__)
-log.setLevel('INFO')
+log.setLevel('WARNING')
 handler = logging.StreamHandler(sys.stdout)
 handler.setLevel(logging.DEBUG)
 formatter = logging.Formatter(

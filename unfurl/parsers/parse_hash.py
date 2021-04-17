@@ -57,8 +57,6 @@ def virustotal_lookup(unfurl, hash_value):
 
 def run(unfurl, node):
 
-    # if node.data_type in ('url.query.pair', 'string'):
-    # if node.data_type.startswith(('uuid', 'hash')):
     if node.data_type.startswith('uuid'):
         return
 
@@ -114,7 +112,11 @@ def run(unfurl, node):
             # Ref: https://passlib.readthedocs.io/en/stable/lib/passlib.hash.cisco_type7.html
             if hash_results[0]['name'] == 'Cisco Type 7':
                 cisco_constant = b"dsfd;kfoA,.iyewrkldJKDHSUBsgvca69834ncxv9873254k;fg87"
-                salt = int(node.value[0:2])
+                try:
+                    salt = int(node.value[0:2])
+                except ValueError:
+                    # Valid salts should be ints; if not, move on.
+                    return
 
                 try:
                     encoded = bytearray.fromhex(node.value[2:])
