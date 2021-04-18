@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import base64
-import re
 from unfurl import utils
 
 b64_edge = {

@@ -15,6 +15,7 @@
 import base64
 import blackboxprotobuf
 import re
+from unfurl import utils
 
 proto_edge = {
     'color': {
@@ -120,12 +121,14 @@ def run(unfurl, node):
     if node.data_type.startswith(('uuid', 'hash')):
         return False
 
-    urlsafe_b64_m = re.fullmatch(r'[A-Za-z0-9_=\-]{16,}', node.value)
-    standard_b64_m = re.fullmatch(r'[A-Za-z0-9+/=]{16,}', node.value)
-    hex_m = re.fullmatch(r'([A-Fa-f0-9]{2} ?){8,}', node.value)
-    long_int = re.fullmatch(r'\d{16,}', node.value)
+    urlsafe_b64_m = utils.urlsafe_b64_re.fullmatch(node.value)
+    standard_b64_m = utils.standard_b64_re.fullmatch(node.value)
+    hex_m = utils.hex_re.fullmatch(node.value)
+    long_int_m = utils.long_int_re.fullmatch(node.value)
+    all_digits_m = utils.digits_re.fullmatch(node.value)
+    all_letters_m = utils.digits_re.fullmatch(node.value)
 
-    if hex_m and not long_int:
+    if hex_m and not (all_digits_m or all_letters_m):
         decoded = bytes.fromhex(node.value)
         try:
             protobuf_values, protobuf_values_types = blackboxprotobuf.decode_message(decoded)
@@ -136,7 +139,7 @@ def run(unfurl, node):
         except Exception:
             return
 
-    elif urlsafe_b64_m and not long_int:
+    elif urlsafe_b64_m and not (all_digits_m or all_letters_m):
         try:
             decoded = base64.urlsafe_b64decode(unfurl.add_b64_padding(node.value))
             protobuf_values, protobuf_values_types = blackboxprotobuf.decode_message(decoded)
@@ -147,7 +150,7 @@ def run(unfurl, node):
         except Exception:
             return
 
-    elif standard_b64_m and not long_int:
+    elif standard_b64_m and not (all_digits_m or all_letters_m):
         try:
             decoded = base64.b64decode(unfurl.add_b64_padding(node.value))
             protobuf_values, protobuf_values_types = blackboxprotobuf.decode_message(decoded)
