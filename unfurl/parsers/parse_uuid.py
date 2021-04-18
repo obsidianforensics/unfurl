@@ -33,6 +33,7 @@ def run(unfurl, node):
             unfurl.add_to_queue(
                 data_type='uuid', key=None, value=u, label=f'UUID: {u[:8]}-{u[8:12]}-{u[12:16]}-{u[16:20]}-{u[20:]}',
                 parent_id=node.node_id, incoming_edge_config=uuid_edge,
+                hover='This is potentially a UUID, based on length',
                 extra_options={'widthConstraint': {'maximum': 500}})
 
     elif node.data_type == 'uuid':

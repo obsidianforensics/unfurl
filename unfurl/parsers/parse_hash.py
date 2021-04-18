@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import name_that_hash
 import requests
 from unfurl import utils
 
@@ -53,6 +52,35 @@ def virustotal_lookup(unfurl, hash_value):
             return result['data']['attributes']
         except:
             return False
+
+
+def decode_cisco_type_7(encoded_text):
+    cisco_constant = b"dsfd;kfoA,.iyewrkldJKDHSUBsgvca69834ncxv9873254k;fg87"
+    try:
+        salt = int(encoded_text[0:2])
+    except ValueError:
+        # Valid salts should be ints; if not, move on.
+        return
+
+    try:
+        encoded = bytearray.fromhex(encoded_text[2:])
+    except ValueError:
+        # Not valid Type 7 encoded then; exit
+        return
+
+    plaintext = ''
+    for i in range(0, len(encoded)):
+        j = (i + salt) % 53
+        p = encoded[i] ^ cisco_constant[j]
+        plaintext += chr(p)
+
+    # If the result isn't readable as ASCII, call it a false positive and move on without adding a node.
+    try:
+        _ = plaintext.encode('ascii')
+    except UnicodeEncodeError:
+        return
+
+    return plaintext
 
 
 def run(unfurl, node):
@@ -96,77 +124,57 @@ def run(unfurl, node):
 
         # Filter for values that are only hex chars (A-F,0-9) and contains both a letter and number.
         # This could conceivably filter out valid hashes, but will filter out many more invalid values.
-        if utils.hex_re.fullmatch(node.value) and \
-                utils.digits_re.search(node.value) and utils.letters_re.search(node.value):
+        if not (utils.hex_re.fullmatch(node.value) and
+                utils.digits_re.search(node.value) and utils.letters_re.search(node.value)):
+            return
 
-            name_that_hash_results = name_that_hash.runner.api_return_hashes_as_dict([node.value])
-
-            if not name_that_hash_results.get(node.value):
-                return
-
-            hash_results = name_that_hash_results[node.value]
-
-            # Cisco "Type 7" password encoding is very flexible, so detecting it is very false positive prone
-            # as it isn't a fixed length. However, decoding it is easy, so Unfurl will only "detect" something as
-            # using this encoding type if it can also decode it (as a method of verifying it).
-            # Ref: https://passlib.readthedocs.io/en/stable/lib/passlib.hash.cisco_type7.html
-            if hash_results[0]['name'] == 'Cisco Type 7':
-                cisco_constant = b"dsfd;kfoA,.iyewrkldJKDHSUBsgvca69834ncxv9873254k;fg87"
-                try:
-                    salt = int(node.value[0:2])
-                except ValueError:
-                    # Valid salts should be ints; if not, move on.
-                    return
-
-                try:
-                    encoded = bytearray.fromhex(node.value[2:])
-                except ValueError:
-                    # Not valid Type 7 encoded then; exit
-                    return
-
-                plaintext = ''
-                for i in range(0, len(encoded)):
-                    j = (i + salt) % 53
-                    p = encoded[i] ^ cisco_constant[j]
-                    plaintext += chr(p)
-
-                # If the result isn't readable as ASCII, call it a false positive and move on without adding a node.
-                try:
-                    _ = plaintext.encode('ascii')
-                except UnicodeEncodeError:
-                    return
-
+        # Cisco "Type 7" password encoding is very flexible, so detecting it is very false positive prone
+        # as it isn't a fixed length. However, decoding it is easy, so Unfurl will only "detect" something as
+        # using this encoding type if it can also decode it (as a method of verifying it).
+        # Ref: https://passlib.readthedocs.io/en/stable/lib/passlib.hash.cisco_type7.html
+        cisco_type_7_m = utils.cisco_7_re.fullmatch(node.value)
+        if cisco_type_7_m:
+            cisco_type_7_plaintext = decode_cisco_type_7(node.value)
+            if cisco_type_7_plaintext:
                 unfurl.add_to_queue(
-                    data_type=f'text', key=f'Cisco "Type 7" encoding', value=plaintext,
-                    label=f'Cisco "Type 7" encoding; plaintext is "{plaintext}"',
+                    data_type=f'text', key=f'Cisco "Type 7" encoding', value=cisco_type_7_plaintext,
+                    label=f'Cisco "Type 7" encoding; plaintext is "{cisco_type_7_plaintext}"',
                     hover='Cisco "Type 7" password encoding is based<br> on XOR and is easily reversible '
                           '[<a hre="https://passlib.readthedocs.io/en/stable/lib/passlib.hash.cisco_type7.html">'
                           'ref</a>].', parent_id=node.node_id, incoming_edge_config=hash_edge)
-                return
+            return
 
-            if hash_results[0]['name'] == 'MD5' and node.value[12] == '4':
-                # UUIDv4 is very common and it's the same length as an MD5 hash. This might filter out some legitimate
-                # MD5 hashes, but it will filter out many more UUIDs. I think the tradeoff is worth it for Unfurl.
-                return
+        if len(node.value) == 32 and node.value[12] == '4':
+            # UUIDv4 is very common and it's the same length as an MD5 hash. This might filter out some legitimate
+            # MD5 hashes, but it will filter out many more UUIDs. I think the tradeoff is worth it for Unfurl.
+            return
 
-            if hash_results[0]['name'] == 'MySQL323':
-                return
+        hash_name, hash_hover, new_node_value = None, None, None
 
-            hash_hover = f'This is potentially a <b>{hash_results[0]["name"]}</b> hash.'
-            if len(hash_results) > 3:
-                hash_hover = f'This is potentially a <b>{hash_results[0]["name"]}</b> hash, but it also matches '\
-                             f'the format <br>of <b>{len(hash_results)}</b> other hash types, including '\
-                             f'<b>{hash_results[1]["name"]}</b> and <b>{hash_results[2]["name"]}</b>.'
+        if len(node.value) == 32:
+            hash_name = 'MD5'
+            hash_hover = f'This is potentially a <b>{hash_name}</b> hash.'
 
-            new_node_value = None
-            if hash_results[0]['name'] in ('MD5', 'SHA-1', 'SHA-256'):
-                # Pass through the values of three common file hashes for further analysis; don't send on the
-                # other types to avoid duplicate processing.
-                new_node_value = node.value
+        if len(node.value) == 40:
+            hash_name = 'SHA-1'
+            hash_hover = f'This is potentially a <b>{hash_name}</b> hash.'
 
-            if hash_results:
-                unfurl.add_to_queue(
-                    data_type=f'hash.{hash_results[0]["name"].lower()}', key=f'{hash_results[0]["name"]} Hash',
-                    value=new_node_value, label=f'Potential {hash_results[0]["name"]} hash',
-                    hover=hash_hover, parent_id=node.node_id, incoming_edge_config=hash_edge)
+        if len(node.value) == 64:
+            hash_name = 'SHA-256'
+            hash_hover = f'This is potentially a <b>{hash_name}</b> hash.'
+
+        if len(node.value) == 128:
+            hash_name = 'SHA-512'
+            hash_hover = f'This is potentially a <b>{hash_name}</b> hash.'
+
+        if hash_name in ('MD5', 'SHA-1', 'SHA-256'):
+            # Pass through the values of three common file hashes for further analysis; don't send on the
+            # other types to avoid duplicate processing.
+            new_node_value = node.value
+
+        if hash_name:
+            unfurl.add_to_queue(
+                data_type=f'hash.{hash_name.lower()}', key=f'{hash_name} Hash',
+                value=new_node_value, label=f'Potential {hash_name} hash',
+                hover=hash_hover, parent_id=node.node_id, incoming_edge_config=hash_edge)
 

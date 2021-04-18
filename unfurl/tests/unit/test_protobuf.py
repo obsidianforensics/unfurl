@@ -81,11 +81,11 @@ class TestProtobuf(unittest.TestCase):
         test.parse_queue()
 
         # check the number of nodes
-        self.assertEqual(len(test.nodes.keys()), 10)
-        self.assertEqual(test.total_nodes, 10)
+        self.assertEqual(len(test.nodes.keys()), 9)
+        self.assertEqual(test.total_nodes, 9)
 
-        self.assertEqual('proto.dict', test.nodes[3].data_type)
-        self.assertEqual("b'jdoe@example.com'", test.nodes[6].value)
+        self.assertEqual('proto.dict', test.nodes[2].data_type)
+        self.assertEqual("b'jdoe@example.com'", test.nodes[5].value)
 
         # make sure the queue finished empty
         self.assertTrue(test.queue.empty())
