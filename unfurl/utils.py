@@ -19,7 +19,7 @@ import re
 long_int_re = re.compile(r'\d{8,}')
 urlsafe_b64_re = re.compile(r'[A-Za-z0-9_\-]{8,}={0,2}')
 standard_b64_re = re.compile(r'[A-Za-z0-9+/]{8,}={0,2}')
-hex_re = re.compile(r'[A-F0-9]+', flags=re.IGNORECASE)
+hex_re = re.compile(r'([A-F0-9]{2})+', flags=re.IGNORECASE)
 digits_re = re.compile(r'\d+')
 letters_re = re.compile(r'[A-Z]+', flags=re.IGNORECASE)
 float_re = re.compile(r'\d+\.\d+')
