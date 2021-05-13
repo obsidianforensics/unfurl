@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import datetime
+import re
 from unfurl import utils
 
 timestamp_edge = {
@@ -22,6 +23,19 @@ timestamp_edge = {
     'title': 'Date & Time Parsing Functions',
     'label': '🕓'
 }
+
+
+def trim_zero_fractional_seconds(timestamp_string, number_to_trim):
+    """Timestamp formats have different levels of precision; trim off extra 0s.
+
+    Different formats may have less precision that the microseconds datetime returns.
+    Trim off the appropriate number of trailing zeros from a value to not add extra,
+    incorrect precision to it.
+
+    """
+    if re.search(rf'\.\d{{{6 - number_to_trim}}}0{{{number_to_trim}}}$', timestamp_string):
+        return timestamp_string[:-number_to_trim]
+    return timestamp_string
 
 
 def decode_epoch_seconds(seconds):
@@ -52,8 +66,9 @@ def decode_epoch_centiseconds(centiseconds):
       2030: 190000000000
 
     """
-    # Trim off the 3 trailing 0s (don't add precision that wasn't in the timestamp)
-    converted_ts = str(datetime.datetime.utcfromtimestamp(float(centiseconds) / 100))[:-4]
+    # Trim off the 4 trailing 0s (don't add precision that wasn't in the timestamp)
+    converted_ts = trim_zero_fractional_seconds(
+        str(datetime.datetime.utcfromtimestamp(float(centiseconds) / 100)), 4)
     return converted_ts, 'Epoch centiseconds'
 
 
@@ -69,8 +84,9 @@ def decode_epoch_milliseconds(milliseconds):
       2030: 1900000000000
 
     """
+    converted_dt = datetime.datetime(1970, 1, 1) + datetime.timedelta(milliseconds=float(milliseconds))
     # Trim off the 3 trailing 0s (don't add precision that wasn't in the timestamp)
-    converted_ts = str(datetime.datetime.utcfromtimestamp(float(milliseconds) / 1000))[:-3]
+    converted_ts = trim_zero_fractional_seconds(str(converted_dt), 3)
     return converted_ts, 'Epoch milliseconds'
 
 
@@ -88,7 +104,8 @@ def decode_epoch_ten_microseconds(ten_microseconds):
 
     """
     # Trim off the trailing 0 (don't add precision that wasn't in the timestamp)
-    converted_ts = str(datetime.datetime.utcfromtimestamp(float(ten_microseconds) / 100000))[:-1]
+    converted_ts = trim_zero_fractional_seconds(
+        str(datetime.datetime.utcfromtimestamp(float(ten_microseconds) / 100000)), 1)
     return converted_ts, 'Epoch ten-microsecond increments'
 
 

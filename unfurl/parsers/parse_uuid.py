@@ -53,14 +53,22 @@ def run(unfurl, node):
                 data_type='epoch-milliseconds', key=None, value=timestamp, label=f'Time generated: {timestamp}',
                 parent_id=node.node_id, incoming_edge_config=uuid_edge)
 
-            # TODO: add detection for randomly generated MACs (random 48-bit number with its eighth bit set to 1 as
+            # Detection for randomly generated MACs (random 48-bit number with its eighth bit set to 1 as
             #  recommended in RFC 4122)
-            pretty_mac = f'{u.node:0{12}X}'
-            pretty_mac = ':'.join([pretty_mac[i]+pretty_mac[i+1] for i in range(0, 12, 2)])
+            if (u.node >> 40) & 0x01 == 1:
+                unfurl.add_to_queue(
+                    data_type='descriptor', key=None, value='The Node ID in this UUID is random',
+                    hover='The Node ID in this UUID is set to a random number, <br>rather than an actual MAC address. '
+                          '<a href="https://tools.ietf.org/html/rfc4122#section-4.5">[ref]</a>',
+                    parent_id=node.node_id, incoming_edge_config=uuid_edge)
 
-            unfurl.add_to_queue(
-                data_type='mac-address', key=None, value=pretty_mac, label=f'MAC address: {pretty_mac}',
-                parent_id=node.node_id, incoming_edge_config=uuid_edge)
+            else:
+                pretty_mac = f'{u.node:0{12}X}'
+                pretty_mac = ':'.join([pretty_mac[i]+pretty_mac[i+1] for i in range(0, 12, 2)])
+
+                unfurl.add_to_queue(
+                    data_type='mac-address', key=None, value=pretty_mac, label=f'MAC address: {pretty_mac}',
+                    parent_id=node.node_id, incoming_edge_config=uuid_edge)
 
         elif u.version == 3:
             unfurl.add_to_queue(

@@ -40,8 +40,6 @@ def run(unfurl, node):
             else:
                 pretty_mac = u.upper()
 
-            # TODO: add detection for randomly generated MACs (random 48-bit number with its eighth bit set to 1 as
-            #  recommended in RFC 4122)
             unfurl.add_to_queue(
                 data_type='mac-address', key=None, value=pretty_mac, label=f'MAC address: {pretty_mac}',
                 parent_id=node.node_id, incoming_edge_config=uuid_edge)

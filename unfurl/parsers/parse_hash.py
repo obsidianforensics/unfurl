@@ -76,7 +76,7 @@ def decode_cisco_type_7(encoded_text):
 
     # If the result isn't readable as ASCII, call it a false positive and move on without adding a node.
     try:
-        _ = plaintext.encode('ascii')
+        _ = plaintext.encode('ascii', errors='strict')
     except UnicodeEncodeError:
         return
 
