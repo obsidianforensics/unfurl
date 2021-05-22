@@ -26,8 +26,13 @@ discord_edge = {
 
 def parse_discord_snowflake(unfurl, node):
     try:
-        # Ref: https://discordapp.com/developers/docs/reference#snowflakes
         snowflake = int(node.value)
+    # Some non-integer values can appear here (like @me) instead; abandon parsing
+    except ValueError:
+        return
+
+    try:
+        # Ref: https://discordapp.com/developers/docs/reference#snowflakes
         timestamp = (snowflake >> 22) + 1420070400000
         worker_id = (snowflake & 0x3E0000) >> 17
         internal_process_id = (snowflake & 0x1F000) >> 17

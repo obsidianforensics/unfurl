@@ -19,6 +19,9 @@ import pycountry
 from unfurl.parsers.proto.google_search_pb2 import Ved
 from google.protobuf import json_format
 
+import logging
+log = logging.getLogger(__name__)
+
 google_edge = {
     'color': {
         'color': 'green'
@@ -63,9 +66,13 @@ def parse_ei(ei):
 
     varint_offset = 4  # First 4 (0-3) bytes are the timestamp
     for _ in [1, 2, 3]:
-        value, bytes_used = decode_varint(decoded[varint_offset:])
-        parsed.append(value)
-        varint_offset += bytes_used
+        try:
+            value, bytes_used = decode_varint(decoded[varint_offset:])
+            parsed.append(value)
+            varint_offset += bytes_used
+        except TypeError as e:
+            log.warning(f'Unable to decode varint from {decoded}: {e}')
+            return
 
     return parsed
 
@@ -211,7 +218,19 @@ def run(unfurl, node):
                     parent_id=node.node_id, incoming_edge_config=google_edge)
 
             elif node.key == 'ei':
-                parsed_ei = parse_ei(unfurl.add_b64_padding(node.value))
+                padded_value = unfurl.add_b64_padding(node.value)
+                if not padded_value:
+                    return
+
+                try:
+                    parsed_ei = parse_ei(padded_value)
+                except Exception as e:
+                    log.exception(f'Exception running parse_ei() on {padded_value}: {e}')
+                    return
+
+                if not parsed_ei:
+                    return
+
                 node.hover = 'The \'<b>ei</b>\' parameter is base64-encoded and contains four values. ' \
                              '<br>The first two are thought to be the timestamp of when the session started ' \
                              '<br>(first value is full seconds, second is microsecond component)' \
@@ -261,7 +280,7 @@ def run(unfurl, node):
 
                 known_params = [0, 1, 2, 4, 5, 7, 8, 26]
                 for known_param in known_params:
-                    if len(params[known_param]) > 0:
+                    if len(params) > known_param and len(params[known_param]) > 0:
                         unfurl.add_to_queue(
                             data_type='google.gs_l', key=str(known_param), value=params[known_param],
                             label=f'Parameter {str(known_param)}: {params[known_param]}',
@@ -377,8 +396,16 @@ def run(unfurl, node):
                 }
                 assert node.value[0] in ['0', '2'], 'The ved parameter should start with 0 or 2'
                 encoded_ved = node.value[1:]
-                encoded_ved = base64.urlsafe_b64decode(unfurl.add_b64_padding(encoded_ved))
-                ved = Ved().FromString(encoded_ved)
+                padded_ved = unfurl.add_b64_padding(encoded_ved)
+                if not padded_ved:
+                    return
+                try:
+                    encoded_ved = base64.urlsafe_b64decode(padded_ved)
+                    ved = Ved().FromString(encoded_ved)
+                except Exception as e:
+                    log.warning(f'Unable to parse ved from {padded_ved}: {e}')
+                    return
+
                 ved_dict = json_format.MessageToDict(ved)
                 for key, value in ved_dict.items():
                     if key == 'v13Outer':
