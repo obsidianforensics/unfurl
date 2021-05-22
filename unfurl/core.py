@@ -28,7 +28,7 @@ log = logging.getLogger(__name__)
 
 
 class Unfurl:
-    def __init__(self):
+    def __init__(self, remote_lookups=None):
         self.nodes = {}
         self.edges = []
         self.queue = queue.Queue()
@@ -36,11 +36,15 @@ class Unfurl:
         self.graph = networkx.DiGraph()
         self.total_nodes = 0
         self.api_keys = {}
+        self.remote_lookups = remote_lookups
 
         config = configparser.ConfigParser()
         config.read('unfurl.ini')
         if config.has_section('API_KEYS'):
             self.api_keys = config['API_KEYS']
+
+        if not self.remote_lookups and config.has_section('UNFURL_APP'):
+            self.remote_lookups = config['UNFURL_APP'].getboolean('remote_lookups')
 
     class Node:
         def __init__(self, node_id, data_type, key, value, label=None, hover=None,
@@ -403,21 +407,26 @@ class Unfurl:
 
 unfurl_app_host = None
 unfurl_app_port = None
+unfurl_remote_lookups = None
 app = Flask(__name__)
 CORS(app)
 
 
 class UnfurlApp:
-    def __init__(self, unfurl_debug='True', unfurl_host='localhost', unfurl_port='5000'):
+    def __init__(self, unfurl_debug='True', unfurl_host='localhost', unfurl_port='5000', remote_lookups=False):
         self.unfurl_debug = unfurl_debug
         self.unfurl_host = unfurl_host
         self.unfurl_port = unfurl_port
+        self.remote_lookups = remote_lookups
 
         global unfurl_app_host
         global unfurl_app_port
-        unfurl_app_host = unfurl_host
-        unfurl_app_port = unfurl_port
+        global unfurl_remote_lookups
+        unfurl_app_host = self.unfurl_host
+        unfurl_app_port = self.unfurl_port
+        unfurl_remote_lookups = self.remote_lookups
 
+        app.config['remote_lookups'] = remote_lookups
         app.run(debug=unfurl_debug, host=unfurl_host, port=unfurl_port)
 
 
@@ -441,7 +450,7 @@ def api(api_path):
     # Split off the local server and keep just the url we want to parse
     unfurl_this = request.referrer.split(f':{unfurl_app_port}/', 1)[1]
 
-    unfurl_instance = Unfurl()
+    unfurl_instance = Unfurl(remote_lookups=app.config['remote_lookups'])
     unfurl_instance.add_to_queue(
         data_type='url', key=None,
         extra_options={'widthConstraint': {'maximum': 1200}},
