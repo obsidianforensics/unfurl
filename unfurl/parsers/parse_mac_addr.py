@@ -34,8 +34,7 @@ def run(unfurl, node):
 
             # Check if we need to add colons
             if len(u) == 12:
-                pretty_mac = f'{u:0{12}X}'
-                pretty_mac = ':'.join([pretty_mac[i]+pretty_mac[i+1] for i in range(0, 12, 2)])
+                pretty_mac = ':'.join([u[i]+u[i+1] for i in range(0, 12, 2)])
 
             else:
                 pretty_mac = u.upper()

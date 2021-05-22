@@ -110,7 +110,9 @@
     subButton.addEventListener("click", function (evt) {
         if (document.getElementById("text_to_unfurl").value.length > 0){
             evt.preventDefault();
-            window.location.replace("/" + document.getElementById("text_to_unfurl").value);
+            // Spaces aren't allowed in URLs, but people sometimes add them by accident
+            value_to_send = document.getElementById("text_to_unfurl").value.replace(/ /g, "");
+            window.location.replace("/" + value_to_send);
         }
         return false;
     });

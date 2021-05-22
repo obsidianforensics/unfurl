@@ -162,8 +162,11 @@ class Unfurl:
 
     @staticmethod
     def add_b64_padding(encoded_string):
+        encoded_string = encoded_string.rstrip('=')
         remainder = len(encoded_string) % 4
-        if remainder == 2:
+        if remainder == 1:
+            return False
+        elif remainder == 2:
             return f'{encoded_string}=='
         elif remainder == 3:
             return f'{encoded_string}='
@@ -202,6 +205,9 @@ class Unfurl:
             max_row_length = len(str(value)) * 2.2
             new_item['extra_options'] = \
                 {'widthConstraint': {'maximum': max(max_row_length, 200)}}
+
+        if new_item['data_type'] == 'url':
+            new_item['value'] = re.sub(' ', '', new_item['value'])
 
         log.info(f'Added to queue: {new_item}')
         self.queue.put(new_item)

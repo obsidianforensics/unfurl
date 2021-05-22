@@ -66,6 +66,10 @@ def run(unfurl, node):
         return
 
     decoded = None
+    padded_value = unfurl.add_b64_padding(node.value)
+    if not padded_value:
+        return
+
     if urlsafe_b64_m:
         decoded = base64.urlsafe_b64decode(unfurl.add_b64_padding(node.value))
     elif standard_b64_m:
