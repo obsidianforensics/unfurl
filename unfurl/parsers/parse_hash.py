@@ -89,7 +89,7 @@ def run(unfurl, node):
         return
 
     if node.data_type.startswith('hash'):
-        if node.data_type == 'hash.md5':
+        if node.data_type == 'hash.md5' and unfurl.remote_lookups:
             hash_plaintext = nitrxgen_md5_lookup(node.value)
 
             if hash_plaintext:
@@ -99,7 +99,7 @@ def run(unfurl, node):
                     hover='Queried Nitrxgen database of MD5 hashes and found a matching plaintext value',
                     parent_id=node.node_id, incoming_edge_config=hash_lookup_edge)
 
-        if node.data_type in ('hash.md5', 'hash.sha-1', 'hash.sha-256'):
+        if node.data_type in ('hash.md5', 'hash.sha-1', 'hash.sha-256') and unfurl.remote_lookups:
             vt_results = virustotal_lookup(unfurl, node.value)
             if vt_results:
                 label_text = 'Hash found on VirusTotal'
@@ -153,19 +153,19 @@ def run(unfurl, node):
 
         if len(node.value) == 32:
             hash_name = 'MD5'
-            hash_hover = f'This is potentially a <b>{hash_name}</b> hash.'
+            hash_hover = f'This is potentially a <b>{hash_name}</b> hash <br>(based on length and character set).'
 
         if len(node.value) == 40:
             hash_name = 'SHA-1'
-            hash_hover = f'This is potentially a <b>{hash_name}</b> hash.'
+            hash_hover = f'This is potentially a <b>{hash_name}</b> hash <br>(based on length and character set).'
 
         if len(node.value) == 64:
             hash_name = 'SHA-256'
-            hash_hover = f'This is potentially a <b>{hash_name}</b> hash.'
+            hash_hover = f'This is potentially a <b>{hash_name}</b> hash <br>(based on length and character set).'
 
         if len(node.value) == 128:
             hash_name = 'SHA-512'
-            hash_hover = f'This is potentially a <b>{hash_name}</b> hash.'
+            hash_hover = f'This is potentially a <b>{hash_name}</b> hash <br>(based on length and character set).'
 
         if hash_name in ('MD5', 'SHA-1', 'SHA-256'):
             # Pass through the values of three common file hashes for further analysis; don't send on the

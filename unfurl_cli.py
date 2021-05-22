@@ -34,6 +34,8 @@ def main():
     parser.add_argument(
         '-f', '--filter', help='only output lines that match this filter.')
     parser.add_argument(
+        '-l', '--lookups', help='allow remote lookups to enhance results.', action='store_true')
+    parser.add_argument(
         '-o', '--output',
         help='file to save output (as CSV) to. if omitted, output is sent to '
              'stdout (typically this means displayed in the console).')

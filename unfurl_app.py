@@ -28,10 +28,16 @@ if config.has_section('UNFURL_APP'):
     unfurl_host = config['UNFURL_APP'].get('host')
     unfurl_port = config['UNFURL_APP'].get('port')
     unfurl_debug = config['UNFURL_APP'].get('debug')
+    try:
+        remote_lookups = config['UNFURL_APP'].getboolean('remote_lookups')
+    # If we can't interpret it as a boolean, fail "safe" to not allowing lookups
+    except ValueError:
+        remote_lookups = False
 
 
 if __name__ == '__main__':
     core.UnfurlApp(
         unfurl_debug=unfurl_debug,
         unfurl_host=unfurl_host,
-        unfurl_port=unfurl_port)
+        unfurl_port=unfurl_port,
+        remote_lookups=remote_lookups)
