@@ -146,12 +146,14 @@ def run(unfurl, node):
 
     if node.data_type == 'url.path' and len(node.value) >= 23:
 
+        cleaned_path = node.value.lstrip('/').rstrip('/')
+
         # URL path should be base64 encoded
-        if not (utils.digits_re.search(node.value) and utils.letters_re.search(node.value)
-                and utils.urlsafe_b64_re.fullmatch(node.value[1:])):
+        if not (utils.digits_re.search(cleaned_path) and utils.letters_re.search(cleaned_path)
+                and utils.urlsafe_b64_re.fullmatch(cleaned_path)):
             return
 
-        decoded = base64.urlsafe_b64decode(node.value[1:23] + '==')
+        decoded = base64.urlsafe_b64decode(cleaned_path[0:22] + '==')
         encoded_payload_uuid_format = '8sBBBBBBBB'
         puid, xor1, xor2, platform_xored, architecture_xored, ts1_xored, ts2_xored, ts3_xored, ts4_xored = \
             struct.unpack(encoded_payload_uuid_format, decoded)
