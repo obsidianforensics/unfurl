@@ -31,7 +31,7 @@ def expand_bitly_url(bitlink_id, api_key):
 
     r = requests.post(
         'https://api-ssl.bitly.com/v4/expand',
-        data=json.dumps({'bitlink_id': f'bit.ly/{bitlink_id}'}),
+        data=json.dumps({'bitlink_id': f'bit.ly/{bitlink_id.rstrip("/")}'}),
         headers={'Content-Type': 'application/json', 'Authorization': f'Bearer {api_key}'})
 
     if r.status_code == 200:
@@ -41,7 +41,7 @@ def expand_bitly_url(bitlink_id, api_key):
 
 
 def expand_url_via_redirect_header(base_url, shortcode):
-    r = requests.get(f'{base_url}{shortcode}', allow_redirects=False)
+    r = requests.get(f'{base_url}{shortcode.rstrip("/")}', allow_redirects=False)
 
     if r.status_code in [301, 302]:
         return r.headers['Location']

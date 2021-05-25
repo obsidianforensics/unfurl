@@ -81,7 +81,7 @@ def run(unfurl, node):
                     parent_id=node.node_id, incoming_edge_config=urlparse_edge)
 
     elif node.data_type == 'url.path':
-        path_segments = node.value.split('/')
+        path_segments = node.value.rstrip('/').split('/')
         if len(path_segments) > 2:
             for segment_number, path_segment in enumerate(path_segments):
                 if path_segment != '':
