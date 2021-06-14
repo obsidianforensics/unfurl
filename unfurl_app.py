@@ -23,6 +23,7 @@ config.read('unfurl.ini')
 unfurl_host = 'localhost'
 unfurl_port = '5000'
 unfurl_debug = 'True'
+remote_lookups = False
 
 if config.has_section('UNFURL_APP'):
     unfurl_host = config['UNFURL_APP'].get('host')

@@ -59,7 +59,7 @@ def main():
             csv_writer.writerow(['url', 'unfurled'])
 
             for item in items_to_unfurl:
-                unfurl_instance = core.Unfurl()
+                unfurl_instance = core.Unfurl(remote_lookups=args.lookups)
                 unfurl_instance.add_to_queue(
                     data_type='url', key=None,
                     value=item)
@@ -71,7 +71,7 @@ def main():
 
     else:
         for item in items_to_unfurl:
-            unfurl_instance = core.Unfurl()
+            unfurl_instance = core.Unfurl(remote_lookups=args.lookups)
             unfurl_instance.add_to_queue(
                 data_type='url', key=None,
                 value=item)
