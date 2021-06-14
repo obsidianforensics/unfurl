@@ -2,7 +2,7 @@ from unfurl.core import Unfurl
 import unittest
 
 
-class TestMetasploit(unittest.TestCase):
+class TestHashDetection(unittest.TestCase):
 
     def test_md5_hash_no_lookups(self):
         """ Test detecting a MD5 in a URL with lookups disabled """
@@ -14,8 +14,8 @@ class TestMetasploit(unittest.TestCase):
         test.parse_queue()
 
         # check the number of nodes
-        self.assertEqual(len(test.nodes.keys()), 10)
-        self.assertEqual(test.total_nodes, 10)
+        self.assertEqual(len(test.nodes.keys()), 9)
+        self.assertEqual(test.total_nodes, 9)
 
         # confirm that detected as MD5
         self.assertIn('Potential MD5 hash', test.nodes[9].label)
@@ -30,14 +30,14 @@ class TestMetasploit(unittest.TestCase):
         test.parse_queue()
 
         # check the number of nodes
-        self.assertEqual(len(test.nodes.keys()), 11)
-        self.assertEqual(test.total_nodes, 11)
+        self.assertEqual(len(test.nodes.keys()), 10)
+        self.assertEqual(test.total_nodes, 10)
 
         # confirm that detected as MD5
         self.assertIn('Potential MD5 hash', test.nodes[9].label)
 
         # confirm that plaintext lookup succeeded
-        self.assertIn('Plaintext: password', test.nodes[11].label)
+        self.assertIn('Plaintext: password', test.nodes[10].label)
 
         # make sure the queue finished empty
         self.assertTrue(test.queue.empty())

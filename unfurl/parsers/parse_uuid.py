@@ -26,9 +26,11 @@ uuid_edge = {
 
 def run(unfurl, node):
     if not node.data_type.startswith(('uuid', 'hash')):
-        m = re.fullmatch(r'/?(?P<uuid>[0-9A-Fa-f]{8}-?([0-9A-Fa-f]{4}-?){3}(?P<mac>[0-9A-Fa-f]{12}))', str(node.value))
+        # Leading '/' optional, 8-4-4-4-12 hex digits with '-' optional, 13th char limited to [1-5]
+        m = re.fullmatch(r'/?([0-9A-F]{8}-?[0-9A-F]{4}-?[1-5][0-9A-F]{3}-?[0-9A-F]{4}-?[0-9A-F]{12})',
+                         str(node.value), re.IGNORECASE)
         if m:
-            u = m.group('uuid')
+            u = m.group(1)
             u = u.replace('-', '')
             unfurl.add_to_queue(
                 data_type='uuid', key=None, value=u, label=f'UUID: {u[:8]}-{u[8:12]}-{u[12:16]}-{u[16:20]}-{u[20:]}',
