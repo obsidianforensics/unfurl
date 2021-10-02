@@ -49,6 +49,31 @@ def decode_varint(source):
             return result, number_of_bytes
 
 
+def split_exactly(to_split, delimiter, times):
+    x = to_split.split(delimiter, times)
+    while len(x) < times+1:
+        x.append(None)
+    return x
+
+
+def parse_aqs(aqs):
+
+    p = {}
+    p['device_type'], p['clicked_suggestion'], remainder = aqs.split('.', 2)
+    autocompletion_str, timing_str = split_exactly(remainder, '.', 1)
+
+    if timing_str:
+        p['millis'], p['provider'], p['page_classification'] = timing_str.split('j', 2)
+
+    p['autocompletion_entries'] = autocompletion_str.split('j')
+
+    for key in list(p):
+        if not p[key]:
+            del p[key]
+
+    return p
+
+
 def parse_ei(ei):
     """Parse ei parameters from Google searches.
 
@@ -216,6 +241,29 @@ def run(unfurl, node):
                     label=f'Browser width: {node.value}px',
                     hover='Inner width of the browser window',
                     parent_id=node.node_id, incoming_edge_config=google_edge)
+
+            elif node.key == 'aqs':
+                x = parse_aqs(node.value)
+
+                for key, value in x.items():
+
+                    if key == 'autocompletion_entries':
+                        for match in value:
+                            unfurl.add_to_queue(
+                                data_type='google.aqs.ac_match', key='Autocomplete Match', value=match,
+                                parent_id=node.node_id, incoming_edge_config=google_edge)
+                    else:
+                        aqs_text = {
+                            'millis': {
+                                'key': '',
+                                'value': '',
+                                'hover': 'Append the query formulation time (time from when the user first typed a character into the omnibox to when the user selected a query)'
+                            }
+                        }
+
+                        unfurl.add_to_queue(
+                            data_type='google.aqs', key=key, value=value,
+                            parent_id=node.node_id, incoming_edge_config=google_edge)
 
             elif node.key == 'ei':
                 padded_value = unfurl.add_b64_padding(node.value)
@@ -456,7 +504,61 @@ def run(unfurl, node):
                             hover=known_ved_descriptions.get(key, ''),
                             parent_id=node.node_id, incoming_edge_config=google_edge)
 
-    if node.data_type == 'google.gs_l':
+    if node.data_type == 'google.aqs.ac_match':
+        ac_types = {
+            0: 'Suggested Search',
+            # A suggested search (with the default engine) query that doesn't fall into one of the
+            # more specific suggestion categories below.
+            5: 'Suggested URL',
+            6: 'Calculator',
+            33: 'Suggested Search - Tail',  # A suggested search to complete the tail of the query.
+            35: 'Personalized Suggested Search',  # A personalized suggested search.
+            44: 'Personalized Suggested Search for a Google+ profile',
+            46: 'Suggested Entity Search',  # A suggested search for an entity.
+            69: 'Native Chrome Suggestion',
+            171: 'Tile Suggestion'
+        }
+
+        ac_subtypes = {
+            39: 'Personal',
+            57: 'Omnibox Echo Search',
+            58: 'Omnibox Echo URL',
+            59: 'Omnibox History Search',
+            60: 'Omnibox History URL',
+            61: 'Omnibox History Title',
+            62: 'Omnibox History Body',
+            63: 'Omnibox History Keyword',
+            64: 'Omnibox Other',  # This value indicates a native chrome suggestion with no named subtype
+            65: 'Omnibox Bookmark Title',
+            66: 'URL-based',
+            176: 'Clipboard Text',
+            177: 'Clipboard URL',
+            271: 'Suggest 2G Lite',
+            327: 'Clipboard Image',
+            362: 'Zero Prefix',
+            450: 'Zero Prefix Local History',
+            451: 'Zero Prefix Local Frequent URLs'
+        }
+
+        entry, count = split_exactly(node.value, 'l', 1)
+        ac_type, subtype_str = split_exactly(entry, 'i', 1)
+
+        unfurl.add_to_queue(
+            data_type='descriptor', key='Type', value=ac_types.get(int(ac_type), f'Unknown ({ac_type})'),
+            parent_id=node.node_id, incoming_edge_config=google_edge)
+
+        if subtype_str:
+            for subtype in subtype_str.split('i'):
+                unfurl.add_to_queue(
+                    data_type='descriptor', key='Subtype', value=ac_subtypes.get(int(subtype), f'Unknown ({subtype})'),
+                    parent_id=node.node_id, incoming_edge_config=google_edge)
+
+        if count:
+            unfurl.add_to_queue(
+                data_type='descriptor', key='Count', value=count,
+                parent_id=node.node_id, incoming_edge_config=google_edge)
+
+    elif node.data_type == 'google.gs_l':
         known_values = {
             '0': known_sources,
             '1': {
