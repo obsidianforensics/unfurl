@@ -221,6 +221,18 @@ def run(unfurl, node):
                     parent_id=node.node_id, incoming_edge_config=urlparse_edge)
             return
 
+        # If the value contains more values in the form "a|b|c|d|e|f"
+        pipe_delimited_values_re = re.compile(
+            r'((?P<value>[^|]+)\|)+(?P<last_value>[^|]+)')
+        m = pipe_delimited_values_re.fullmatch(node.value)
+        if m:
+            pipe_values = node.value.split('|')
+            for value in pipe_values:
+                unfurl.add_to_queue(
+                    data_type='string', key=None, value=value,
+                    parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+            return
+
         # If the value contains more pairs of the form "a=b&c=d&e=f"
         amp_delimited_pairs_re = re.compile(
             r'((?P<key>[^&=]+)=(?P<value>[^&=]+)&)+(?P<last_key>[^&=]+)=(?P<last_value>[^&=]+)')
