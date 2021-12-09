@@ -56,22 +56,17 @@ def split_exactly(to_split, delimiter, times):
     return x
 
 
-def parse_aqs(aqs):
-
-    p = {}
-    p['device_type'], p['clicked_suggestion'], remainder = aqs.split('.', 2)
+def parse_aqs(aqs: str) -> dict:
+    parsed = {}
+    parsed['Device Type'], parsed['clicked_suggestion'], remainder = aqs.split('.', 2)
     autocompletion_str, timing_str = split_exactly(remainder, '.', 1)
+    parsed['autocompletion_entries'] = autocompletion_str.split('j')
 
     if timing_str:
-        p['millis'], p['provider'], p['page_classification'] = timing_str.split('j', 2)
+        parsed['query_formulation_time'], parsed['field_trial_triggered'], parsed['page_classification'] = \
+            timing_str.split('j', 2)
 
-    p['autocompletion_entries'] = autocompletion_str.split('j')
-
-    for key in list(p):
-        if not p[key]:
-            del p[key]
-
-    return p
+    return parsed
 
 
 def parse_ei(ei):
@@ -243,24 +238,60 @@ def run(unfurl, node):
                     parent_id=node.node_id, incoming_edge_config=google_edge)
 
             elif node.key == 'aqs':
-                x = parse_aqs(node.value)
-
-                for key, value in x.items():
-
+                parsed_aqs = parse_aqs(node.value)
+                for key, value in parsed_aqs.items():
                     if key == 'autocompletion_entries':
-                        for match in value:
+                        repeated_count_offset = 0
+                        for index, match in enumerate(value):
+                            adjusted_start = index + repeated_count_offset
+                            if 'l' in match:
+                                _, repeated_count = split_exactly(match, 'l', 1)
+                                repeated_count = int(repeated_count) - 1
+                                repeated_count_offset += repeated_count
+                                unfurl.add_to_queue(
+                                    data_type='google.aqs.ac_match',
+                                    key=f'Autocomplete Matches ({adjusted_start}-{adjusted_start + repeated_count})',
+                                    value=match, parent_id=node.node_id, incoming_edge_config=google_edge)
+                            else:
+                                unfurl.add_to_queue(
+                                    data_type='google.aqs.ac_match',
+                                    key=f'Autocomplete Match ({adjusted_start})',
+                                    value=match, parent_id=node.node_id, incoming_edge_config=google_edge)
+
+                    elif key == 'page_classification':
+                        unfurl.add_to_queue(
+                            data_type='google.aqs.page_classification', key='Page Classification', value=value,
+                            hover='The type of page currently displayed when the user used the omnibox',
+                            parent_id=node.node_id, incoming_edge_config=google_edge)
+
+                    elif key == 'query_formulation_time':
+                        unfurl.add_to_queue(
+                            data_type='google.aqs.query_formulation_time', key='Query Formulation Time',
+                            value=f'{int(value)/1000} seconds',
+                            hover='Query formulation time (time from when the user first typed a character into the '
+                                  'omnibox to when the user selected a query)',
+                            parent_id=node.node_id, incoming_edge_config=google_edge)
+
+                    elif key == 'field_trial_triggered':
+                        unfurl.add_to_queue(
+                            data_type='google.aqs.field_trial_triggered', key='Field Trial Triggered',
+                            value=str(bool(int(value))),  # converts the '0' or '1' (strings) into True or False strings
+                            hover='Whether a field trial (of zero suggest or search provider) was triggered in the '
+                                  'session',
+                            parent_id=node.node_id, incoming_edge_config=google_edge)
+
+                    elif key == 'clicked_suggestion':
+                        if value:
                             unfurl.add_to_queue(
-                                data_type='google.aqs.ac_match', key='Autocomplete Match', value=match,
+                                data_type='google.aqs.clicked_suggestion', key='Clicked Suggestion',
+                                value=value, hover='The index (starting at 0) of the accepted suggestion',
+                                parent_id=node.node_id, incoming_edge_config=google_edge)
+                        else:
+                            unfurl.add_to_queue(
+                                data_type='google.aqs.clicked_suggestion', key='Clicked Suggestion',
+                                value='None', hover='The user did not click one of the offered suggestions',
                                 parent_id=node.node_id, incoming_edge_config=google_edge)
                     else:
-                        aqs_text = {
-                            'millis': {
-                                'key': '',
-                                'value': '',
-                                'hover': 'Append the query formulation time (time from when the user first typed a character into the omnibox to when the user selected a query)'
-                            }
-                        }
-
                         unfurl.add_to_queue(
                             data_type='google.aqs', key=key, value=value,
                             parent_id=node.node_id, incoming_edge_config=google_edge)
@@ -557,6 +588,132 @@ def run(unfurl, node):
             unfurl.add_to_queue(
                 data_type='descriptor', key='Count', value=count,
                 parent_id=node.node_id, incoming_edge_config=google_edge)
+
+    elif node.data_type == 'google.aqs.page_classification':
+        # Source: https://source.chromium.org/chromium/chromium/src/+/main:third_party/metrics_proto/omnibox_event.proto;l=97
+        classifications = {
+            0: {
+                'name': 'Invalid Spec',
+                'description': 'An invalid URL; shouldn\'t happen'
+            },
+
+            1: {
+                'name': 'New Tab Page',
+                'description': 'The New Tab Page (chrome://newtab/). For modern versions of Chrome, this is only '
+                               'reported when an extension is replacing the new tab page. Otherwise, new tab page '
+                               'interactions will be as one of the other "New Tab Page" types. For old versions of '
+                               'Chrome, this was reported for the default New Tab Page.',
+            },
+
+            2: {
+                'name': 'Blank Page',
+                'description': 'about:blank'
+            },
+
+            3: {
+                'name': 'Home Page',
+                'description': 'The user\'s home page. Note that if the home page is set to any of the new tab page '
+                               'versions or to about:blank, then we\'ll classify the page into those categories, '
+                               'not "Home Page".'
+            },
+
+            4: {
+                'name': 'Other',
+                'description': 'The catch-all entry of everything not included somewhere else on this list.'
+            },
+
+            5: {
+                'name': '(Obsolete) Instant New Tab Page',
+                'description': 'The instant new tab page enum value was deprecated on August 2, 2013.'
+            },
+
+            6: {
+                'name': 'Search Result Page (with search term replacement)',
+                'description': 'The user is on a search result page that does search term replacement. This means the '
+                               'search terms are shown in the omnibox instead of the URL. In other words: Query in '
+                               'Omnibox is Active for this SRP.'
+            },
+
+            7: {
+                'name': 'Instant New Tab Page (with omnibox as starting focus)',
+                'description': 'The new tab page in which this omnibox interaction first started with the user having '
+                               'focus in the omnibox.'
+            },
+
+            8: {
+                'name': 'Instant New Tab Page (with fakebox as starting focus)',
+                'description': 'The new tab page in which this omnibox interaction first started with the user having '
+                               'focus in the fakebox. Note that this started being replaced by NTP_REALBOX in Aug 2020 '
+                               'and will eventually be obsolete.'
+            },
+
+            9: {
+                'name': 'Search Results Page (no search term replacement)',
+                'description': 'The user is on a search result page that does not do search term replacement. This '
+                               'means the URL of the SRP is shown in the omnibox. In other words: Query in Omnibox is '
+                               'Inactive for this SRP.'
+            },
+
+            10: {
+                'name': 'Home Screen',
+                'description': 'The user is on the home screen.'
+            },
+
+            11: {
+                'name': 'Search App',
+                'description': 'The user is in the search app.'
+            },
+
+            12: {
+                'name': 'Maps App',
+                'description': 'The user is in the maps app.'
+            },
+
+            13: {
+                'name': 'Search Button',
+                'description': 'This omnibox interaction started with the user tapping the search button.'
+            },
+
+            14: {
+                'name': 'ChromeOS App List',
+                'description': 'This interaction started with the user focusing or typing in the search box of the '
+                               'ChromeOS app list (a.k.a., launcher).'
+            },
+
+            15: {
+                'name': 'New Tab Page (realbox)',
+                'description': 'The new tab page in which this omnibox interaction started with the user having focus '
+                               'in the realbox.'
+            },
+
+            16: {
+                'name': 'Android Search Widget',
+                'description': 'Android\'s Search Widget started directly from Launcher.'
+            },
+
+            17: {
+                'name': 'Android Start surface homepage',
+                'description': 'Android\'s Start surface homepage.'
+            },
+
+            18: {
+                'name': 'Android Start surface New Tab',
+                'description': 'New Tab with Omnibox focused when Android\'s start surface finale is enabled.'
+            },
+
+            19: {
+                'name': 'Android Shortcuts Widget',
+                'description': 'Android\'s improved Search Widget with new suggestions'
+            }
+        }
+
+        known = classifications.get(int(node.value), None)
+        if not known:
+            return
+
+        unfurl.add_to_queue(
+            data_type='descriptor', key=None, value=f'{node.value}: {known["name"]}', hover=known['description'],
+            parent_id=node.node_id, incoming_edge_config=google_edge)
 
     elif node.data_type == 'google.gs_l':
         known_values = {
