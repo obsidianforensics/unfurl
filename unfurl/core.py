@@ -22,6 +22,7 @@ import re
 import unfurl.parsers
 from flask import Flask, render_template, request
 from flask_cors import CORS
+from unfurl import utils
 
 import logging
 log = logging.getLogger(__name__)
@@ -230,7 +231,7 @@ class Unfurl:
         item = queued_item
         node_id = self.create_node(
             data_type=item['data_type'], key=item['key'], value=item['value'],
-            label=item['label'], hover=item['hover'],
+            label=item['label'], hover=utils.wrap_hover_text(item['hover']),
             parent_id=item.get('parent_id', None),
             incoming_edge_config=item.get('incoming_edge_config', None),
             extra_options=item.get('extra_options', None))
