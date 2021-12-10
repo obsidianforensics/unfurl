@@ -30,6 +30,42 @@ class TestGoogle(unittest.TestCase):
         self.assertTrue(test.queue.empty())
         self.assertEqual(len(test.edges), 0)
 
+    def test_google_search_with_aqs(self):
+        """ Test a Google search URL with a AQS param """
+
+        test = Unfurl()
+        test.add_to_queue(
+            data_type='url', key=None,
+            value='https://www.google.com/search?q=dfir&oq=dfir'
+                  '&aqs=chrome.1.69i60j0i433i512j0i512j69i60l2j69i61j69i60j69i65.2855j0j7')
+        test.parse_queue()
+
+        # Check the number of nodes
+        self.assertEqual(len(test.nodes.keys()), 42)
+        self.assertEqual(test.total_nodes, 42)
+
+        # Confirm that clicked suggestion parsed
+        self.assertEqual('Clicked Suggestion: 1', test.nodes[15].label)
+
+        # Check that 1st autocomplete match parsed
+        self.assertEqual('Autocomplete Match (0): 69i60', test.nodes[16].label)
+
+        # Check that match type of 1st autocomplete match parsed
+        self.assertIn('Type: Native Chrome Suggestion', test.nodes[26].label)
+
+        # Check that match subtype of autocomplete match 5 parsed
+        self.assertIn('Subtype: Omnibox History Title', test.nodes[37].label)
+
+        # Check that Query Formulation Time parsed
+        self.assertIn('2.855 seconds', test.nodes[23].label)
+
+        # Check that page classification was parsed and looked up
+        self.assertIn('(with omnibox as starting focus)', test.nodes[42].label)
+
+        # make sure the queue finished empty
+        self.assertTrue(test.queue.empty())
+        self.assertEqual(len(test.edges), 0)
+
 
 if __name__ == '__main__':
     unittest.main()
