@@ -15,6 +15,8 @@
 # limitations under the License.
 
 import re
+import textwrap
+from typing import Union
 
 long_int_re = re.compile(r'\d{8,}')
 urlsafe_b64_re = re.compile(r'[A-Za-z0-9_\-]{8,}={0,2}')
@@ -25,3 +27,26 @@ letters_re = re.compile(r'[A-Z]+', flags=re.IGNORECASE)
 float_re = re.compile(r'\d+\.\d+')
 mac_addr_re = re.compile(r'(?P<mac_addr>[0-9A-Fa-f]{12}|([0-9A-Fa-f]:){6})')
 cisco_7_re = re.compile(r'\d{2}[A-F0-9]{4,}', re.IGNORECASE)
+
+
+def wrap_hover_text(hover_text: Union[str, None]) -> Union[str, None]:
+    if not hover_text:
+        return None
+
+    if not isinstance(hover_text, str):
+        return None
+
+    # If there are any HTML tags in it, leave it alone. This
+    # could be manually-inserted <br>, or links, or anything
+    # else. This isn't perfect detection, but it'll do.
+    if '<' in hover_text and '>' in hover_text:
+        return hover_text
+
+    # If the text is just a little long, I'd rather have it all on
+    # one line than split into one long line and a short second line
+    if len(hover_text) < 70:
+        return hover_text
+
+    # "Wrap" the hover text by splitting it into lines of length <width>,
+    # then joining them together with a <br>.
+    return '<br>'.join(textwrap.wrap(hover_text, width=55))
