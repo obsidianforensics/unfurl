@@ -174,7 +174,8 @@ def decode_datetime_ticks(ticks):
       2038: 642815136000000000
 
     """
-    return (datetime.datetime(1, 1, 1) + datetime.timedelta(microseconds=ticks/10)), 'DateTime ticks'
+    seconds = (ticks - 621355968000000000) / 10000000
+    return (datetime.datetime.fromtimestamp(seconds)), 'DateTime ticks'
 
 
 def decode_mac_absolute_time(seconds):
