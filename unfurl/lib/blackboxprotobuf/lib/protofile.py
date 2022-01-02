@@ -9,6 +9,7 @@ import io
 import re
 import logging
 from unfurl.lib.blackboxprotobuf.lib.exceptions import TypedefException
+from unfurl.lib.blackboxprotobuf.lib.api import sort_typedef
 
 PROTO_FILE_TYPE_MAP = {
     "uint": "uint64",
@@ -71,7 +72,7 @@ def _print_message(message_name, typedef, output_file, depth=0):
         raise TypedefException("Message name: %s is not valid" % message_name)
 
     # sort typedef for better looking output
-    typedef = unfurl.lib.blackboxprotobuf.lib.api.sort_typedef(typedef)
+    typedef = sort_typedef(typedef)
 
     message_name = message_name.strip()
     output_file.write(u"\n")

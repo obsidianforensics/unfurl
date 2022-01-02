@@ -108,10 +108,7 @@ def encode_message(data, config, typedef, path=None):
         # Get the field number convert it as necessary
         alt_field_number = None
 
-        if six.PY2:
-            string_types = (str, unicode)
-        else:
-            string_types = str
+        string_types = str
 
         if isinstance(field_number, string_types):
             if "-" in field_number:
