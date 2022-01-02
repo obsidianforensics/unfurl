@@ -13,8 +13,7 @@
 # limitations under the License.
 
 import base64
-import blackboxprotobuf
-import re
+from unfurl.lib import blackboxprotobuf
 from unfurl import utils
 
 proto_edge = {
@@ -47,6 +46,8 @@ wire_types = {
     'fixed64': '<b>64-bit (1)</b>. <br><br>It is displayed here as a fixed64, but it could originally '
                'have been <br>a fixed64, sfixed64, or double.',
     'bytes': '<b>length-delimited (2)</b>. <br><br>It is displayed here as bytes, but it could originally '
+             'have been <br>a string, bytes, embedded messages, or packed repeated fields.',
+    'string': '<b>length-delimited (2)</b>. <br><br>It is displayed here as a string, but it could originally '
              'have been <br>a string, bytes, embedded messages, or packed repeated fields.',
     'fixed32': '<b>32-bit (5)</b>. <br><br>It is displayed here as an int, but it could originally '
                'have been <br>a fixed32, sfixed32, or float.'

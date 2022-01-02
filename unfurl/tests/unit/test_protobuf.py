@@ -24,7 +24,7 @@ class TestProtobuf(unittest.TestCase):
         self.assertEqual(b'\n\n/m/050zjwr0\x01J\x1dfile system forensic analysis', test.nodes[2].value)
 
         # Confirm that text/bytes proto field decoded correctly
-        self.assertEqual("b'file system forensic analysis'", test.nodes[5].value)
+        self.assertEqual('file system forensic analysis', test.nodes[5].value)
 
         # Make sure the queue finished empty
         self.assertTrue(test.queue.empty())
@@ -44,7 +44,7 @@ class TestProtobuf(unittest.TestCase):
         self.assertEqual(test.total_nodes, 9)
 
         self.assertEqual('proto.dict', test.nodes[2].data_type)
-        self.assertEqual("b'jdoe@example.com'", test.nodes[5].value)
+        self.assertEqual('jdoe@example.com', test.nodes[5].value)
 
         # make sure the queue finished empty
         self.assertTrue(test.queue.empty())
@@ -64,7 +64,7 @@ class TestProtobuf(unittest.TestCase):
         self.assertEqual(test.total_nodes, 9)
 
         self.assertEqual('proto.dict', test.nodes[2].data_type)
-        self.assertEqual("b'jdoe@example.com'", test.nodes[5].value)
+        self.assertEqual('jdoe@example.com', test.nodes[5].value)
 
         # make sure the queue finished empty
         self.assertTrue(test.queue.empty())
@@ -85,7 +85,7 @@ class TestProtobuf(unittest.TestCase):
         self.assertEqual(test.total_nodes, 9)
 
         self.assertEqual('proto.dict', test.nodes[2].data_type)
-        self.assertEqual("b'jdoe@example.com'", test.nodes[5].value)
+        self.assertEqual('jdoe@example.com', test.nodes[5].value)
 
         # make sure the queue finished empty
         self.assertTrue(test.queue.empty())
