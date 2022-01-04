@@ -14,14 +14,14 @@ class TestTwitter(unittest.TestCase):
         test.parse_queue()
 
         # check the number of nodes
-        self.assertEqual(len(test.nodes.keys()), 13)
-        self.assertEqual(test.total_nodes, 13)
+        self.assertEqual(len(test.nodes.keys()), 14)
+        self.assertEqual(test.total_nodes, 14)
 
         # confirm that snowflake was detected
         self.assertIn('Twitter Snowflakes', test.nodes[9].hover)
 
         # embedded timestamp parses correctly
-        self.assertEqual('2019-02-20 14:40:26.837', test.nodes[13].value)
+        self.assertEqual('2019-02-20 14:40:26.837', test.nodes[14].value)
 
         # make sure the queue finished empty
         self.assertTrue(test.queue.empty())
