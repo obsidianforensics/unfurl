@@ -107,7 +107,16 @@ class Unfurl:
 
     def build_known_domain_lists(self):
         warning_lists = FixedWarningLists()
-        self.known_domain_lists = warning_lists.warninglists
+        warning_lists_dict = warning_lists.warninglists
+
+        # This list has some values I think may confuse users (t.co, drive.google.com, etc), as most things on
+        # those domains are not security blog-related, so I'm removing it.
+        warning_lists_dict.pop('List of known security providers/vendors blog domain', 1)
+
+        # Similarly, not all bit.ly links are MSOffice-related, so I'm removing it.
+        warning_lists_dict['List of known Office 365 URLs'].list.remove('bit.ly')
+
+        self.known_domain_lists = warning_lists_dict
 
     def search_known_domain_lists(self, domain):
         lists_found_in = []
