@@ -14,17 +14,17 @@ class TestGoogle(unittest.TestCase):
         test.parse_queue()
 
         # Check the number of nodes
-        self.assertEqual(len(test.nodes.keys()), 18)
-        self.assertEqual(test.total_nodes, 18)
+        self.assertEqual(len(test.nodes.keys()), 20)
+        self.assertEqual(test.total_nodes, 20)
 
         # Confirm that RLZ AP parsed
-        self.assertEqual('Application: C1', test.nodes[12].label)
+        self.assertEqual('Application: C1', test.nodes[14].label)
 
         # Language parses
-        self.assertEqual('Language: English (en)', test.nodes[15].label)
+        self.assertEqual('Language: English (en)', test.nodes[17].label)
 
         # Search cohort parses
-        self.assertIn('United States the week of 2020-06-22', test.nodes[17].label)
+        self.assertIn('United States the week of 2020-06-22', test.nodes[19].label)
 
         # make sure the queue finished empty
         self.assertTrue(test.queue.empty())
@@ -41,26 +41,26 @@ class TestGoogle(unittest.TestCase):
         test.parse_queue()
 
         # Check the number of nodes
-        self.assertEqual(len(test.nodes.keys()), 42)
-        self.assertEqual(test.total_nodes, 42)
+        self.assertEqual(len(test.nodes.keys()), 44)
+        self.assertEqual(test.total_nodes, 44)
 
         # Confirm that clicked suggestion parsed
-        self.assertEqual('Clicked Suggestion: 1', test.nodes[15].label)
+        self.assertEqual('Clicked Suggestion: 1', test.nodes[17].label)
 
         # Check that 1st autocomplete match parsed
-        self.assertEqual('Autocomplete Match (0): 69i60', test.nodes[16].label)
+        self.assertEqual('Autocomplete Match (0): 69i60', test.nodes[18].label)
 
         # Check that match type of 1st autocomplete match parsed
-        self.assertIn('Type: Native Chrome Suggestion', test.nodes[26].label)
+        self.assertIn('Type: Native Chrome Suggestion', test.nodes[28].label)
 
         # Check that match subtype of autocomplete match 5 parsed
-        self.assertIn('Subtype: Omnibox History Title', test.nodes[37].label)
+        self.assertIn('Subtype: Omnibox History Title', test.nodes[39].label)
 
         # Check that Query Formulation Time parsed
-        self.assertIn('2.855 seconds', test.nodes[23].label)
+        self.assertIn('2.855 seconds', test.nodes[25].label)
 
         # Check that page classification was parsed and looked up
-        self.assertIn('(with omnibox as starting focus)', test.nodes[42].label)
+        self.assertIn('(with omnibox as starting focus)', test.nodes[44].label)
 
         # make sure the queue finished empty
         self.assertTrue(test.queue.empty())

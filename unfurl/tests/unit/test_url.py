@@ -10,7 +10,7 @@ class TestUrl(unittest.TestCase):
         test = Unfurl()
         test.add_to_queue(
             data_type='url', key=None,
-            value='https://www.example.com/testing/1?2=3&4=5')
+            value='https://www.test-example.com/testing/1?2=3&4=5')
         test.parse_queue()
 
         # check the number of nodes
@@ -32,7 +32,7 @@ class TestUrl(unittest.TestCase):
         test = Unfurl()
         test.add_to_queue(
             data_type='url', key=None,
-            value='https://www.example.com/testing/1?2=3&4=5&lang=en')
+            value='https://www.test-example.com/testing/1?2=3&4=5&lang=en')
         test.parse_queue()
 
         # check the number of nodes

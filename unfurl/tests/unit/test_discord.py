@@ -15,8 +15,8 @@ class TestDiscord(unittest.TestCase):
         test.parse_queue()
 
         # test number of nodes
-        self.assertEqual(len(test.nodes.keys()), 21)
-        self.assertEqual(test.total_nodes, 21)
+        self.assertEqual(len(test.nodes.keys()), 22)
+        self.assertEqual(test.total_nodes, 22)
 
         # is processing finished empty
         self.assertTrue(test.queue.empty())

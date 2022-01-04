@@ -10,7 +10,7 @@ class TestMetasploit(unittest.TestCase):
         test = Unfurl()
         test.add_to_queue(
             data_type='url', key=None,
-            value='https://example.com/4PGoVGYmx8l6F3sVI4Rc8g1wms758YNVXPczHlPobpJENARS'
+            value='https://test-example.com/4PGoVGYmx8l6F3sVI4Rc8g1wms758YNVXPczHlPobpJENARS'
                   'uSHb57lFKNndzVSpivRDSi5VH2U-w-pEq_CroLcB--cNbYRroyFuaAgCyMCJDpWbws/')
         test.parse_queue()
 
@@ -37,7 +37,7 @@ class TestMetasploit(unittest.TestCase):
         test = Unfurl()
         test.add_to_queue(
             data_type='url', key=None,
-            value='https://example.com/WsJH')
+            value='https://test-example.com/WsJH')
         test.parse_queue()
 
         # check the number of nodes

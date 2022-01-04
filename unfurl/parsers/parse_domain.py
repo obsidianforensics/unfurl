@@ -34,6 +34,23 @@ urlparse_edge = {
 
 
 def run(unfurl, node):
+    if node.data_type == 'url.domain':
+        hits_in_known_lists = unfurl.search_known_domain_lists(node.value)
+        for hit in hits_in_known_lists:
+            cleaned_node_name = hit['name']
+            cleaned_node_hover = hit['description']
+
+            if cleaned_node_name.startswith('List of'):
+                cleaned_node_name = f'Domain is on list {cleaned_node_name[5:]}'
+
+            event_desc_message_prefix = 'Event contains one or more entries of known'
+            if cleaned_node_hover.startswith(event_desc_message_prefix):
+                cleaned_node_hover = f'Domain is on list of {cleaned_node_hover[len(event_desc_message_prefix):]}'
+
+            unfurl.add_to_queue(
+                data_type='descriptor', key=None, value=cleaned_node_name, hover=cleaned_node_hover,
+                parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+
     if psl is None or node.data_type != 'url.hostname' or not isinstance(node.value, str):
         return
 
@@ -55,7 +72,7 @@ def run(unfurl, node):
                 parent_id=node.node_id, incoming_edge_config=urlparse_edge)
         unfurl.add_to_queue(
             data_type='url.domain', key='Domain Name', value=domain,
-            hover='This is the base, registerable, part of the domain or netloc',
+            hover='This is the base, registrable, part of the domain or netloc',
             parent_id=node.node_id, incoming_edge_config=urlparse_edge)
         
     tld = psl.get_tld(full_domain)
