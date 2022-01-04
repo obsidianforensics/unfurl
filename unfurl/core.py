@@ -25,7 +25,39 @@ from flask_cors import CORS
 from unfurl import utils
 
 import logging
+
 log = logging.getLogger(__name__)
+
+from pymispwarninglists import WarningLists
+from pymispwarninglists import api as WarningListsApi
+import json
+import sys
+from glob import glob
+from pathlib import Path
+from typing import Union, Dict, Any, List, Optional
+
+
+# This class can be removed when they merge https://github.com/MISP/PyMISPWarningLists/pull/15
+class FixedWarningLists(WarningLists):
+    def __init__(self, slow_search: bool = False, lists: Optional[List] = None):
+        """Load all the warning lists from the package.
+        :slow_search: If true, uses the most appropriate search method. Can be slower. Default: exact match.
+        :lists: A list of warning lists (typically fetched from a MISP instance)
+        """
+
+        if not lists:
+            lists = []
+            self.root_dir_warninglists = Path(
+                sys.modules['pymispwarninglists'].__file__).parent / 'data' / 'misp-warninglists' / 'lists'
+            for warninglist_file in glob(str(self.root_dir_warninglists / '*' / 'list.json')):
+                with open(warninglist_file, mode='r', encoding="utf-8") as f:
+                    lists.append(json.load(f))
+        if not lists:
+            raise api.PyMISPWarningListsError(
+                'Unable to load the lists. Do not forget to initialize the submodule (git submodule update --init).')
+        self.warninglists = {}
+        for warninglist in lists:
+            self.warninglists[warninglist['name']] = WarningListsApi.WarningList(warninglist, slow_search)
 
 
 class Unfurl:
@@ -38,6 +70,7 @@ class Unfurl:
         self.total_nodes = 0
         self.api_keys = {}
         self.remote_lookups = remote_lookups
+        self.known_domain_lists = None
 
         config = configparser.ConfigParser()
         config.read('unfurl.ini')
@@ -46,6 +79,9 @@ class Unfurl:
 
         if not self.remote_lookups and config.has_section('UNFURL_APP'):
             self.remote_lookups = config['UNFURL_APP'].getboolean('remote_lookups')
+
+        if not self.known_domain_lists:
+            self.build_known_domain_lists()
 
     class Node:
         def __init__(self, node_id, data_type, key, value, label=None, hover=None,
@@ -68,6 +104,40 @@ class Unfurl:
 
         def __repr__(self):
             return str(self.__dict__)
+
+    def build_known_domain_lists(self):
+        warning_lists = FixedWarningLists()
+        self.known_domain_lists = warning_lists.warninglists
+
+    def search_known_domain_lists(self, domain):
+        lists_found_in = []
+        for known_list in self.known_domain_lists.values():
+            if domain in known_list.list:
+                lists_found_in.append({'name': known_list.name, 'description': known_list.description})
+
+        return_list = []
+        for found in lists_found_in:
+            if not found['name'].startswith('Top'):
+                return_list.append(found)
+
+        top_found = [x['name'] for x in lists_found_in if str(x['name']).startswith('Top')]
+        top_1k = [x for x in top_found if x.startswith(('Top 1000', 'Top 500 '))]
+        top_10k = [x for x in top_found if x.startswith(('Top 10 000', 'Top 10K'))]
+        top_1m = [x for x in top_found if x.startswith(('Top 1,000,000', 'Top 20 000'))]
+
+        if top_1k:
+            return_list.append({'name': 'Domain is extremely popular (found in "Top 1000" lists)',
+                                'description': f'Domain is found in {len(top_1k)} lists: {", ".join(top_1k)}'})
+
+        elif top_10k:
+            return_list.append({'name': 'Domain is very popular (found in "Top 10K" lists)',
+                                'description': f'Domain is found in {len(top_10k)} lists: {", ".join(top_10k)}'})
+
+        elif top_1m:
+            return_list.append({'name': 'Domain is popular (found in "Top 1M" lists)',
+                                'description': f'Domain is found in {len(top_1m)} lists: {", ".join(top_1m)}'})
+
+        return return_list
 
     def get_predecessor_node(self, node):
         if not node.parent_id:
@@ -307,12 +377,12 @@ class Unfurl:
                 node_color = node.incoming_edge_config['color']['color']
 
         transformed = {
-                'id': str(node.node_id),
-                'name': shorten_name(node.label),
-                'fullName': f'{node.label}',
-                'dataType': f'{node.data_type}',
-                'val': val_func(node.node_id),
-                'color': node_color
+            'id': str(node.node_id),
+            'name': shorten_name(node.label),
+            'fullName': f'{node.label}',
+            'dataType': f'{node.data_type}',
+            'val': val_func(node.node_id),
+            'color': node_color
         }
 
         if node.hover:
