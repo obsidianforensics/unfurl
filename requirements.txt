@@ -5,6 +5,7 @@ networkx
 protobuf
 publicsuffix2
 pycountry
+pymispwarninglists
 Requests
 setuptools
 torf
