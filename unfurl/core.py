@@ -28,6 +28,8 @@ import logging
 
 log = logging.getLogger(__name__)
 
+# This class and these imports can be removed when they merge https://github.com/MISP/PyMISPWarningLists/pull/15 and
+# put out a new PyPI package.
 from pymispwarninglists import WarningLists
 from pymispwarninglists import api as WarningListsApi
 import json
@@ -37,7 +39,6 @@ from pathlib import Path
 from typing import Union, Dict, Any, List, Optional
 
 
-# This class can be removed when they merge https://github.com/MISP/PyMISPWarningLists/pull/15
 class FixedWarningLists(WarningLists):
     def __init__(self, slow_search: bool = False, lists: Optional[List] = None):
         """Load all the warning lists from the package.
@@ -115,6 +116,10 @@ class Unfurl:
 
         # Similarly, not all bit.ly links are MSOffice-related, so I'm removing it.
         warning_lists_dict['List of known Office 365 URLs'].list.remove('bit.ly')
+
+        # And the capitalization was bothering me, so fixing it here.
+        warning_lists_dict['List of known google domains'].name = 'List of known Google domains'
+        warning_lists_dict['List of known microsoft domains'].name = 'List of known Microsoft domains'
 
         self.known_domain_lists = warning_lists_dict
 

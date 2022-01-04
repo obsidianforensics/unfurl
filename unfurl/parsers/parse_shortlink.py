@@ -114,8 +114,9 @@ def run(unfurl, node):
         {'domain': 'x.co', 'base_url': 'https://x.co/'},
     ]
 
+    preceding_domain = unfurl.find_preceding_domain(node)
     for redirect_expand in redirect_expands:
-        if redirect_expand['domain'] == unfurl.find_preceding_domain(node):
+        if redirect_expand['domain'] == preceding_domain:
             expanded_url = expand_url_via_redirect_header(redirect_expand['base_url'], node.value[1:])
             if expanded_url:
                 unfurl.add_to_queue(
@@ -123,3 +124,17 @@ def run(unfurl, node):
                     label=f'Expanded URL: {expanded_url}',
                     hover=f'Expanded URL, retrieved from {redirect_expand["domain"]} via "Location" header',
                     parent_id=node.node_id, incoming_edge_config=shortlink_edge)
+            return
+
+    # Get the list of "known" URL shortener domains from MISP; many of these seem to be deprecated.
+    # Try to expand the shortlink via a 301/302 Location header; if the site uses something like a meta refresh,
+    # this won't work.
+    misp_shortner_domains = unfurl.known_domain_lists['List of known URL Shorteners domains'].list
+    if preceding_domain in misp_shortner_domains:
+        expanded_url = expand_url_via_redirect_header(f'https://{preceding_domain}/', node.value[1:])
+        if expanded_url:
+            unfurl.add_to_queue(
+                data_type='url', key=None, value=expanded_url,
+                label=f'Expanded URL: {expanded_url}',
+                hover=f'Expanded URL, retrieved from {preceding_domain} via "Location" header',
+                parent_id=node.node_id, incoming_edge_config=shortlink_edge)
