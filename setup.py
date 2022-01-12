@@ -17,6 +17,7 @@ setup(
     'blackboxprotobuf==1.0.1',
     'flask',
     'flask_cors',
+    'flask-restx',
     'maclookup',
     'networkx',
     'protobuf==3.10.0',
