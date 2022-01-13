@@ -179,9 +179,9 @@
 
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('url')) {
-        document.getElementById("text_to_unfurl").value = decodeURI(urlParams.get('url'));
+        document.getElementById("text_to_unfurl").value = decodeURI(urlParams.get('url') + window.location.hash);
         var url = new URL(`${window.location.protocol}//${window.location.host}/json/visjs`);
-        url.searchParams.set('url', urlParams.get('url'));
+        url.searchParams.set('url', urlParams.get('url') + window.location.hash);
         fetch(url).then(response => {
         return response.json();
       }).then(data => {
