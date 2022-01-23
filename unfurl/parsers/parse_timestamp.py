@@ -233,6 +233,8 @@ def decode_windows_filetime_hex(intervals):
 def run(unfurl, node):
     new_timestamp = (None, 'unknown')
 
+    # If the node is explicitly classified as a raw timestamp, use that
+    # type for the conversion
     if node.data_type == 'epoch-seconds':
         new_timestamp = decode_epoch_seconds(node.value)
 
@@ -263,7 +265,12 @@ def run(unfurl, node):
     elif node.data_type == 'epoch-hex-seconds':
         new_timestamp = decode_epoch_hex(node.value)
 
+    # Otherwise, examine the value of the node and see if we can detect a reasonable timestamp
     else:
+        # There are some known cases where we want to suppress a timestamp conversion; put them here.
+        if node.data_type == 'google.ei':
+            return
+
         matches_digits = utils.digits_re.fullmatch(str(node.value))
         matches_float = utils.float_re.fullmatch(str(node.value))
         matches_hex = utils.hex_re.fullmatch(str(node.value))

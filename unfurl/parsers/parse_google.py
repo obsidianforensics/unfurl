@@ -223,18 +223,26 @@ def parse_rlz(rlz_string):
 def run(unfurl, node):
     if node.data_type == 'url.query.pair':
         if 'google' in unfurl.find_preceding_domain(node):
-            if node.key == 'bih':
-                unfurl.add_to_queue(
-                    data_type='google.bih', key='Browser Height', value=node.value,
-                    label=f'Browser height: {node.value}px',
-                    hover='Inner height of the browser window',
-                    parent_id=node.node_id, incoming_edge_config=google_edge)
-
-            elif node.key == 'biw':
+            if node.key == 'biw':
                 unfurl.add_to_queue(
                     data_type='google.biw', key='Browser Width', value=node.value,
                     label=f'Browser width: {node.value}px',
                     hover='Inner width of the browser window',
+                    parent_id=node.node_id, incoming_edge_config=google_edge)
+
+            elif node.key == 'bih':
+                biw_node = unfurl.check_sibling_nodes(node, data_type='url.query.pair', key='biw', return_node=True)
+                if biw_node:
+                    unfurl.add_to_queue(
+                        data_type='descriptor', key=None,
+                        value=f'Size of browser window: {biw_node.value}x{node.value} pixels',
+                        hover='The size of the "content area" in browser window',
+                        parent_id=[node.node_id, biw_node.node_id], incoming_edge_config=google_edge)
+
+                unfurl.add_to_queue(
+                    data_type='google.bih', key='Browser Height', value=node.value,
+                    label=f'Browser height: {node.value}px',
+                    hover='Inner height of the browser window',
                     parent_id=node.node_id, incoming_edge_config=google_edge)
 
             elif node.key == 'aqs':
@@ -328,23 +336,28 @@ def run(unfurl, node):
                 assert len(parsed_ei) == 4, \
                     f'There should be 4 decoded ei values, but we have {len(parsed_ei)}!'
 
-                # The first ei value is epoch seconds, the second has the fractional (micro) seconds.
-                # Concatenating them here as strings lets the timestamp parser convert it later.
-                ei_timestamp = str(parsed_ei[0]) + str(parsed_ei[1])
+                unfurl.add_to_queue(
+                    data_type='google.ei', key=0, value=parsed_ei[0],
+                    label=f'ei-0: {parsed_ei[0]}',
+                    hover='The first <b>ei</b> value is thought to be part of the timestamp'
+                          ' (seconds) of when the session began.',
+                    parent_id=node.node_id, incoming_edge_config=google_edge)
 
                 unfurl.add_to_queue(
-                    data_type='epoch-microseconds', key=None, value=ei_timestamp, label=f'ei Timestamp: {ei_timestamp}',
-                    hover='The first two values combined in the <b>ei</b> parameter are thought to be the timestamp of '
-                          'when the session began.', parent_id=node.node_id, incoming_edge_config=google_edge)
+                    data_type='google.ei', key=1, value=parsed_ei[1],
+                    label=f'ei-1: {parsed_ei[1]}',
+                    hover='The second <b>ei</b> value is thought to be part of the timestamp'
+                          ' (fractional seconds) of when the session began.',
+                    parent_id=node.node_id, incoming_edge_config=google_edge)
 
                 unfurl.add_to_queue(
-                    data_type='integer', key=None, value=parsed_ei[2],
+                    data_type='google.ei', key=2, value=parsed_ei[2],
                     label=f'ei-2: {parsed_ei[2]}',
                     hover='The meaning of the third <b>ei</b> value is not known.',
                     parent_id=node.node_id, incoming_edge_config=google_edge)
 
                 unfurl.add_to_queue(
-                    data_type='integer', key=None, value=parsed_ei[3],
+                    data_type='google.ei', key=3, value=parsed_ei[3],
                     label=f'ei-3: {parsed_ei[3]}',
                     hover='The meaning of the fourth <b>ei</b> value is not known, '
                           'but it matches the <b>ved</b> "13-3" value.',
@@ -590,7 +603,8 @@ def run(unfurl, node):
                 parent_id=node.node_id, incoming_edge_config=google_edge)
 
     elif node.data_type == 'google.aqs.page_classification':
-        # Source: https://source.chromium.org/chromium/chromium/src/+/main:third_party/metrics_proto/omnibox_event.proto;l=97
+        # Source: https://source.chromium.org/chromium/chromium/src/+/main:third_party/
+        #         metrics_proto/omnibox_event.proto;l=97
         classifications = {
             0: {
                 'name': 'Invalid Spec',
@@ -941,3 +955,19 @@ def run(unfurl, node):
             data_type='descriptor', key=node.value, value=rlz_aps.get(node.value, 'Unknown'),
             label=f'Search performed using {rlz_aps.get(node.value, "unknown application")}',
             parent_id=node.node_id, incoming_edge_config=google_edge)
+
+    elif node.data_type == 'google.ei' and node.key == 1:
+        ei0_node = unfurl.check_sibling_nodes(node, data_type='google.ei', key=0, return_node=True)
+
+        if ei0_node:
+            # The first ei value is epoch seconds, the second has the fractional (micro) seconds.
+            # Concatenating them here as strings lets the timestamp parser convert it later.
+            ei_timestamp = str(ei0_node.value) + str(node.value)
+
+            unfurl.add_to_queue(
+                data_type='epoch-microseconds', key=None, value=ei_timestamp, label=f'ei Timestamp: {ei_timestamp}',
+                hover='The first two values combined in the <b>ei</b> parameter are thought to be the timestamp of '
+                      'when the session began. The first (ei-0) contains the full seconds portion of the timestamp '
+                      'and the second (ei-1) contains the fractional seconds.',
+                parent_id=[node.node_id, ei0_node.node_id],
+                incoming_edge_config=google_edge)

@@ -36,10 +36,9 @@ def wrap_hover_text(hover_text: Union[str, None]) -> Union[str, None]:
     if not isinstance(hover_text, str):
         return None
 
-    # If there are any HTML tags in it, leave it alone. This
-    # could be manually-inserted <br>, or links, or anything
-    # else. This isn't perfect detection, but it'll do.
-    if '<' in hover_text and '>' in hover_text:
+    # If there are any manually-inserted <br> or links, leave it
+    # alone. This isn't perfect detection, but it'll do.
+    if '<a' in hover_text or '<br' in hover_text:
         return hover_text
 
     # If the text is just a little long, I'd rather have it all on
@@ -49,4 +48,4 @@ def wrap_hover_text(hover_text: Union[str, None]) -> Union[str, None]:
 
     # "Wrap" the hover text by splitting it into lines of length <width>,
     # then joining them together with a <br>.
-    return '<br>'.join(textwrap.wrap(hover_text, width=55))
+    return '<br>'.join(textwrap.wrap(hover_text, width=60))

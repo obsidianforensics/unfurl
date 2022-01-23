@@ -157,23 +157,22 @@ class Unfurl:
         if not node.parent_id:
             return False
         predecessor = list(self.graph.predecessors(node))
-        assert len(predecessor) == 1
-        return predecessor[0]
+        return predecessor
 
     def get_successor_nodes(self, node):
         successors = list(self.graph.successors(node))
         return successors
 
-    def check_sibling_nodes(self, node, data_type=None, key=None, value=None):
-        parent_node = self.get_predecessor_node(node)
+    def check_sibling_nodes(self, node, data_type=None, key=None, value=None, return_node=False):
+        parent_nodes = self.get_predecessor_node(node)
 
-        if not parent_node:
+        if not parent_nodes:
             return False
 
-        assert type(parent_node) == Unfurl.Node, \
-            f'Expected Unfurl.Node as parent type; got {type(parent_node)}'
+        sibling_nodes = []
 
-        sibling_nodes = self.get_successor_nodes(parent_node)
+        for parent_node in parent_nodes:
+            sibling_nodes.extend(self.get_successor_nodes(parent_node))
 
         for sibling_node in sibling_nodes:
 
@@ -183,44 +182,55 @@ class Unfurl:
 
             # For each attribute, check if it is set. If it is and it
             # doesn't match, stop checking this node and go to the next
-            if data_type and data_type != sibling_node.data_type:
-                continue
-            if key and key != sibling_node.key:
-                continue
-            if value and value != sibling_node.value:
-                continue
+            if data_type:
+                if data_type != sibling_node.data_type:
+                    continue
+            if key:
+                if key != sibling_node.key:
+                    continue
+            if value:
+                if value != sibling_node.value:
+                    continue
 
             # This node matched all the given criteria;
+            if return_node:
+                return sibling_node
             return True
 
         # If we got here, no nodes matched all criteria.
         return False
 
     def find_preceding_domain(self, node):
-        parent_node = self.get_predecessor_node(node)
+        parent_nodes = self.get_predecessor_node(node)
 
-        if not parent_node:
-            return ''
+        preceding_domain = ''
 
-        assert isinstance(parent_node, Unfurl.Node), \
-            f'Expected Unfurl.Node as parent type; got {type(parent_node)}'
+        if not parent_nodes:
+            return preceding_domain
 
-        if parent_node.data_type == 'url.hostname':
-            assert isinstance(parent_node.value, str)
-            return parent_node.value
-        elif parent_node.data_type == 'url':
-            for child_node in self.get_successor_nodes(parent_node):
-                if child_node.data_type == 'url.hostname':
-                    assert isinstance(child_node.value, str)
-                    return child_node.value
-                elif child_node.data_type == 'url.authority':
-                    for subcomponent in self.get_successor_nodes(child_node):
-                        if subcomponent.data_type == 'url.hostname':
-                            assert isinstance(subcomponent.value, str)
-                            return subcomponent.value
-            return ''
-        else:
-            return self.find_preceding_domain(parent_node)
+        assert isinstance(parent_nodes, list)
+
+        for parent_node in parent_nodes:
+            if parent_node.data_type == 'url.hostname':
+                assert isinstance(parent_node.value, str)
+                preceding_domain = parent_node.value
+                break
+            elif parent_node.data_type == 'url':
+                for child_node in self.get_successor_nodes(parent_node):
+                    if child_node.data_type == 'url.hostname':
+                        assert isinstance(child_node.value, str)
+                        preceding_domain = child_node.value
+                        break
+                    elif child_node.data_type == 'url.authority':
+                        for subcomponent in self.get_successor_nodes(child_node):
+                            if subcomponent.data_type == 'url.hostname':
+                                assert isinstance(subcomponent.value, str)
+                                preceding_domain = subcomponent.value
+                                break
+            else:
+                preceding_domain = self.find_preceding_domain(parent_node)
+
+        return preceding_domain
 
     def get_id(self):
         new_id = self.next_id
@@ -241,7 +251,11 @@ class Unfurl:
         self.total_nodes += 1
 
         if parent_id:
-            self.graph.add_edge(self.nodes[parent_id], new_node)
+            if isinstance(parent_id, list):
+                for parent in parent_id:
+                    self.graph.add_edge(self.nodes[parent], new_node)
+            else:
+                self.graph.add_edge(self.nodes[parent_id], new_node)
 
         return new_node.node_id
 
@@ -319,9 +333,6 @@ class Unfurl:
             parent_id=item.get('parent_id', None),
             incoming_edge_config=item.get('incoming_edge_config', None),
             extra_options=item.get('extra_options', None))
-
-        if item.get('parent_id'):
-            self.get_predecessor_node(self.nodes[node_id])
 
         self.run_plugins(self.nodes[node_id])
 
