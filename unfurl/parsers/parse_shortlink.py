@@ -37,7 +37,7 @@ def expand_bitly_url(bitlink_id, api_key):
     if r.status_code == 200:
         return r.json()
     else:
-        return False
+        return {}
 
 
 def expand_url_via_redirect_header(base_url, shortcode):
@@ -46,14 +46,28 @@ def expand_url_via_redirect_header(base_url, shortcode):
     if r.status_code in [301, 302]:
         return r.headers['Location']
     else:
-        return False
+        return {}
 
 
 def run(unfurl, node):
-    if not node.data_type == 'url.path':
+    if not unfurl.remote_lookups:
         return
 
-    if not unfurl.remote_lookups:
+    # Linkedin has another method of URL shortening that's different from how most others do it; I can
+    # refactor this in the future to be more flexible if I find more sites that operate this way, but for now
+    # this works.
+    if node.data_type == 'url.query.pair' and node.key == 'code':
+        if 'linkedin.com' in unfurl.find_preceding_domain(node):
+            expanded_url = expand_url_via_redirect_header('https://www.linkedin.com/slink?code=', node.value)
+            if expanded_url:
+                unfurl.add_to_queue(
+                    data_type='url', key=None, value=expanded_url,
+                    label=f'Expanded URL: {expanded_url}',
+                    hover=f'Expanded URL, retrieved from linkedin.com via "Location" header',
+                    parent_id=node.node_id, incoming_edge_config=shortlink_edge)
+            return
+
+    if not node.data_type == 'url.path':
         return
 
     bitly_domains = ['bit.ly', 'bitly.com', 'j.mp']
@@ -129,8 +143,8 @@ def run(unfurl, node):
     # Get the list of "known" URL shortener domains from MISP; many of these seem to be deprecated.
     # Try to expand the shortlink via a 301/302 Location header; if the site uses something like a meta refresh,
     # this won't work.
-    misp_shortner_domains = unfurl.known_domain_lists['List of known URL Shorteners domains'].list
-    if preceding_domain in misp_shortner_domains:
+    misp_shortener_domains = unfurl.known_domain_lists['List of known URL Shorteners domains'].list
+    if preceding_domain in misp_shortener_domains:
         expanded_url = expand_url_via_redirect_header(f'https://{preceding_domain}/', node.value[1:])
         if expanded_url:
             unfurl.add_to_queue(
