@@ -16,6 +16,7 @@ setup(
   install_requires=[
     'flask',
     'flask_cors',
+    'flask-restx',
     'maclookup',
     'networkx',
     'protobuf',

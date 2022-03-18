@@ -177,32 +177,38 @@
         }
     };
 
-    fetch('//' + window.location.host + '/api/{{ url_to_unfurl }}').then(response => {
-      return response.json();
-    }).then(data => {
-        console.log(data);
-        // Work with your JSON data here..
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('url')) {
+        document.getElementById("text_to_unfurl").value = decodeURI(urlParams.get('url') + window.location.hash);
+        var url = new URL(`${window.location.protocol}//${window.location.host}/json/visjs`);
+        url.searchParams.set('url', urlParams.get('url') + window.location.hash);
+        fetch(url).then(response => {
+        return response.json();
+      }).then(data => {
+          console.log(data);
+          // Work with your JSON data here..
 
-        var unfurl = {
-           nodes: data.nodes,
-           edges: data.edges
-        };
-        var network = new vis.Network(container, unfurl, options);
+          var unfurl = {
+             nodes: data.nodes,
+             edges: data.edges
+          };
+          var network = new vis.Network(container, unfurl, options);
 
-        network.on("doubleClick", function(params) {
-          params.event.preventDefault();
-          var selectedNodeId = this.getNodeAt(params.pointer.DOM);
-          if (selectedNodeId) {
-              var selectedNode = data.nodes[selectedNodeId-1];
-              console.log("Copied '" + selectedNode.label + "' to clipboard");
-              navigator.clipboard.writeText(selectedNode.label);
-            }
-        });
+          network.on("doubleClick", function(params) {
+            params.event.preventDefault();
+            var selectedNodeId = this.getNodeAt(params.pointer.DOM);
+            if (selectedNodeId) {
+                var selectedNode = data.nodes[selectedNodeId-1];
+                console.log("Copied '" + selectedNode.label + "' to clipboard");
+                navigator.clipboard.writeText(selectedNode.label);
+              }
+          });
 
-    }).catch(err => {
-      // What do when the request fails
-      console.log('The request failed! ', err);
-    });
+      }).catch(err => {
+        // What do when the request fails
+        console.log('The request failed! ', err);
+      });
+    };
 
     function toggleVisConfig() {
       var visConfig = document.getElementById('unfurlOptions');

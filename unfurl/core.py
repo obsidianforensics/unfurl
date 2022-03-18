@@ -20,13 +20,13 @@ import networkx
 import queue
 import re
 import unfurl.parsers
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 from flask_cors import CORS
+from flask_restx import Api, Namespace, Resource
 from unfurl import utils
+from urllib.parse import unquote
 
 import logging
-
-log = logging.getLogger(__name__)
 
 # This class and these imports can be removed when they merge https://github.com/MISP/PyMISPWarningLists/pull/15 and
 # put out a new PyPI package.
@@ -36,7 +36,9 @@ import json
 import sys
 from glob import glob
 from pathlib import Path
-from typing import Union, Dict, Any, List, Optional
+from typing import List, Optional
+
+log = logging.getLogger(__name__)
 
 
 class FixedWarningLists(WarningLists):
@@ -54,7 +56,7 @@ class FixedWarningLists(WarningLists):
                 with open(warninglist_file, mode='r', encoding="utf-8") as f:
                     lists.append(json.load(f))
         if not lists:
-            raise api.PyMISPWarningListsError(
+            raise WarningListsApi.PyMISPWarningListsError(
                 'Unable to load the lists. Do not forget to initialize the submodule (git submodule update --init).')
         self.warninglists = {}
         for warninglist in lists:
@@ -276,7 +278,7 @@ class Unfurl:
     def check_if_int_between(value, low, high):
         try:
             value = int(value)
-        except:
+        except Exception:
             return False
 
         if low < value < high:
@@ -533,31 +535,54 @@ class UnfurlApp:
 
 
 @app.route('/')
-def index():
-    return render_template(
-        'graph.html', url_to_unfurl='', unfurl_host=unfurl_app_host,
-        unfurl_port=unfurl_app_port)
+@app.route('/<path:path>')
+def index(path=''):
+    url_to_unfurl = ''
+    if path:
+        # backward compatibility, it is preferable to use the graph route and a quoted URL instead
+        if f':{unfurl_app_port}/' in request.url:
+            url_to_unfurl = unquote(request.url.split(f':{unfurl_app_port}/', 1)[1])
+        else:
+            # for tests, the port isn't in the URL, take everything after the domain
+            url_to_unfurl = unquote(request.url.split('/', 3)[-1])
+        return redirect(url_for('graph', url=url_to_unfurl))
+    return render_template('graph.html',
+                           unfurl_host=unfurl_app_host,
+                           unfurl_port=unfurl_app_port)
 
 
-@app.route('/<path:url_to_unfurl>')
-def graph(url_to_unfurl):
-    return render_template(
-        'graph.html', url_to_unfurl=url_to_unfurl,
-        unfurl_host=unfurl_app_host, unfurl_port=unfurl_app_port)
+@app.route('/graph')
+def graph():
+    if 'url' not in request.args:
+        return redirect(url_for('index'))
+    return render_template('graph.html',
+                           unfurl_host=unfurl_app_host,
+                           unfurl_port=unfurl_app_port)
 
 
-@app.route('/api/<path:api_path>')
-def api(api_path):
-    # Get the referrer from the request, which has the full url + query string.
-    # Split off the local server and keep just the url we want to parse
-    unfurl_this = request.referrer.split(f':{unfurl_app_port}/', 1)[1]
+restx_api = Api(app, title='unfurl API',
+                description='API to submit URLs to expand to an unfurl instance.',
+                doc='/doc/')
 
-    unfurl_instance = Unfurl(remote_lookups=app.config['remote_lookups'])
-    unfurl_instance.add_to_queue(
-        data_type='url', key=None,
-        extra_options={'widthConstraint': {'maximum': 1200}},
-        value=unfurl_this)
-    unfurl_instance.parse_queue()
+namespace = Namespace('GenericAPI', description='Generic unfurl API', path='/')
 
-    unfurl_json = unfurl_instance.generate_json()
-    return unfurl_json
+restx_api.add_namespace(namespace)
+
+
+@namespace.route('/json/visjs')
+@namespace.doc(description='Expand a URL and returns the JSON expansion in the vis.js format')
+class JsonVisJS(Resource):
+
+    @namespace.param('url', 'The URL to expand', required=False)
+    def get(self):
+        if 'url' not in request.args:
+            return {}
+        unfurl_this = unquote(request.args['url'])
+        unfurl_instance = Unfurl(remote_lookups=app.config['remote_lookups'])
+        unfurl_instance.add_to_queue(
+            data_type='url', key=None,
+            extra_options={'widthConstraint': {'maximum': 1200}},
+            value=unfurl_this)
+        unfurl_instance.parse_queue()
+        unfurl_json = unfurl_instance.generate_json()
+        return unfurl_json
