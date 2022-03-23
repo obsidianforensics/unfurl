@@ -69,7 +69,7 @@ def parse_discord_snowflake(unfurl, node):
 def run(unfurl, node):
 
     # Known patterns from main Discord site
-    discord_domains = ['discordapp.com', 'discordapp.net']
+    discord_domains = ['discordapp.com', 'discordapp.net', 'discord.com']
     if any(discord_domain in unfurl.find_preceding_domain(node) for discord_domain in discord_domains):
         if node.data_type == 'url.path.segment':
             # Viewing a channel on a server
