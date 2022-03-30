@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import configparser
+import logging
 import importlib
 import networkx
 import queue
@@ -23,44 +24,11 @@ import unfurl.parsers
 from flask import Flask, render_template, request, redirect, url_for
 from flask_cors import CORS
 from flask_restx import Api, Namespace, Resource
+from pymispwarninglists import WarningLists
 from unfurl import utils
 from urllib.parse import unquote
 
-import logging
-
-# This class and these imports can be removed when they merge https://github.com/MISP/PyMISPWarningLists/pull/15 and
-# put out a new PyPI package.
-from pymispwarninglists import WarningLists
-from pymispwarninglists import api as WarningListsApi
-import json
-import sys
-from glob import glob
-from pathlib import Path
-from typing import List, Optional
-
 log = logging.getLogger(__name__)
-
-
-class FixedWarningLists(WarningLists):
-    def __init__(self, slow_search: bool = False, lists: Optional[List] = None):
-        """Load all the warning lists from the package.
-        :slow_search: If true, uses the most appropriate search method. Can be slower. Default: exact match.
-        :lists: A list of warning lists (typically fetched from a MISP instance)
-        """
-
-        if not lists:
-            lists = []
-            self.root_dir_warninglists = Path(
-                sys.modules['pymispwarninglists'].__file__).parent / 'data' / 'misp-warninglists' / 'lists'
-            for warninglist_file in glob(str(self.root_dir_warninglists / '*' / 'list.json')):
-                with open(warninglist_file, mode='r', encoding="utf-8") as f:
-                    lists.append(json.load(f))
-        if not lists:
-            raise WarningListsApi.PyMISPWarningListsError(
-                'Unable to load the lists. Do not forget to initialize the submodule (git submodule update --init).')
-        self.warninglists = {}
-        for warninglist in lists:
-            self.warninglists[warninglist['name']] = WarningListsApi.WarningList(warninglist, slow_search)
 
 
 class Unfurl:
@@ -109,7 +77,7 @@ class Unfurl:
             return str(self.__dict__)
 
     def build_known_domain_lists(self):
-        warning_lists = FixedWarningLists()
+        warning_lists = WarningLists()
         warning_lists_dict = warning_lists.warninglists
 
         # This list has some values I think may confuse users (t.co, drive.google.com, etc), as most things on
