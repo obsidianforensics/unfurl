@@ -53,7 +53,7 @@ def run(unfurl, node):
     if not unfurl.remote_lookups:
         return
 
-    # Linkedin has another method of URL shortening that's different from how most others do it; I can
+    # LinkedIn has another method of URL shortening that's different from how most others do it; I can
     # refactor this in the future to be more flexible if I find more sites that operate this way, but for now
     # this works.
     if node.data_type == 'url.query.pair' and node.key == 'code':

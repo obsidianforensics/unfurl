@@ -22,7 +22,7 @@ setup(
     'protobuf',
     'publicsuffix2',
     'pycountry',
-    'pymispwarninglists',
+    'pymispwarninglists>=1.3',
     'Requests',
     'torf',
     'ulid-py'
