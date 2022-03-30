@@ -102,6 +102,20 @@ def run(unfurl, node):
                     data_type='url.query.pair', key=key, value=v, label=f'{key}: {v}',
                     parent_id=node.node_id, incoming_edge_config=urlparse_edge)
 
+        # If the query string or fragment is actually another URL (as seen in some redirectors), we want to
+        # continue doing subsequent parsing on it. For that, we need to recognize it and change the data_type to url.
+        if not parsed_qs:
+            try:
+                parsed_url = urllib.parse.urlparse(node.value)
+                if (parsed_url.netloc and parsed_url.path) or (parsed_url.scheme and parsed_url.netloc):
+                    unfurl.add_to_queue(
+                        data_type='url', key=None, value=node.value, parent_id=node.node_id,
+                        incoming_edge_config=urlparse_edge)
+                    return
+            except:
+                # Guess it wasn't a URL
+                pass
+
     elif node.data_type == 'url.params':
         split_params_re = re.compile(r'^(?P<key>[^=]+?)=(?P<value>[^=?]+)(?P<delim>[;,|])')
         split_params = split_params_re.match(node.value)
