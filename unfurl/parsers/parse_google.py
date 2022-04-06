@@ -14,8 +14,9 @@
 
 import base64
 import datetime
-import struct
 import pycountry
+import struct
+import re
 from unfurl.parsers.proto.google_search_pb2 import Ved
 from google.protobuf import json_format
 
@@ -99,31 +100,36 @@ def parse_ei(ei):
 
 def parse_rlz(rlz_string):
     # Reference: https://github.com/rogerta/rlz/blob/wiki/HowToReadAnRlzString.md
+    rlz_re = re.compile(r'1(?P<ap>[A-z0-9]{2})(?P<brand_code>[A-z0-9]{4})(?P<cannibal>[c_])(?P<language_code>[A-z]{2}'
+                        r'(-[A-z]{2})?)(?P<install_cohort>[A-z]{2}\d{1,4})?(?P<search_cohort>[A-z]{2}\d{1,4})?')
+    rlz_m = rlz_re.fullmatch(rlz_string)
+    if not rlz_m:
+        return
 
-    rlz = {}
-    assert rlz_string[0] == '1', 'Only v1 of RLZ is known'
-
-    rlz['version'] = {
+    rlz = {
+        'version': {
             'data_type': 'google.rlz.version',
             'key': 'RLZ version',
-            'value': rlz_string[0],
-            'hover': 'Only v1 of RLZ is known'}
+            'value': '1',
+            'hover': 'Only v1 of RLZ is known'
+        },
+        'ap': {
+            'data_type': 'google.rlz.ap',
+            'key': 'Application',
+            'value': rlz_m.group('ap'),
+            'hover': 'Application (or "access point") used to do the Google Search'
+        },
+        'brand_code': {
+            'data_type': 'google.rlz.brand_code',
+            'key': 'Brand Code',
+            'value': rlz_m.group('brand_code'),
+            'hover': 'The brand code identifies the distribution channel (it may be a partner or internal marketing). '
+                     'This correlates to how the user got the software (ie. they downloaded it by itself vs. it came '
+                     'pre-installed on their new computer vs. it came with a partner\'s software.'
+        }
+    }
 
-    rlz['ap'] = {
-        'data_type': 'google.rlz.ap',
-        'key': 'Application',
-        'value': rlz_string[1:3],
-        'hover': 'Application (or "access point") used to do the Google Search'}
-
-    rlz['brand_code'] = {
-        'data_type': 'google.rlz.brand_code',
-        'key': 'Brand Code',
-        'value': rlz_string[3:7],
-        'hover': 'The brand code identifies the distribution channel (it may be a partner or internal marketing). <br>'
-                 'This correlates to how the user got the software (ie. they downloaded it by itself vs. it came <br>'
-                 'pre-installed on their new computer vs. it came with a partner\'s software.'}
-
-    cannibal_string = rlz_string[7]
+    cannibal_string = rlz_m.group('cannibal')
     if cannibal_string == 'c':
         cannibal_value = 'Yes'
     elif cannibal_string == '_':
@@ -138,39 +144,17 @@ def parse_rlz(rlz_string):
         'hover': '"Cannibal" tells if the library has evidence that the user was a user prior <br>'
                  'to installing the software, and thus "cannibalized" a previous installation.'}
 
-    rlz_pointer = 8
-
     # Examples of longer RLZ values (2- and 5-char lang codes):
     #   1C1CHBF_en-GBGB901GB901
     #   1C1GCEU_enUS820US820
-    if len(rlz_string) >= 11:
-        # If a dash is in this position, it means it is a 5 char lang code, not the 2 char code
-        if rlz_string[10] == '-':
-            language_code = rlz_string[rlz_pointer:rlz_pointer+5]
-            rlz_pointer += 5
-            # langcodes was having install issues on macOS; not using it for now in
-            # order to not complicate Unfurl's install. Pycountry's languages isn't
-            # as good (only alpha_2 and alpha_3) but better than nothing for now.
-            # Old implementation:
-            # language_name = langcodes.Language.get(language_code).language_name()
-            language_name = pycountry.languages.get(alpha_2=language_code[:2]).name
 
-        else:
-            language_code = rlz_string[rlz_pointer:rlz_pointer+2]
-            # language_name = langcodes.Language.get(language_code).language_name()
-            language_name = pycountry.languages.get(alpha_2=language_code).name
-            rlz_pointer += 2
-
-    # Example of RLZ value without cohorts
-    #   1C1GCEV_en
-    elif len(rlz_string) == 10:
-        language_code = rlz_string[rlz_pointer:rlz_pointer + 2]
-        # language_name = langcodes.Language.get(language_code).language_name()
-        language_name = pycountry.languages.get(alpha_2=language_code).name
-        rlz_pointer += 2
-
-    else:
-        raise ValueError('Couldn\'t parse RLZ language code')
+    language_code = rlz_m.group('language_code')
+    # langcodes was having install issues on macOS; not using it for now in
+    # order to not complicate Unfurl's install. Pycountry's languages isn't
+    # as good (only alpha_2 and alpha_3) but better than nothing for now.
+    # Old implementation:
+    # language_name = langcodes.Language.get(language_code).language_name()
+    language_name = pycountry.languages.get(alpha_2=language_code[:2]).name
 
     rlz['language'] = {
         'data_type': 'google.rlz.language',
@@ -179,13 +163,11 @@ def parse_rlz(rlz_string):
         'hover': 'The two- (en) or five-character (zh-CN) language code of the application. <br>'
                  'Valid values depend on the specific app.'}
 
-    # The cohorts are optional, so if this is the end of the RLZ string, return what we've parsed
-    if not len(rlz_string) >= rlz_pointer+5:
+    # The cohorts are optional; example of RLZ value without cohorts: 1C1GCEV_en
+    if not rlz_m.group('install_cohort'):
         return rlz
 
-    install_cohort = rlz_string[rlz_pointer:rlz_pointer+5]
-    rlz_pointer += 5
-
+    install_cohort = rlz_m.group('install_cohort')
     install_country_code = install_cohort[:2]
     install_country = pycountry.countries.get(alpha_2=install_country_code).name
     install_date = datetime.timedelta(weeks=int(install_cohort[2:])) + datetime.date(year=2003, month=2, day=3)
@@ -200,13 +182,15 @@ def parse_rlz(rlz_string):
 
     # Both cohorts do not need to be present, so if the 2nd one (search) is missing, return what we have
     # Example: 1CAGZLV_enGB898
-    if not len(rlz_string) >= rlz_pointer + 5:
+    if not rlz_m.group('search_cohort'):
         return rlz
 
-    search_cohort = rlz_string[rlz_pointer:rlz_pointer + 5]
-
+    search_cohort = rlz_m.group('search_cohort')
     search_country_code = search_cohort[:2]
-    search_country = pycountry.countries.get(alpha_2=search_country_code).name
+    pycountry_object = pycountry.countries.get(alpha_2=search_country_code)
+    search_country = search_country_code
+    if pycountry_object:
+        search_country = pycountry_object.name
     search_date = datetime.timedelta(weeks=int(search_cohort[2:])) + datetime.date(year=2003, month=2, day=3)
 
     rlz['search_cohort'] = {
@@ -447,12 +431,12 @@ def run(unfurl, node):
 
                 try:
                     rlz = parse_rlz(node.value)
-
-                    for component in rlz.values():
-                        unfurl.add_to_queue(
-                            data_type=component['data_type'], key=component['key'],
-                            value=component['value'], hover=component['hover'],
-                            parent_id=node.node_id, incoming_edge_config=google_edge)
+                    if rlz:
+                        for component in rlz.values():
+                            unfurl.add_to_queue(
+                                data_type=component['data_type'], key=component['key'],
+                                value=component['value'], hover=component['hover'],
+                                parent_id=node.node_id, incoming_edge_config=google_edge)
 
                 except ValueError as e:
                     print(f'Exception parsing RLZ: {e}')
