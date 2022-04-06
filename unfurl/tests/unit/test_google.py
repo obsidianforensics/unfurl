@@ -10,21 +10,50 @@ class TestGoogle(unittest.TestCase):
         test = Unfurl()
         test.add_to_queue(
             data_type='url', key=None,
-            value='https://www.google.com/search?rlz=1C1GCAB_enUS907US907q=dfir+data')
+            value='https://www.google.com/search?rlz=1C1GCAB_enUS907US907&q=dfir+data')
         test.parse_queue()
 
         # Check the number of nodes
-        self.assertEqual(len(test.nodes.keys()), 20)
-        self.assertEqual(test.total_nodes, 20)
+        self.assertEqual(len(test.nodes.keys()), 22)
+        self.assertEqual(test.total_nodes, 22)
 
         # Confirm that RLZ AP parsed
-        self.assertEqual('Application: C1', test.nodes[14].label)
+        self.assertEqual('Application: C1', test.nodes[15].label)
 
         # Language parses
-        self.assertEqual('Language: English (en)', test.nodes[17].label)
+        self.assertEqual('Language: English (en)', test.nodes[18].label)
 
         # Search cohort parses
-        self.assertIn('United States the week of 2020-06-22', test.nodes[19].label)
+        self.assertIn('United States the week of 2020-06-22', test.nodes[20].label)
+
+        # make sure the queue finished empty
+        self.assertTrue(test.queue.empty())
+        self.assertEqual(len(test.edges), 0)
+
+    def test_google_search_with_rlz_different_weeks(self):
+        """ Test a Google search URL with a RLZ param with different cohort weeks """
+
+        test = Unfurl()
+        test.add_to_queue(
+            data_type='url', key=None,
+            value='https://www.google.com/search?rlz=1C1GCAB_esUS97US1007&q=dfir+data')
+        test.parse_queue()
+
+        # Check the number of nodes
+        self.assertEqual(len(test.nodes.keys()), 22)
+        self.assertEqual(test.total_nodes, 22)
+
+        # Confirm that RLZ AP parsed
+        self.assertEqual('Application: C1', test.nodes[15].label)
+
+        # Language parses
+        self.assertEqual('Language: Spanish (es)', test.nodes[18].label)
+
+        # Install cohort parses (2 digit week)
+        self.assertIn('United States the week of 2004-12-13', test.nodes[19].label)
+
+        # Search cohort parses (4 digit week)
+        self.assertIn('United States the week of 2022-05-23', test.nodes[20].label)
 
         # make sure the queue finished empty
         self.assertTrue(test.queue.empty())
