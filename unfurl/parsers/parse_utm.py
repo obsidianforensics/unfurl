@@ -23,6 +23,10 @@ utm_edge = {
 
 def run(unfurl, node):
     if node.data_type == 'url.query.pair':
+        # References:
+        #   https://ga-dev-tools.web.app/campaign-url-builder/
+        #   https://en.wikipedia.org/wiki/UTM_parameters
+
         if node.key == 'utm_source':
             unfurl.add_to_queue(
                 data_type='descriptor', key=None,
