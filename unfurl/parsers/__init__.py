@@ -24,6 +24,7 @@ __all__ = [
     "parse_twitter",
     "parse_ulid",
     "parse_url",
+    "parse_utm",
     "parse_uuid",
     "parse_youtube",
     "parse_yahoo"
