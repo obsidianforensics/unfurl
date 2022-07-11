@@ -121,12 +121,22 @@ def run(unfurl, node):
 
     # Adobe
     # References:
-    #  https://experienceleague.adobe.com/docs/analytics/integration/advertising-analytics/advertising-analytics-workflow/aa-manual-vs-automatic-tracking.html?lang=en
+    #  https://experienceleague.adobe.com/docs/analytics/integration/advertising-analytics/advertising-analytics-
+    #  workflow/aa-manual-vs-automatic-tracking.html?lang=en
 
     elif node.key == 's_kwcid':
         unfurl.add_to_queue(
-            data_type='!_delimited', key=None,
+            data_type='descriptor', key=None,
             value='Adobe Analytics Keyword Campaign ID',
             hover='Campaign tracking code for Adobe Analytics. Two known variations so far based on the 3rd value: '
                   '"3" for Google and "10" for Bing.',
+            parent_id=node.node_id, incoming_edge_config=utm_edge)
+
+    # Facebook
+    elif node.key == 'fbclid':
+        unfurl.add_to_queue(
+            data_type='descriptor', key=None,
+            value='Facebook Click ID',
+            hover='This URL was likely the result of clicking an external link on Facebook. <b>fbclid</b> is thought '
+                  'to be a unique parameter added by Facebook to outgoing links for analytics purposes.',
             parent_id=node.node_id, incoming_edge_config=utm_edge)
