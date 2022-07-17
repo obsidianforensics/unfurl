@@ -86,7 +86,7 @@ def run(unfurl, node):
 
     try:
         inflated_str = inflated_bytes.decode('ascii', errors='strict')
-        if re.fullmatch(r'\w+', inflated_str):
+        if re.fullmatch(r'[\w=&%\.-]+', inflated_str):
             unfurl.add_to_queue(
                 data_type='string', key=None, value=inflated_str,
                 parent_id=node.node_id,
