@@ -14,7 +14,7 @@
 
 utm_edge = {
     'color': {
-        'color': '#FFBF00'
+        'color': '#7b0004'
     },
     'title': 'Analytics & Tracking Functions',
     'label': '👀'
