@@ -26,7 +26,57 @@ urlparse_edge = {
 }
 
 
+def parse_delimited_string(unfurl_instance, node, delimiter, pairs=False) -> None:
+    split_values = node.value.split(delimiter)
+
+    for split_value in split_values:
+        if pairs:
+            key, value = split_value.split('=')
+            unfurl_instance.add_to_queue(
+                data_type='url.query.pair', key=key, value=value,
+                parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+        else:
+            unfurl_instance.add_to_queue(
+                data_type='string', key=None, value=split_value,
+                parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+
+
+def try_url_unquote(unfurl_instance, node) -> bool:
+    unquoted = urllib.parse.unquote_plus(node.value)
+    if unquoted != node.value:
+        unfurl_instance.add_to_queue(
+            data_type='string', key=None, value=unquoted,
+            hover='Unquoted URL (replaced %xx escapes with their single-character equivalent)',
+            parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+        return True
+    return False
+
+
+def try_url_parse(unfurl_instance, node) -> bool:
+    try:
+        parsed_url = urllib.parse.urlparse(node.value)
+        if (parsed_url.netloc and parsed_url.path) or (parsed_url.scheme and parsed_url.netloc):
+            unfurl_instance.add_to_queue(
+                data_type='url', key=None, value=node.value, parent_id=node.node_id,
+                incoming_edge_config=urlparse_edge)
+            return True
+        return False
+    except:
+        return False
+
+
 def run(unfurl, node):
+
+    if not node.data_type.startswith('url'):
+        try:
+            # If a node isn't of type 'url' (but maybe 'string' or something) but we can recognize its
+            # value as a URL, update the data_type so the rest of the parser can act on it.
+            parsed_url = urllib.parse.urlparse(node.value)
+            if (parsed_url.netloc and parsed_url.path) or (parsed_url.scheme and parsed_url.netloc):
+                node.data_type = 'url'
+        except:
+            # Guess it wasn't a URL
+            return
 
     if node.data_type == 'url':
         parsed_url = urllib.parse.urlparse(node.value)
@@ -105,16 +155,9 @@ def run(unfurl, node):
         # If the query string or fragment is actually another URL (as seen in some redirectors), we want to
         # continue doing subsequent parsing on it. For that, we need to recognize it and change the data_type to url.
         if not parsed_qs:
-            try:
-                parsed_url = urllib.parse.urlparse(node.value)
-                if (parsed_url.netloc and parsed_url.path) or (parsed_url.scheme and parsed_url.netloc):
-                    unfurl.add_to_queue(
-                        data_type='url', key=None, value=node.value, parent_id=node.node_id,
-                        incoming_edge_config=urlparse_edge)
-                    return
-            except:
-                # Guess it wasn't a URL
-                pass
+            parsed = try_url_parse(unfurl, node)
+            if parsed:
+                return
 
     elif node.data_type == 'url.params':
         split_params_re = re.compile(r'^(?P<key>[^=]+?)=(?P<value>[^=?]+)(?P<delim>[;,|])')
@@ -163,35 +206,38 @@ def run(unfurl, node):
                       'per <a href="https://tools.ietf.org/html/rfc3986" target="_blank">RFC3986</a>',
                 parent_id=node.node_id, incoming_edge_config=urlparse_edge)
 
-    elif node.data_type == 'url.query.pair' and node.key in ['l', 'lang', 'language', 'set-lang']:
+    elif node.data_type == 'url.query.pair':
+        if node.key in ['l', 'lang', 'language', 'set-lang']:
+            language = None
 
-        if len(node.value) == 2:
-            language = pycountry.languages.get(alpha_2=node.value)
-        elif len(node.value) == 3:
-            language = pycountry.languages.get(alpha_3=node.value)
-        else:
-            return
+            if len(node.value) == 2:
+                language = pycountry.languages.get(alpha_2=node.value)
+            elif len(node.value) == 3:
+                language = pycountry.languages.get(alpha_3=node.value)
 
-        if language:
-            unfurl.add_to_queue(
-                data_type='descriptor', key='Language', value=language.name,
-                hover='This is a generic parser based on common query-string patterns across websites',
-                parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+            if language:
+                unfurl.add_to_queue(
+                    data_type='descriptor', key='Language', value=language.name,
+                    hover='This is a generic parser based on common query-string patterns across websites',
+                    parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+                return
 
-    elif node.data_type == 'url.query.pair' and node.key in ['c', 'cc', 'country', 'country_code']:
+        elif node.key in ['c', 'cc', 'country', 'country_code']:
+            country = None
 
-        if len(node.value) == 2:
-            country = pycountry.countries.get(alpha_2=node.value)
-        elif len(node.value) == 3:
-            country = pycountry.countries.get(alpha_3=node.value)
-        else:
-            return
+            if len(node.value) == 2:
+                country = pycountry.countries.get(alpha_2=node.value)
+            elif len(node.value) == 3:
+                country = pycountry.countries.get(alpha_3=node.value)
 
-        if country:
-            unfurl.add_to_queue(
-                data_type='descriptor', key='Country', value=country.name,
-                hover='This is a generic parser based on common query-string patterns across websites',
-                parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+            if country:
+                unfurl.add_to_queue(
+                    data_type='descriptor', key='Country', value=country.name,
+                    hover='This is a generic parser based on common query-string patterns across websites',
+                    parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+                return
+
+        try_url_unquote(unfurl, node)
 
     elif node.data_type == 'url.path.segment':
         for file_type in mimetypes.types_map.keys():
@@ -210,29 +256,16 @@ def run(unfurl, node):
         if not isinstance(node.value, str):
             return
 
-        try:
-            # If we can recognize another URL inside a value, parse it
-            parsed_url = urllib.parse.urlparse(node.value)
-            if (parsed_url.netloc and parsed_url.path) or (parsed_url.scheme and parsed_url.netloc):
-                unfurl.add_to_queue(
-                    data_type='url', key=None, value=node.value, parent_id=node.node_id,
-                    incoming_edge_config=urlparse_edge)
-                return
-        except:
-            # Guess it wasn't a URL
-            pass
+        parsed = try_url_parse(unfurl, node)
+        if parsed:
+            return
 
         # If the value contains more pairs of the form "a=b|c=d|e=f"
         pipe_delimited_pairs_re = re.compile(
             r'((?P<key>[^|=]+)=(?P<value>[^|=]+)\|)+(?P<last_key>[^|=]+)=(?P<last_value>[^|=]+)')
         m = pipe_delimited_pairs_re.fullmatch(node.value)
         if m:
-            pipe_pairs = node.value.split('|')
-            for pair in pipe_pairs:
-                key, value = pair.split('=')
-                unfurl.add_to_queue(
-                    data_type='url.query.pair', key=key, value=value,
-                    parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+            parse_delimited_string(unfurl, node, delimiter='|', pairs=True)
             return
 
         # If the value contains more values in the form "a|b|c|d|e|f"
@@ -240,22 +273,15 @@ def run(unfurl, node):
             r'((?P<value>[^|]+)\|)+(?P<last_value>[^|]+)')
         m = pipe_delimited_values_re.fullmatch(node.value)
         if m:
-            pipe_values = node.value.split('|')
-            for value in pipe_values:
-                unfurl.add_to_queue(
-                    data_type='string', key=None, value=value,
-                    parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+            parse_delimited_string(unfurl, node, delimiter='|')
             return
 
         # If the value contains more pairs of the form "a=b&c=d&e=f"
         amp_delimited_pairs_re = re.compile(
-            r'((?P<key>[^&=]+)=(?P<value>[^&=]+)&)+(?P<last_key>[^&=]+)=(?P<last_value>[^&=]+)')
+            r'((?P<key>[^&=]+)=(?P<value>[^&=]*)&)+(?P<last_key>[^&=]+)=(?P<last_value>[^&=]*)')
         m = amp_delimited_pairs_re.fullmatch(node.value)
         if m:
-            amp_pairs = node.value.split('&')
-            for pair in amp_pairs:
-                key, value = pair.split('=')
-                unfurl.add_to_queue(
-                    data_type='url.query.pair', key=key, value=value,
-                    parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+            parse_delimited_string(unfurl, node, delimiter='&', pairs=True)
             return
+
+        try_url_unquote(unfurl, node)

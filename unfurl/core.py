@@ -72,6 +72,8 @@ class Unfurl:
                     self.label = f'{self.key}: {self.value}'
                 elif self.value:
                     self.label = self.value
+                elif self.key:
+                    self.label = f'{self.key}:'
 
         def __repr__(self):
             return str(self.__dict__)
