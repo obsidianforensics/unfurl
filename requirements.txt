@@ -1,4 +1,4 @@
-flask
+flask==2.1.3
 flask-restx
 flask_cors
 maclookup
@@ -11,3 +11,4 @@ Requests
 setuptools
 torf
 ulid-py
+Werkzeug==2.1.2
