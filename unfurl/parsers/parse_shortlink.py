@@ -53,11 +53,13 @@ def run(unfurl, node):
     if not unfurl.remote_lookups:
         return
 
+    preceding_domain = unfurl.find_preceding_domain(node)
+
     # LinkedIn has another method of URL shortening that's different from how most others do it; I can
     # refactor this in the future to be more flexible if I find more sites that operate this way, but for now
     # this works.
     if node.data_type == 'url.query.pair' and node.key == 'code':
-        if 'linkedin.com' in unfurl.find_preceding_domain(node):
+        if 'linkedin.com' in preceding_domain:
             expanded_url = expand_url_via_redirect_header('https://www.linkedin.com/slink?code=', node.value)
             if expanded_url:
                 unfurl.add_to_queue(
@@ -67,7 +69,19 @@ def run(unfurl, node):
                     parent_id=node.node_id, incoming_edge_config=shortlink_edge)
             return
 
-    if not node.data_type == 'url.path':
+    # Substack inserts a redirect
+    if 'substack.com' == preceding_domain and node.key == 2 and \
+            unfurl.check_sibling_nodes(node, data_type='url.path.segment', key=1, value='redirect'):
+        expanded_url = expand_url_via_redirect_header('https://substack.com/redirect/', node.value)
+
+        if expanded_url:
+            unfurl.add_to_queue(
+                data_type='url', key=None, value=expanded_url,
+                label=f'Expanded URL: {expanded_url}',
+                hover=f'Expanded URL, retrieved from {preceding_domain} via "Location" header',
+                parent_id=node.node_id, incoming_edge_config=shortlink_edge)
+
+    if node.data_type != 'url.path':
         return
 
     bitly_domains = ['bit.ly', 'bitly.com', 'j.mp']
@@ -128,7 +142,6 @@ def run(unfurl, node):
         {'domain': 'x.co', 'base_url': 'https://x.co/'},
     ]
 
-    preceding_domain = unfurl.find_preceding_domain(node)
     for redirect_expand in redirect_expands:
         if redirect_expand['domain'] == preceding_domain:
             expanded_url = expand_url_via_redirect_header(redirect_expand['base_url'], node.value[1:])
