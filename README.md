@@ -1,4 +1,7 @@
-![Unfurl Logo](/unfurl/static/unfurl.png)
+<picture>
+  <source srcset="/unfurl/static/unfurl_dark.png" media="(prefers-color-scheme: dark)">
+  <img src="/unfurl/static/unfurl.png" alt="Unfurl Logo">
+</picture>
 
 # Extract and Visualize Data from URLs using Unfurl
 Unfurl takes a URL and expands ("unfurls") it into a directed graph, extracting every bit of information from the URL and 
