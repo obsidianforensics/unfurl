@@ -11,6 +11,7 @@ __all__ = [
     "parse_hash",
     "parse_json",
     "parse_ksuid",
+    "parse_linkedin",
     "parse_mac_addr",
     "parse_magnet",
     "parse_mastodon",

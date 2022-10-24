@@ -24,7 +24,7 @@ tiktok_edge = {
 }
 
 
-def parse_tiktok_id(unfurl, node):
+def parse_tiktok_id(unfurl, node, on_tiktok=True):
     try:
         tiktok_id = int(node.value)
         # TikTok IDs are 63 bits long; the upper 31 bits are the timestamp.
@@ -35,7 +35,8 @@ def parse_tiktok_id(unfurl, node):
         log.exception(f'Exception parsing TikTok ID: {e}')
         return
 
-    node.hover = 'TikTok IDs are time-based IDs similar to those of Twitter Snowflakes.'
+    if on_tiktok:
+        node.hover = 'TikTok IDs are time-based IDs similar to those of Twitter Snowflakes.'
 
     unfurl.add_to_queue(
         data_type='epoch-seconds', key=None, value=timestamp, label=f'Timestamp: {timestamp}',
@@ -66,4 +67,4 @@ def run(unfurl, node):
     # If it's the "root" node and a plausible TikTok ID, parse it.
     # This case covers someone parsing just a TikTok ID, not a full URL.
     elif node.node_id == 1 and unfurl.check_if_int_between(node.value, 6500000000000000000, 7500000000000000000):
-        parse_tiktok_id(unfurl, node)
+        parse_tiktok_id(unfurl, node, on_tiktok=False)
