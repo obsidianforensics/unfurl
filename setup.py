@@ -5,7 +5,7 @@ setup(
   packages=find_packages(),
   include_package_data=True,
   scripts=['unfurl_app.py', 'unfurl_cli.py'],
-  version='20220200',
+  version='20221000',
   description='Unfurl takes a URL and expands ("unfurls") it into a directed graph',
   url='https://github.com/obsidianforensics/unfurl',
   author='Ryan Benson',
@@ -14,18 +14,18 @@ setup(
   keywords=['unfurl', 'forensics', 'dfir', 'reverse-engineering', 'security'],
   classifiers=[],
   install_requires=[
-    'flask',
+    'flask==2.1.3',
     'flask_cors',
     'flask-restx',
     'maclookup',
     'networkx',
-    'protobuf',
+    'protobuf==3.*',
     'publicsuffix2',
     'pycountry',
     'pymispwarninglists>=1.3',
     'Requests',
     'torf',
-    'ulid-py'
+    'ulid-py',
+    'Werkzeug==2.1.2'
   ]
 )
-

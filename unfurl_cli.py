@@ -40,6 +40,9 @@ def main():
         help='file to save output (as CSV) to. if omitted, output is sent to '
              'stdout (typically this means displayed in the console).')
     parser.add_argument(
+        '-t', '--type', help='Type of output to produce', choices=['tree', 'json'], default='tree'
+    )
+    parser.add_argument(
         '-v', '-V', '--version', action='version', version=f'unfurl v{core.unfurl.__version__}')
     args = parser.parse_args()
 
@@ -64,10 +67,14 @@ def main():
                     data_type='url', key=None,
                     value=item)
                 unfurl_instance.parse_queue()
-                csv_writer.writerow(
-                    [item, unfurl_instance.generate_text_tree(
-                        detailed=args.detailed,
-                        output_filter=args.filter)])
+                if args.type == 'json':
+                    csv_writer.writerow(
+                        [item, unfurl_instance.generate_full_json()])
+                else:
+                    csv_writer.writerow(
+                        [item, unfurl_instance.generate_text_tree(
+                            detailed=args.detailed,
+                            output_filter=args.filter)])
 
     else:
         for item in items_to_unfurl:
@@ -77,8 +84,11 @@ def main():
                 value=item)
             unfurl_instance.parse_queue()
 
-            print(unfurl_instance.generate_text_tree(
-                detailed=args.detailed, output_filter=args.filter))
+            if args.type == 'json':
+                print(unfurl_instance.generate_full_json())
+            else:
+                print(unfurl_instance.generate_text_tree(
+                    detailed=args.detailed, output_filter=args.filter))
             print()
 
 
