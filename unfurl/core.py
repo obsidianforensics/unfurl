@@ -78,6 +78,9 @@ class Unfurl:
         def __repr__(self):
             return str(self.__dict__)
 
+        def to_dict(self):
+            return self.__dict__
+
     def build_known_domain_lists(self):
         warning_lists = WarningLists()
         warning_lists_dict = warning_lists.warninglists
@@ -351,6 +354,15 @@ class Unfurl:
 
         return data_json
 
+    def generate_full_json(self):
+        data_json = {'nodes': [], 'edges': []}
+        for orig_node in self.graph.nodes():
+            data_json['nodes'].append(orig_node.to_dict())
+        for orig_edge in self.graph.edges():
+            data_json['edges'].append(orig_edge)
+
+        return data_json
+
     @staticmethod
     def transform_3d_node(node):
         def val_func(node_id):
@@ -530,7 +542,7 @@ def graph():
                            unfurl_port=unfurl_app_port)
 
 
-restx_api = Api(app, title='unfurl API',
+restx_api = Api(app, title='Unfurl API',
                 description='API to submit URLs to expand to an unfurl instance.',
                 doc='/doc/')
 
@@ -548,11 +560,25 @@ class JsonVisJS(Resource):
         if 'url' not in request.args:
             return {}
         unfurl_this = unquote(request.args['url'])
-        unfurl_instance = Unfurl(remote_lookups=app.config['remote_lookups'])
-        unfurl_instance.add_to_queue(
-            data_type='url', key=None,
-            extra_options={'widthConstraint': {'maximum': 1200}},
-            value=unfurl_this)
-        unfurl_instance.parse_queue()
-        unfurl_json = unfurl_instance.generate_json()
-        return unfurl_json
+        return run(
+            unfurl_this,
+            return_type='json',
+            remote_lookups=app.config['remote_lookups'],
+            extra_options={'widthConstraint': {'maximum': 1200}})
+
+
+def run(url, data_type='url', return_type='json', remote_lookups=False, extra_options=None):
+    u = Unfurl(remote_lookups=remote_lookups)
+    u.add_to_queue(
+        data_type=data_type,
+        key=None,
+        value=url,
+        extra_options=extra_options
+    )
+    u.parse_queue()
+    if return_type == 'text':
+        return u.generate_text_tree()
+    elif return_type == 'full_json':
+        return u.generate_full_json()
+    else:
+        return u.generate_json()
