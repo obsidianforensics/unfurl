@@ -14,9 +14,9 @@ setup(
   keywords=['unfurl', 'forensics', 'dfir', 'reverse-engineering', 'security'],
   classifiers=[],
   install_requires=[
-    'flask==2.1.3',
+    'flask>=2.2.0',
     'flask_cors',
-    'flask-restx',
+    'flask-restx>=1.0.1',
     'maclookup',
     'networkx',
     'protobuf==3.*',
@@ -26,6 +26,6 @@ setup(
     'Requests',
     'torf',
     'ulid-py',
-    'Werkzeug==2.1.2'
+    'Werkzeug>=2.2.0'
   ]
 )
