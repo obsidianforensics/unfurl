@@ -1,4 +1,4 @@
-# Copyright 2020 Google LLC
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -36,9 +36,11 @@ def run(unfurl, node):
     urlsafe_b64_m = utils.urlsafe_b64_re.fullmatch(node.value)
     standard_b64_m = utils.standard_b64_re.fullmatch(node.value)
     long_int_m = utils.long_int_re.fullmatch(node.value)
+    all_letters_m = utils.letters_re.fullmatch(node.value)
 
-    # Long integers pass the b64 regex, but we don't want those here.
-    if long_int_m:
+    # Long integers and normal words pass the b64 regex, but we don't want those here.
+    # It's technically valid base64, but to reduce false positives we're filtering them out.
+    if long_int_m or all_letters_m:
         return
 
     decoded = None
