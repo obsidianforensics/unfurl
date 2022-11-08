@@ -1,5 +1,10 @@
 from setuptools import setup, find_packages
 
+# read the contents of your README file
+from pathlib import Path
+this_directory = Path(__file__).parent
+long_description = (this_directory / "README.md").read_text()
+
 setup(
   name='dfir-unfurl',
   packages=find_packages(),
@@ -7,6 +12,8 @@ setup(
   scripts=['unfurl_app.py', 'unfurl_cli.py'],
   version='20221100',
   description='Unfurl takes a URL and expands ("unfurls") it into a directed graph',
+  long_description_content_type='text/markdown',
+  long_description=long_description,
   url='https://github.com/obsidianforensics/unfurl',
   author='Ryan Benson',
   author_email='ryan@dfir.blog',
