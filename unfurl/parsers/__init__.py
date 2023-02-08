@@ -10,6 +10,7 @@ __all__ = [
     "parse_google",
     "parse_hash",
     "parse_json",
+    "parse_jwt",
     "parse_ksuid",
     "parse_linkedin",
     "parse_mac_addr",
