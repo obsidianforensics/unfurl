@@ -134,6 +134,34 @@ class Unfurl:
         predecessor = list(self.graph.predecessors(node))
         return predecessor
 
+    def get_predecessor_chain(self, node, chain: list = None) -> list:
+        if not chain:
+            chain = []
+
+        predecessor = Unfurl.get_predecessor_node(self, node)
+        if predecessor:
+            chain.append(predecessor[0])
+            Unfurl.get_predecessor_chain(self, predecessor[0], chain)
+
+        return chain
+
+    @staticmethod
+    def check_if_in_node_chain(chain: list, key, value, chain_index: int) -> bool:
+        if chain_index >= len(chain):
+            return False
+
+        # If a multiple values are passed into value, return True if any of them are
+        # found (effectively an OR; allows for searching for multiple terms at once)
+        if isinstance(value, (list, tuple)):
+            if getattr(chain[chain_index], key) in value:
+                return True
+            else:
+                return False
+
+        if getattr(chain[chain_index], key) == value:
+            return True
+        return False
+
     def get_successor_nodes(self, node):
         successors = list(self.graph.successors(node))
         return successors

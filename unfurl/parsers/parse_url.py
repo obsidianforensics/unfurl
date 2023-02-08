@@ -262,7 +262,7 @@ def run(unfurl, node):
 
         # If the value contains more pairs of the form "a=b|c=d|e=f"
         pipe_delimited_pairs_re = re.compile(
-            r'((?P<key>[^|=]+)=(?P<value>[^|=]+)\|)+(?P<last_key>[^|=]+)=(?P<last_value>[^|=]+)')
+            r'((?P<key>[^/|=]+)=(?P<value>[^/|=]+)\|)+(?P<last_key>[^/|=]+)=(?P<last_value>[^/|=]+)')
         m = pipe_delimited_pairs_re.fullmatch(node.value)
         if m:
             parse_delimited_string(unfurl, node, delimiter='|', pairs=True)
@@ -270,7 +270,7 @@ def run(unfurl, node):
 
         # If the value contains more values in the form "a|b|c|d|e|f"
         pipe_delimited_values_re = re.compile(
-            r'((?P<value>[^|]+)\|)+(?P<last_value>[^|]+)')
+            r'((?P<value>[^/|]+)\|)+(?P<last_value>[^/|]+)')
         m = pipe_delimited_values_re.fullmatch(node.value)
         if m:
             parse_delimited_string(unfurl, node, delimiter='|')
@@ -278,7 +278,7 @@ def run(unfurl, node):
 
         # If the value contains more pairs of the form "a=b&c=d&e=f"
         amp_delimited_pairs_re = re.compile(
-            r'((?P<key>[^&=]+)=(?P<value>[^&=]*)&)+(?P<last_key>[^&=]+)=(?P<last_value>[^&=]*)')
+            r'((?P<key>[^/&=]+)=(?P<value>[^/&=]*)&)+(?P<last_key>[^/&=]+)=(?P<last_value>[^/&=]*)')
         m = amp_delimited_pairs_re.fullmatch(node.value)
         if m:
             parse_delimited_string(unfurl, node, delimiter='&', pairs=True)
