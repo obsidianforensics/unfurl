@@ -159,6 +159,13 @@ def run(unfurl, node):
             if parsed:
                 return
 
+        # This isn't working now, as the fragment isn't getting passed in at all. Need to refactor how the
+        # URL gets passed to Unfurl before this will work.
+        text_fragment_re = re.compile(r':~:text=([A-z0-9%]+-,)?([A-z0-9%]+)(,[A-z0-9%]+)?(,-[A-z0-9%]+)?')
+        m = text_fragment_re.fullmatch(node.value)
+        if m:
+            print('fragment!!')
+
     elif node.data_type == 'url.params':
         split_params_re = re.compile(r'^(?P<key>[^=]+?)=(?P<value>[^=?]+)(?P<delim>[;,|])')
         split_params = split_params_re.match(node.value)
