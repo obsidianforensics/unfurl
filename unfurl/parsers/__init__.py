@@ -4,6 +4,7 @@ __all__ = [
     "parse_brave",
     "parse_compressed",
     "parse_discord",
+    "parse_dns",
     "parse_domain",
     "parse_dropbox",
     "parse_duckduckgo",

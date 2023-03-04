@@ -33,6 +33,9 @@ def run(unfurl, node):
         # A valid b64 string will not be this length
         return False
 
+    if node.data_type == 'url.query.pair' and node.key == 'dns':
+        return False
+
     urlsafe_b64_m = utils.urlsafe_b64_re.fullmatch(node.value)
     standard_b64_m = utils.standard_b64_re.fullmatch(node.value)
     long_int_m = utils.long_int_re.fullmatch(node.value)
