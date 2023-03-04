@@ -1,3 +1,4 @@
+dnslib
 flask >= 2.2.0
 flask-restx >= 1.0.1
 flask_cors
