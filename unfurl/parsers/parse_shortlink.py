@@ -65,7 +65,7 @@ def run(unfurl, node):
                 unfurl.add_to_queue(
                     data_type='url', key=None, value=expanded_url,
                     label=f'Expanded URL: {expanded_url}',
-                    hover=f'Expanded URL, retrieved from linkedin.com via "Location" header',
+                    hover='Expanded URL, retrieved from linkedin.com via "Location" header',
                     parent_id=node.node_id, incoming_edge_config=shortlink_edge)
             return
 
@@ -122,6 +122,7 @@ def run(unfurl, node):
         {'domain': 'db.tt', 'base_url': 'https://db.tt/'},
         {'domain': 'dlvr.it', 'base_url': 'https://dlvr.it/'},
         {'domain': 'fb.me', 'base_url': 'https://fb.me/'},
+        {'domain': 'flip.it', 'base_url': 'https://flip.it/'},
         {'domain': 'goo.gl', 'base_url': 'https://goo.gl/'},
         {'domain': 'ift.tt', 'base_url': 'https://ift.tt/'},
         {'domain': 'is.gd', 'base_url': 'https://is.gd/'},
@@ -134,12 +135,11 @@ def run(unfurl, node):
         {'domain': 'snip.ly', 'base_url': 'https://snip.ly/'},
         {'domain': 't.co', 'base_url': 'https://t.co/'},
         {'domain': 't.ly', 'base_url': 'https://t.ly/'},
+        {'domain': 'tinyurl.com', 'base_url': 'https://tinyurl.com/'},
         {'domain': 'tr.im', 'base_url': 'https://tr.im/'},
         {'domain': 'trib.al', 'base_url': 'https://trib.al/'},
-        {'domain': 'tinyurl.com', 'base_url': 'https://tinyurl.com/'},
         {'domain': 'urlwee.com', 'base_url': 'https://urlwee.com/'},
-        {'domain': 'urlzs.com', 'base_url': 'https://urlzs.com/'},
-        {'domain': 'x.co', 'base_url': 'https://x.co/'},
+        {'domain': 'urlzs.com', 'base_url': 'https://urlzs.com/'}
     ]
 
     for redirect_expand in redirect_expands:
