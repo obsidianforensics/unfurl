@@ -89,9 +89,6 @@ class Unfurl:
         # those domains are not security blog-related, so I'm removing it.
         warning_lists_dict.pop('List of known security providers/vendors blog domain', 1)
 
-        # Similarly, not all bit.ly links are MSOffice-related, so I'm removing it.
-        warning_lists_dict['List of known Office 365 URLs'].list.remove('bit.ly')
-
         # And the capitalization was bothering me, so fixing it here.
         warning_lists_dict['List of known google domains'].name = 'List of known Google domains'
         warning_lists_dict['List of known microsoft domains'].name = 'List of known Microsoft domains'

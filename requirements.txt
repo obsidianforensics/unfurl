@@ -7,7 +7,7 @@ networkx
 protobuf == 3.*
 publicsuffix2
 pycountry
-pymispwarninglists >= 1.3
+pymispwarninglists >= 1.5
 Requests
 setuptools
 torf
