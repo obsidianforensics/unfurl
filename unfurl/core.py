@@ -88,9 +88,7 @@ class Unfurl:
         # This list has some values I think may confuse users (t.co, drive.google.com, etc), as most things on
         # those domains are not security blog-related, so I'm removing it.
         warning_lists_dict.pop('List of known security providers/vendors blog domain', 1)
-
-        # Similarly, not all bit.ly links are MSOffice-related, so I'm removing it.
-        warning_lists_dict['List of known Office 365 URLs'].list.remove('bit.ly')
+        warning_lists_dict.pop('OSINT.DigitalSide.IT Warning List', 1)
 
         # And the capitalization was bothering me, so fixing it here.
         warning_lists_dict['List of known google domains'].name = 'List of known Google domains'
@@ -106,13 +104,13 @@ class Unfurl:
 
         return_list = []
         for found in lists_found_in:
-            if not found['name'].startswith('Top'):
+            if not found['name'].startswith(('Top', 'google-chrome-crux-1million')):
                 return_list.append(found)
 
         top_found = [x['name'] for x in lists_found_in if str(x['name']).startswith('Top')]
         top_1k = [x for x in top_found if x.startswith(('Top 1000', 'Top 500 '))]
         top_10k = [x for x in top_found if x.startswith(('Top 10 000', 'Top 10K'))]
-        top_1m = [x for x in top_found if x.startswith(('Top 1,000,000', 'Top 20 000'))]
+        top_1m = [x for x in top_found if x.startswith(('Top 1,000,000', 'Top 20 000', 'google-chrome-crux-1million'))]
 
         if top_1k:
             return_list.append({'name': 'Domain is extremely popular (found in "Top 1000" lists)',
