@@ -10,7 +10,7 @@ setup(
   packages=find_packages(),
   include_package_data=True,
   scripts=['unfurl_app.py', 'unfurl_cli.py'],
-  version='20230900',
+  version='20230901',
   description='Unfurl takes a URL and expands ("unfurls") it into a directed graph',
   long_description_content_type='text/markdown',
   long_description=long_description,
@@ -21,6 +21,7 @@ setup(
   keywords=['unfurl', 'forensics', 'dfir', 'reverse-engineering', 'security'],
   classifiers=[],
   install_requires=[
+    'dnslib',
     'flask>=2.2.0',
     'flask_cors',
     'flask-restx>=1.0.1',
