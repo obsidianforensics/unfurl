@@ -22,7 +22,7 @@ setup(
   classifiers=[],
   install_requires=[
     'dnslib',
-    'flask==2.3.2',
+    'flask==2.3.3',
     'flask_cors',
     'flask-restx>=1.2.0',
     'maclookup',
@@ -34,6 +34,6 @@ setup(
     'Requests',
     'torf',
     'ulid-py',
-    'Werkzeug==2.3.0'
+    'Werkzeug==2.3.3'
   ]
 )
