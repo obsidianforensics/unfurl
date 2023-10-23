@@ -1,10 +1,10 @@
 dnslib
-flask >= 2.2.0
-flask-restx >= 1.0.1
+flask == 2.3.0
+flask-restx >= 1.2.0
 flask_cors
 maclookup
 networkx
-protobuf == 3.*
+protobuf == 4.*
 publicsuffix2
 pycountry
 pymispwarninglists >= 1.5
@@ -12,4 +12,4 @@ Requests
 setuptools
 torf
 ulid-py
-Werkzeug >= 2.2.0
+Werkzeug == 2.3.0

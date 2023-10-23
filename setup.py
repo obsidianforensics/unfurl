@@ -18,22 +18,22 @@ setup(
   author='Ryan Benson',
   author_email='ryan@dfir.blog',
   license='Apache',
-  keywords=['unfurl', 'forensics', 'dfir', 'reverse-engineering', 'security'],
+  keywords=['unfurl', 'forensics', 'dfir', 'reverse-engineering', 'security', 'osint', 'digital forensics'],
   classifiers=[],
   install_requires=[
     'dnslib',
-    'flask>=2.2.0',
+    'flask==2.3.0',
     'flask_cors',
-    'flask-restx>=1.0.1',
+    'flask-restx>=1.2.0',
     'maclookup',
     'networkx',
-    'protobuf==3.*',
+    'protobuf==4.*',
     'publicsuffix2',
     'pycountry',
     'pymispwarninglists>=1.5',
     'Requests',
     'torf',
     'ulid-py',
-    'Werkzeug>=2.2.0'
+    'Werkzeug==2.3.0'
   ]
 )
