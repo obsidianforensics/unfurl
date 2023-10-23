@@ -34,6 +34,6 @@ setup(
     'Requests',
     'torf',
     'ulid-py',
-    'Werkzeug==2.3.3'
+    'Werkzeug>=2.3.3'
   ]
 )
