@@ -18,7 +18,7 @@ setup(
   author='Ryan Benson',
   author_email='ryan@dfir.blog',
   license='Apache',
-  keywords=['unfurl', 'forensics', 'dfir', 'reverse-engineering', 'security'],
+  keywords=['unfurl', 'forensics', 'dfir', 'reverse-engineering', 'security', 'osint', 'digital forensics'],
   classifiers=[],
   install_requires=[
     'dnslib',
@@ -27,7 +27,7 @@ setup(
     'flask-restx>=1.0.1',
     'maclookup',
     'networkx',
-    'protobuf==3.*',
+    'protobuf==4.*',
     'publicsuffix2',
     'pycountry',
     'pymispwarninglists>=1.5',

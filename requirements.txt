@@ -4,7 +4,7 @@ flask-restx >= 1.0.1
 flask_cors
 maclookup
 networkx
-protobuf == 3.*
+protobuf == 4.*
 publicsuffix2
 pycountry
 pymispwarninglists >= 1.5

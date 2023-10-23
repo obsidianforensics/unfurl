@@ -125,9 +125,8 @@ def run(unfurl, node):
     urlsafe_b64_m = utils.urlsafe_b64_re.fullmatch(node.value)
     standard_b64_m = utils.standard_b64_re.fullmatch(node.value)
     hex_m = utils.hex_re.fullmatch(node.value)
-    long_int_m = utils.long_int_re.fullmatch(node.value)
     all_digits_m = utils.digits_re.fullmatch(node.value)
-    all_letters_m = utils.digits_re.fullmatch(node.value)
+    all_letters_m = utils.letters_re.fullmatch(node.value)
 
     if hex_m and not (all_digits_m or all_letters_m):
         decoded = bytes.fromhex(node.value)
