@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools", "setuptools-scm"]
+requires = ["setuptools>=61", "setuptools-scm>=8.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -19,11 +19,15 @@ keywords=["unfurl", "forensics", "dfir", "reverse-engineering", "security", "osi
 [tool.setuptools_scm]
 
 [tool.setuptools.dynamic]
-dependencies = { file = ["requirements.in"] }
+dependencies = { file = ["requirements.txt"] }
 version = { attr = "unfurl.__version__" }
-optional-dependencies.ui = { file = ["requirements-ui.in"] }
-optional-dependencies.lookups = { file = ["requirements-lookups.in"] }
-optional-dependencies.all = { file = ["requirements-all.in"] }
+optional-dependencies.ui = { file = ["requirements-ui.txt"] }
+optional-dependencies.lookups = { file = ["requirements-lookups.txt"] }
+optional-dependencies.all = { file = ["requirements-all.txt"] }
+
+[project.scripts]
+unfurl = "unfurl.app:cli"
+unfurl_app = "unfurl.app:web_app"
 
 [project.urls]
 Home = "https://github.com/obsidianforensics/unfurl"

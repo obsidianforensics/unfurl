@@ -1,0 +1,4 @@
+flask>=3.0.0
+flask-restx>=1.3.0
+flask_cors
+Werkzeug>=3.0.0
