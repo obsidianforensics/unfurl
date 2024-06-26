@@ -113,3 +113,7 @@ dmypy.json
 
 # PyCharm
 /.idea/
+/venv38/
+/dist/
+/dfir_unfurl.egg-info/
+/build/
