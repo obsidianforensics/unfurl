@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2020 Google LLC
+# Copyright 2024 Ryan Benson
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,12 +21,9 @@ import networkx
 import queue
 import re
 import unfurl.parsers
-from flask import Flask, render_template, request, redirect, url_for
-from flask_cors import CORS
-from flask_restx import Api, Namespace, Resource
+
 from pymispwarninglists import WarningLists
 from unfurl import utils
-from urllib.parse import unquote
 
 log = logging.getLogger(__name__)
 
@@ -181,7 +178,7 @@ class Unfurl:
             if node.node_id == sibling_node.node_id:
                 continue
 
-            # For each attribute, check if it is set. If it is and it
+            # For each attribute, check if it is set. If it is, and it
             # doesn't match, stop checking this node and go to the next
             if data_type:
                 if data_type != sibling_node.data_type:
@@ -516,95 +513,3 @@ class Unfurl:
 
         return text_output
 
-
-unfurl_app_host = None
-unfurl_app_port = None
-unfurl_remote_lookups = None
-app = Flask(__name__)
-CORS(app)
-
-
-class UnfurlApp:
-    def __init__(self, unfurl_debug='True', unfurl_host='localhost', unfurl_port='5000', remote_lookups=False):
-        self.unfurl_debug = unfurl_debug
-        self.unfurl_host = unfurl_host
-        self.unfurl_port = unfurl_port
-        self.remote_lookups = remote_lookups
-
-        global unfurl_app_host
-        global unfurl_app_port
-        global unfurl_remote_lookups
-        unfurl_app_host = self.unfurl_host
-        unfurl_app_port = self.unfurl_port
-        unfurl_remote_lookups = self.remote_lookups
-
-        app.config['remote_lookups'] = remote_lookups
-        app.run(debug=unfurl_debug, host=unfurl_host, port=unfurl_port)
-
-
-@app.route('/')
-@app.route('/<path:path>')
-def index(path=''):
-    url_to_unfurl = ''
-    if path:
-        # backward compatibility, it is preferable to use the graph route and a quoted URL instead
-        if f':{unfurl_app_port}/' in request.url:
-            url_to_unfurl = unquote(request.url.split(f':{unfurl_app_port}/', 1)[1])
-        else:
-            # for tests, the port isn't in the URL, take everything after the domain
-            url_to_unfurl = unquote(request.url.split('/', 3)[-1])
-        return redirect(url_for('graph', url=url_to_unfurl))
-    return render_template('graph.html',
-                           unfurl_host=unfurl_app_host,
-                           unfurl_port=unfurl_app_port)
-
-
-@app.route('/graph')
-def graph():
-    if 'url' not in request.args:
-        return redirect(url_for('index'))
-    return render_template('graph.html',
-                           unfurl_host=unfurl_app_host,
-                           unfurl_port=unfurl_app_port)
-
-
-restx_api = Api(app, title='Unfurl API',
-                description='API to submit URLs to expand to an unfurl instance.',
-                doc='/doc/')
-
-namespace = Namespace('GenericAPI', description='Generic unfurl API', path='/')
-
-restx_api.add_namespace(namespace)
-
-
-@namespace.route('/json/visjs')
-@namespace.doc(description='Expand a URL and returns the JSON expansion in the vis.js format')
-class JsonVisJS(Resource):
-
-    @namespace.param('url', 'The URL to expand', required=False)
-    def get(self):
-        if 'url' not in request.args:
-            return {}
-        unfurl_this = unquote(request.args['url'])
-        return run(
-            unfurl_this,
-            return_type='json',
-            remote_lookups=app.config['remote_lookups'],
-            extra_options={'widthConstraint': {'maximum': 1200}})
-
-
-def run(url, data_type='url', return_type='json', remote_lookups=False, extra_options=None):
-    u = Unfurl(remote_lookups=remote_lookups)
-    u.add_to_queue(
-        data_type=data_type,
-        key=None,
-        value=url,
-        extra_options=extra_options
-    )
-    u.parse_queue()
-    if return_type == 'text':
-        return u.generate_text_tree()
-    elif return_type == 'full_json':
-        return u.generate_full_json()
-    else:
-        return u.generate_json()
