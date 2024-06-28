@@ -1,4 +1,4 @@
-# Copyright 2022 Google LLC
+# Copyright 2024 Ryan Benson
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,12 +13,12 @@
 # limitations under the License.
 
 __author__ = "Ryan Benson"
-__version__ = "2023.09"
+__version__ = "20240625"
 __email__ = "ryan@dfir.blog"
 
 import logging
 import sys
-from unfurl.core import run
+from unfurl.app import run
 
 log = logging.getLogger(__name__)
 log.setLevel('WARNING')
