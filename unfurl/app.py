@@ -20,7 +20,7 @@ from flask import Flask, render_template, request, redirect, url_for
 from flask_cors import CORS
 from flask_restx import Api, Namespace, Resource
 from urllib.parse import unquote
-from unfurl.core import Unfurl
+from unfurl.core import run
 
 unfurl_app_host = None
 unfurl_app_port = None
@@ -94,23 +94,6 @@ class JsonVisJS(Resource):
             return_type='json',
             remote_lookups=app.config['remote_lookups'],
             extra_options={'widthConstraint': {'maximum': 1200}})
-
-
-def run(url, data_type='url', return_type='json', remote_lookups=False, extra_options=None):
-    u = Unfurl(remote_lookups=remote_lookups)
-    u.add_to_queue(
-        data_type=data_type,
-        key=None,
-        value=url,
-        extra_options=extra_options
-    )
-    u.parse_queue()
-    if return_type == 'text':
-        return u.generate_text_tree()
-    elif return_type == 'full_json':
-        return u.generate_full_json()
-    else:
-        return u.generate_json()
 
 
 def web_app(host='localhost', port='5000', debug='True', remote_lookups=False):

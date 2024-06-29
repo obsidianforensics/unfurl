@@ -13,12 +13,12 @@
 # limitations under the License.
 
 __author__ = "Ryan Benson"
-__version__ = "20240626"
+__version__ = "20240627"
 __email__ = "ryan@dfir.blog"
 
 import logging
 import sys
-from unfurl.app import run
+from unfurl.core import run
 
 log = logging.getLogger(__name__)
 log.setLevel('WARNING')

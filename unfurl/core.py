@@ -513,3 +513,19 @@ class Unfurl:
 
         return text_output
 
+
+def run(url, data_type='url', return_type='json', remote_lookups=False, extra_options=None):
+    u = Unfurl(remote_lookups=remote_lookups)
+    u.add_to_queue(
+        data_type=data_type,
+        key=None,
+        value=url,
+        extra_options=extra_options
+    )
+    u.parse_queue()
+    if return_type == 'text':
+        return u.generate_text_tree()
+    elif return_type == 'full_json':
+        return u.generate_full_json()
+    else:
+        return u.generate_json()
