@@ -26,7 +26,7 @@ optional-dependencies.lookups = { file = ["requirements-lookups.txt"] }
 optional-dependencies.all = { file = ["requirements-all.txt"] }
 
 [project.scripts]
-unfurl = "unfurl.app:cli"
+unfurl = "unfurl.cli:command_line_interface"
 unfurl_app = "unfurl.app:web_app"
 
 [project.urls]

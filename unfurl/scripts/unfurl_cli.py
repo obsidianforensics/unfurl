@@ -12,6 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from unfurl.app import cli
+from unfurl.cli import command_line_interface
 
-cli()
+command_line_interface()
