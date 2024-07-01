@@ -70,8 +70,8 @@ def parse_twitter_snowflake(unfurl, node, encoding_type='integer', on_twitter=Tr
                 f'Sequence number should be between 0 and 4096; got {sequence}'
 
             # Since we are trying to parse things that might not be valid, make sure the decoded
-            # timestamp is "reasonable" (between 2010-11 (the Snowflake epoch) and 2024-01
-            if not 1288834974657 < timestamp < 1704070800000:
+            # timestamp is "reasonable" (between 2010-11 (the Snowflake epoch) and 2025-03
+            if not 1288834974657 < timestamp < 1741000800000:
                 return
 
         except Exception as e:
@@ -110,14 +110,15 @@ def parse_twitter_snowflake(unfurl, node, encoding_type='integer', on_twitter=Tr
 
 def run(unfurl, node):
     preceding_domain = unfurl.find_preceding_domain(node)
-    if preceding_domain in ['twitter.com', 'mobile.twitter.com']:
-        # Make sure potential snowflake is reasonable: between 2015-02-01 & 2024-06-10
+    if preceding_domain in ['twitter.com', 'mobile.twitter.com', 'x.com', 'mobile.x.com']:
+        # Make sure potential snowflake is reasonable: between 2015-02-01 & 2025-03-13
         if node.data_type == 'url.path.segment' and \
-                unfurl.check_if_int_between(node.value, 261675293291446272, 1800000000000000001):
+                unfurl.check_if_int_between(node.value, 261675293291446272, 1900000000000000001):
             parse_twitter_snowflake(unfurl, node)
 
         # Based on information found in a Javascript file on Twitter's website. Thanks 2*yo (https://github.com/2xyo)!
-        # ref: https://web.archive.org/web/20220924170519/https://abs.twimg.com/responsive-web/client-web/main.ea5f3cf9.js
+        # ref:
+        #   https://web.archive.org/web/20220924170519/https://abs.twimg.com/responsive-web/client-web/main.ea5f3cf9.js
         elif node.data_type == 'url.query.pair' and node.key == 's':
             sharing_codes = {
                 '01': ' from an Android using SMS',
@@ -209,7 +210,7 @@ def run(unfurl, node):
                     parse_twitter_snowflake(unfurl, node, encoding_type='base64')
 
     # Images from Twitter can be viewed in other ways than the above (including being saved/downloaded and then
-    # uploaded somewhere else. The file name pattern appears fairly unique, so if we see a file name that matches it
+    # uploaded somewhere else). The file name pattern appears fairly unique, so if we see a file name that matches it
     # and decodes to a "reasonable" timestamp, show it in the graph.
     if node.data_type == 'file.name' and len(node.value) == 15:
         on_twitter = True if '.twimg.com' in preceding_domain else False

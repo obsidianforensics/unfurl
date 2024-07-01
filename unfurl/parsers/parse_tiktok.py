@@ -53,11 +53,11 @@ def run(unfurl, node):
             if node.key == 1:
                 if node.value.startswith('@'):
                     unfurl.add_to_queue(
-                        data_type='descriptor', key=None, value=f'Username who posted on TikTok',
+                        data_type='descriptor', key=None, value='Username who posted on TikTok',
                         parent_id=node.node_id, incoming_edge_config=tiktok_edge)
                 elif node.value == 'embed':
                     unfurl.add_to_queue(
-                        data_type='descriptor', key=None, value=f'TikTok video was embedded on another site',
+                        data_type='descriptor', key=None, value='TikTok video was embedded on another site',
                         parent_id=node.node_id, incoming_edge_config=tiktok_edge)
 
             # Check if TikTok ID timestamp would be between 2017-12 and 2025-05

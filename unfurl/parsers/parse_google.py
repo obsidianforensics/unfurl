@@ -18,6 +18,7 @@ import pycountry
 import struct
 import re
 from unfurl.parsers.proto.google_search_pb2 import Ved
+from unfurl import utils
 from google.protobuf import json_format
 
 import logging
@@ -289,6 +290,8 @@ def run(unfurl, node):
                             parent_id=node.node_id, incoming_edge_config=google_edge)
 
             elif node.key == 'ei':
+                if not re.fullmatch(utils.urlsafe_b64_re, node.value):
+                    return
                 padded_value = unfurl.add_b64_padding(node.value)
                 if not padded_value:
                     return
