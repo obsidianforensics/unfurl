@@ -115,7 +115,7 @@ def run(unfurl, node):
             for field, value in parsed_magnet.__dict__.items():
                 if field in [f'_{known}' for known in known_field_names.keys()]:
                     continue
-                # 'infohash' is extracted from xt by torf and added as it's own thing (for convenience); skip it
+                # 'infohash' is extracted from xt by torf and added as its own thing (for convenience); skip it
                 elif field == '_infohash':
                     continue
                 elif value:

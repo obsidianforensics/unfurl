@@ -4,5 +4,6 @@ protobuf==4.*
 publicsuffix2
 pycountry
 pymispwarninglists>=1.5
+requests
 torf
 ulid-py
