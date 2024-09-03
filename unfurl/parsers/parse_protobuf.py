@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import base64
-from unfurl.lib import blackboxprotobuf
+import blackboxprotobuf
 from unfurl import utils
 
 proto_edge = {
