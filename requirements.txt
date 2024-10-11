@@ -7,3 +7,4 @@ pymispwarninglists>=1.5
 requests
 torf
 ulid-py
+bbpb
