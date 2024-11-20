@@ -2,6 +2,7 @@ __all__ = [
     "parse_base64",
     "parse_bing",
     "parse_brave",
+    "parse_bluesky",
     "parse_compressed",
     "parse_discord",
     "parse_dns",
