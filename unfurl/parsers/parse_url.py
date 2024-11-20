@@ -1,4 +1,4 @@
-# Copyright 2019 Google LLC
+# Copyright 2024 Ryan Benson
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -43,7 +43,8 @@ def parse_delimited_string(unfurl_instance, node, delimiter, pairs=False) -> Non
 
 def try_url_unquote(unfurl_instance, node) -> bool:
     unquoted = urllib.parse.unquote_plus(node.value)
-    if unquoted != node.value:
+    # The regex is to avoid erroneously unquoting a timestamp string (ending with +00:00)
+    if unquoted != node.value and not re.match(r'.*\+\d\d:\d\d$', node.value):
         unfurl_instance.add_to_queue(
             data_type='string', key=None, value=unquoted,
             hover='Unquoted URL (replaced %xx escapes with their single-character equivalent)',
