@@ -389,5 +389,5 @@ def run(unfurl, node):
     if new_timestamp != (None, 'unknown'):
         unfurl.add_to_queue(
             data_type=new_timestamp['data_type'], key=None, value=new_timestamp['timestamp_value'],
-            hover=f'Converted as {new_timestamp['display_type']}', parent_id=node.node_id,
+            hover=f'Converted as {new_timestamp["display_type"]}', parent_id=node.node_id,
             incoming_edge_config=timestamp_edge)
