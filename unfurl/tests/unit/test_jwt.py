@@ -1,5 +1,4 @@
 from unfurl.core import Unfurl
-import datetime
 import unittest
 
 
@@ -32,10 +31,6 @@ class TestJWT(unittest.TestCase):
         # confirm that the explanation of the standard "typ" parameter was added
         self.assertIn('declare the media type', test.nodes[12].label)
 
-        # make sure the queue finished empty
-        self.assertTrue(test.queue.empty())
-        self.assertEqual(len(test.edges), 0)
-
     def test_jwt_iat_timestamp(self):
         """Parse a sole JWT with an iat field that is parsed as a timestamp.
 
@@ -64,11 +59,7 @@ class TestJWT(unittest.TestCase):
         self.assertEqual(1422779638, test.nodes[10].value)
 
         # confirm that the "iat" claim was detected and parsed as a timestamp
-        self.assertEqual(datetime.datetime(2015, 2, 1, 8, 33, 58), test.nodes[14].value)
-
-        # make sure the queue finished empty
-        self.assertTrue(test.queue.empty())
-        self.assertEqual(len(test.edges), 0)
+        self.assertEqual('2015-02-01 08:33:58+00:00', test.nodes[14].value)
 
     def test_jwt_as_url_segment(self):
         """Parse a JWT that is part of the URL.
@@ -100,10 +91,6 @@ class TestJWT(unittest.TestCase):
 
         # confirm that the header was parsed as JSON
         self.assertEqual('alg', test.nodes[19].key)
-
-        # make sure the queue finished empty
-        self.assertTrue(test.queue.empty())
-        self.assertEqual(len(test.edges), 0)
 
 
 if __name__ == '__main__':

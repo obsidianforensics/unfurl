@@ -24,7 +24,7 @@ class TestBluesky(unittest.TestCase):
         self.assertEqual(1732040395098000, test.nodes[12].value)
 
         # embedded timestamp parses correctly
-        self.assertEqual('2024-11-19 18:19:55.098000', test.nodes[13].value)
+        self.assertEqual('2024-11-19 18:19:55.098000+00:00', test.nodes[13].value)
 
     def test_bluesky_bare_tid(self):
         """ Test parsing a Bluesky/ATProto TID"""
@@ -46,7 +46,7 @@ class TestBluesky(unittest.TestCase):
         self.assertEqual(1731543333133695, test.nodes[2].value)
 
         # embedded timestamp parses correctly
-        self.assertEqual('2024-11-14 00:15:33.133695', test.nodes[3].value)
+        self.assertEqual('2024-11-14 00:15:33.133695+00:00', test.nodes[3].value)
 
 if __name__ == '__main__':
     unittest.main()

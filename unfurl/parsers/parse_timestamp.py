@@ -1,4 +1,4 @@
-# Copyright 2020 Google LLC
+# Copyright 2024 Ryan Benson
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 
 import datetime
 import re
+
 from unfurl import utils
 
 timestamp_edge = {
@@ -50,7 +51,11 @@ def decode_epoch_seconds(seconds):
       2030: 1900000000
 
     """
-    return datetime.datetime.utcfromtimestamp(float(seconds)), 'Epoch seconds'
+    return {
+        'data_type': 'timestamp.epoch-seconds',
+        'display_type': 'Epoch seconds',
+        'timestamp_value': str(datetime.datetime.fromtimestamp(float(seconds), datetime.UTC))
+    }
 
 
 def decode_epoch_centiseconds(centiseconds):
@@ -68,9 +73,13 @@ def decode_epoch_centiseconds(centiseconds):
     """
     # Trim off the 4 trailing 0s (don't add precision that wasn't in the timestamp)
     converted_ts = trim_zero_fractional_seconds(
-        str(datetime.datetime.utcfromtimestamp(float(centiseconds) / 100)), 4)
-    return converted_ts, 'Epoch centiseconds'
+        str(datetime.datetime.fromtimestamp(float(centiseconds) / 100, datetime.UTC)), 4)
 
+    return {
+        'data_type': 'timestamp.epoch-centiseconds',
+        'display_type': 'Epoch centiseconds',
+        'timestamp_value': converted_ts
+    }
 
 def decode_epoch_milliseconds(milliseconds):
     """Decode a numeric timestamp in Epoch milliseconds format to a human-readable timestamp.
@@ -87,7 +96,12 @@ def decode_epoch_milliseconds(milliseconds):
     converted_dt = datetime.datetime(1970, 1, 1) + datetime.timedelta(milliseconds=float(milliseconds))
     # Trim off the 3 trailing 0s (don't add precision that wasn't in the timestamp)
     converted_ts = trim_zero_fractional_seconds(str(converted_dt), 3)
-    return converted_ts, 'Epoch milliseconds'
+
+    return {
+        'data_type': 'timestamp.epoch-milliseconds',
+        'display_type': 'Epoch milliseconds',
+        'timestamp_value': converted_ts
+    }
 
 
 def decode_epoch_ten_microseconds(ten_microseconds):
@@ -105,9 +119,13 @@ def decode_epoch_ten_microseconds(ten_microseconds):
     """
     # Trim off the trailing 0 (don't add precision that wasn't in the timestamp)
     converted_ts = trim_zero_fractional_seconds(
-        str(datetime.datetime.utcfromtimestamp(float(ten_microseconds) / 100000)), 1)
-    return converted_ts, 'Epoch ten-microsecond increments'
+        str(datetime.datetime.fromtimestamp(float(ten_microseconds) / 100000, datetime.UTC)), 1)
 
+    return {
+        'data_type': 'timestamp.epoch-ten-microseconds',
+        'display_type': 'Epoch ten-microsecond increments',
+        'timestamp_value': converted_ts
+    }
 
 def decode_epoch_microseconds(microseconds):
     """Decode a numeric timestamp in Epoch microseconds format to a human-readable timestamp.
@@ -121,8 +139,13 @@ def decode_epoch_microseconds(microseconds):
       2030: 1900000000000000
 
     """
-    converted_ts = str(datetime.datetime.utcfromtimestamp(float(microseconds) / 1000000))
-    return converted_ts, 'Epoch microseconds'
+    converted_ts = datetime.datetime.fromtimestamp(float(microseconds) / 1000000, datetime.UTC)
+
+    return {
+        'data_type': 'timestamp.epoch-microseconds',
+        'display_type': 'Epoch microseconds',
+        'timestamp_value': str(converted_ts)
+    }
 
 
 def decode_webkit(microseconds):
@@ -136,8 +159,13 @@ def decode_webkit(microseconds):
       2025: 13380163200000000
 
     """
-    return datetime.datetime.utcfromtimestamp((float(microseconds) / 1000000) - 11644473600), 'Webkit'
+    converted_ts = datetime.datetime.fromtimestamp((float(microseconds) / 1000000) - 11644473600, datetime.UTC)
 
+    return {
+        'data_type': 'timestamp.webkit',
+        'display_type': 'Webkit',
+        'timestamp_value': str(converted_ts)
+    }
 
 def decode_windows_filetime(intervals):
     """Decode a numeric timestamp in Windows FileTime format to a human-readable timestamp.
@@ -152,8 +180,13 @@ def decode_windows_filetime(intervals):
       2065: 146424672000000000
 
     """
-    return datetime.datetime.utcfromtimestamp((float(intervals) / 10000000) - 11644473600), 'Windows FileTime'
+    converted_ts =  datetime.datetime.fromtimestamp((float(intervals) / 10000000) - 11644473600, datetime.UTC)
 
+    return {
+        'data_type': 'timestamp.windows-filetime',
+        'display_type': 'Windows FileTime',
+        'timestamp_value': str(converted_ts)
+    }
 
 def decode_datetime_ticks(ticks):
     """Decode a numeric timestamp in .Net/C# DateTime ticks format to a human-readable timestamp.
@@ -175,7 +208,13 @@ def decode_datetime_ticks(ticks):
 
     """
     seconds = (ticks - 621355968000000000) / 10000000
-    return (datetime.datetime.fromtimestamp(seconds)), 'DateTime ticks'
+    converted_ts = datetime.datetime.fromtimestamp(seconds)
+
+    return {
+        'data_type': 'timestamp.datetime-ticks',
+        'display_type': 'DateTime ticks',
+        'timestamp_value': str(converted_ts)
+    }
 
 
 def decode_mac_absolute_time(seconds):
@@ -194,7 +233,13 @@ def decode_mac_absolute_time(seconds):
       2035: 1072915200
 
     """
-    return datetime.datetime.utcfromtimestamp(float(seconds)+978307200), 'Mac Absolute Time / Cocoa'
+    converted_ts = datetime.datetime.fromtimestamp(float(seconds) + 978307200, datetime.UTC)
+
+    return {
+        'data_type': 'timestamp.mac-absolute-time',
+        'display_type': 'Mac Absolute Time / Cocoa',
+        'timestamp_value': str(converted_ts)
+    }
 
 
 def decode_epoch_hex(seconds):
@@ -209,7 +254,12 @@ def decode_epoch_hex(seconds):
 
     """
     timestamp, _ = decode_epoch_seconds(int(seconds, 16))
-    return timestamp, 'Epoch seconds (hex)'
+
+    return {
+        'data_type': 'timestamp.epoch-seconds-hex',
+        'display_type': 'Epoch seconds (hex)',
+        'timestamp_value': str(timestamp)
+    }
 
 
 def decode_windows_filetime_hex(intervals):
@@ -227,7 +277,12 @@ def decode_windows_filetime_hex(intervals):
     """
     int_right = int(intervals, 16)
     timestamp, _ = decode_windows_filetime(int_right)
-    return timestamp, 'Windows FileTime (hex)'
+
+    return {
+        'data_type': 'timestamp.windows-filetime-hex',
+        'display_type': 'Windows FileTime (hex)',
+        'timestamp_value': str(timestamp)
+    }
 
 
 def run(unfurl, node):
@@ -333,6 +388,6 @@ def run(unfurl, node):
 
     if new_timestamp != (None, 'unknown'):
         unfurl.add_to_queue(
-            data_type=new_timestamp[1], key=None, value=new_timestamp[0],
-            hover=f'Converted as {new_timestamp[1]}', parent_id=node.node_id,
+            data_type=new_timestamp['data_type'], key=None, value=new_timestamp['timestamp_value'],
+            hover=f'Converted as {new_timestamp['display_type']}', parent_id=node.node_id,
             incoming_edge_config=timestamp_edge)
