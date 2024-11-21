@@ -22,7 +22,6 @@ keywords=["unfurl", "forensics", "dfir", "reverse-engineering", "security", "osi
 dependencies = { file = ["requirements.txt"] }
 version = { attr = "unfurl.__version__" }
 optional-dependencies.ui = { file = ["requirements-ui.txt"] }
-optional-dependencies.lookups = { file = ["requirements-lookups.txt"] }
 optional-dependencies.all = { file = ["requirements-all.txt"] }
 
 [project.scripts]
