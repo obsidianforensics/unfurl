@@ -13,7 +13,7 @@
 # limitations under the License.
 
 __author__ = "Ryan Benson"
-__version__ = "20241120"
+__version__ = "20241121"
 __email__ = "ryan@dfir.blog"
 
 import logging

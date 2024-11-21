@@ -30,7 +30,7 @@ page with an interesting URL, you can click the bookmarklet and see the URL "unf
 
 ### Local Python Install
 
-1. Install via pip: `pip install dfir-unfurl`
+1. Install via pip: `pip install dfir-unfurl[all]`
 
 After Unfurl is installed, you can run use it via the web app or command-line:
 
@@ -87,6 +87,3 @@ optional arguments:
 
 If using Docker as above, run: 
 ``docker exec unfurl python -m unittest discover -s unfurl/tests``
-
-## Legal Bit
-This is not an officially supported Google product.
