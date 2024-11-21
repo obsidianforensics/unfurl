@@ -1,4 +1,6 @@
+bbpb
 dnslib
+mac-vendor-lookup>=0.1.12
 networkx
 protobuf==4.*
 publicsuffix2
@@ -7,4 +9,3 @@ pymispwarninglists>=1.5
 requests
 torf
 ulid-py
-bbpb
