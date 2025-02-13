@@ -31,12 +31,12 @@ class TestBitly(unittest.TestCase):
         test.parse_queue()
 
         # test number of nodes
-        self.assertEqual(len(test.nodes.keys()), 18)
-        self.assertEqual(test.total_nodes, 18)
+        self.assertEqual(20, len(test.nodes.keys()))
+        self.assertEqual(20, test.total_nodes)
 
         self.assertEqual(test.nodes[4].value, '/g6VWYYwY12')
-        self.assertEqual(test.nodes[11].value, 'github.com')
-        self.assertEqual(test.nodes[16].label, '1: obsidianforensics')
+        self.assertEqual(test.nodes[12].value, 'github.com')
+        self.assertEqual(test.nodes[17].label, '1: obsidianforensics')
 
         # is processing finished empty
         self.assertTrue(test.queue.empty())
@@ -50,8 +50,8 @@ class TestBitly(unittest.TestCase):
         test.parse_queue()
 
         # test number of nodes
-        self.assertEqual(len(test.nodes.keys()), 8)
-        self.assertEqual(test.total_nodes, 8)
+        self.assertEqual(9, len(test.nodes.keys()))
+        self.assertEqual(9, test.total_nodes)
 
 
 if __name__ == '__main__':
