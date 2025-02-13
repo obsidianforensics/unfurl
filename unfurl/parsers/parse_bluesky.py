@@ -1,4 +1,4 @@
-# Copyright 2024 Ryan Benson
+# Copyright 2025 Ryan Benson
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -118,7 +118,7 @@ def run(unfurl: unfurl.core.Unfurl, node: unfurl.core.Unfurl.Node) -> None:
                 parent_id=node.node_id, incoming_edge_config=bluesky_edge)
 
     # On bsky.app, handles have a predictable location in URLs. If a URL starts with https://bsky.app/profile,
-    # the next URL path segment should be a Bluesky "handle" (or DID). We can resolve this handles to the backing
+    # the next URL path segment should be a Bluesky "handle" (or DID). We can resolve this handle to the backing
     # decentralized identifier (DID) using a Bluesky API. We can then do more lookups using that DID.
     if node.data_type == 'url.path.segment':
         preceding_domain = unfurl.find_preceding_domain(node)
