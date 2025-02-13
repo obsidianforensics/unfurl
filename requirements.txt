@@ -1,11 +1,11 @@
-bbpb
-dnslib
+bbpb >= 1.4.1
+dnslib < 1
 mac-vendor-lookup>=0.1.12
-networkx
-protobuf==4.*
+networkx==3.*
+protobuf==5.*
 publicsuffix2
-pycountry
-pymispwarninglists>=1.5
-requests
-torf
-ulid-py
+pycountry > 24
+pymispwarninglists>=1.6.1
+requests >= 2.32
+torf > 4
+ulid-py > 1

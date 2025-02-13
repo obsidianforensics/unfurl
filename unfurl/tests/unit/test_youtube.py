@@ -14,11 +14,11 @@ class TestYouTube(unittest.TestCase):
         test.parse_queue()
 
         # test number of nodes
-        self.assertEqual(len(test.nodes.keys()), 16)
-        self.assertEqual(test.total_nodes, 16)
+        self.assertEqual(17, len(test.nodes.keys()))
+        self.assertEqual(17, test.total_nodes)
 
         # Test query parsing
-        self.assertEqual('Video will start playing at 42 seconds', test.nodes[16].label)
+        self.assertEqual('Video will start playing at 42 seconds', test.nodes[17].label)
 
         # is processing finished empty
         self.assertTrue(test.queue.empty())
