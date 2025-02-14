@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import ipaddress
 import re
 import textwrap
 from typing import Union
@@ -29,6 +30,23 @@ letters_and_slash_re = re.compile(r'[A-Z/]+', flags=re.IGNORECASE)
 float_re = re.compile(r'\d+\.\d+')
 mac_addr_re = re.compile(r'(?P<mac_addr>[0-9A-Fa-f]{12}|([0-9A-Fa-f]:){6})')
 cisco_7_re = re.compile(r'\d{2}[A-F0-9]{4,}', re.IGNORECASE)
+octal_ip_re = re.compile(r'(0[0-7]{3})\.(0[0-7]{3})\.(0[0-7]{3})\.(0[0-7]{3})')
+
+
+def parse_ip_address(potential_ip):
+    if re.fullmatch(digits_re, potential_ip):
+        potential_ip = int(potential_ip)
+    elif re.fullmatch(r'0x[A-F0-9]{8}', potential_ip, flags=re.IGNORECASE):
+        potential_ip = int(potential_ip, base=16)
+    elif re.fullmatch(octal_ip_re, potential_ip):
+        m = re.fullmatch(octal_ip_re, potential_ip)
+        potential_ip = f"{int(m.group(1), 8)}.{int(m.group(2), 8)}.{int(m.group(3), 8)}.{int(m.group(4), 8)}"
+    try:
+        parsed_ip = ipaddress.ip_address(potential_ip)
+    except ValueError:
+        parsed_ip = None
+
+    return parsed_ip
 
 
 def wrap_hover_text(hover_text: Union[str, None]) -> Union[str, None]:
