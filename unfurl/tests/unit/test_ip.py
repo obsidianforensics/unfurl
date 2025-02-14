@@ -106,14 +106,14 @@ class TestIp(unittest.TestCase):
         test.parse_queue()
 
         # check the number of nodes
-        self.assertEqual(6, len(test.nodes.keys()))
-        self.assertEqual(6, test.total_nodes)
+        self.assertEqual(5, len(test.nodes.keys()))
+        self.assertEqual(5, test.total_nodes)
 
         # confirm the scheme is parsed
         self.assertIn('https', test.nodes[2].label)
 
         # confirm the IP is parsed
-        self.assertEqual('216.58.199.78', test.nodes[6].label)
+        self.assertEqual('216.58.199.78', test.nodes[5].label)
 
         # confirm the path is parsed
         self.assertIn('path', test.nodes[4].hover)
