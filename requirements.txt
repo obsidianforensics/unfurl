@@ -2,7 +2,7 @@ bbpb >= 1.4.1
 dnslib < 1
 mac-vendor-lookup>=0.1.12
 networkx==3.*
-protobuf==5.*
+protobuf >= 4.0, < 6.0
 publicsuffix2
 pycountry > 24
 pymispwarninglists>=1.6.1
