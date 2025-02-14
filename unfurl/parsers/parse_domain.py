@@ -15,6 +15,8 @@
 import urllib.parse
 import warnings
 
+from unfurl import utils
+
 try:
     from publicsuffix2 import PublicSuffixList
     psl = PublicSuffixList(idna=False)
@@ -51,7 +53,10 @@ def run(unfurl, node):
                 data_type='descriptor', key=None, value=cleaned_node_name, hover=cleaned_node_hover,
                 parent_id=node.node_id, incoming_edge_config=urlparse_edge)
 
-    if psl is None or node.data_type != 'url.hostname' or not isinstance(node.value, str):
+    if (psl is None
+            or node.data_type != 'url.hostname'
+            or not isinstance(node.value, str)
+            or utils.parse_ip_address(node.value)):
         return
 
     full_domain = node.value
