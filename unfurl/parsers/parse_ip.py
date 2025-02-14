@@ -41,6 +41,6 @@ def run(unfurl, node):
             return
 
         unfurl.add_to_queue(
-            data_type='ip', key=None, value=parsed_ip,
+            data_type='ip', key=None, value=str(parsed_ip),
             hover=hover,
             parent_id=node.node_id, incoming_edge_config=urlparse_edge)
