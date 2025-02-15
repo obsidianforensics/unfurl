@@ -253,12 +253,12 @@ def decode_epoch_hex(seconds):
       2030: 713FB300
 
     """
-    timestamp, _ = decode_epoch_seconds(int(seconds, 16))
+    timestamp = decode_epoch_seconds(int(seconds, 16))
 
     return {
         'data_type': 'timestamp.epoch-seconds-hex',
         'display_type': 'Epoch seconds (hex)',
-        'timestamp_value': str(timestamp)
+        'timestamp_value': timestamp['timestamp_value']
     }
 
 
@@ -276,12 +276,12 @@ def decode_windows_filetime_hex(intervals):
 
     """
     int_right = int(intervals, 16)
-    timestamp, _ = decode_windows_filetime(int_right)
+    timestamp = decode_windows_filetime(int_right)
 
     return {
         'data_type': 'timestamp.windows-filetime-hex',
         'display_type': 'Windows FileTime (hex)',
-        'timestamp_value': str(timestamp)
+        'timestamp_value': timestamp['timestamp_value']
     }
 
 
