@@ -29,15 +29,24 @@ uuid_edge = {
 
 def run(unfurl, node):
     if node.data_type == 'mac-address':
+        vendor_lookup = None
         try:
-            vendor_lookup = netaddr.EUI(node.value).oui.registration().org
+            mac_addr = netaddr.EUI(node.value)
+            vendor_lookup = mac_addr.oui.registration().org
+        except netaddr.NotRegisteredError:
+            pass
         except Exception as e:
             log.exception(f'Exception while parsing MAC address: {e}')
-            return
 
         if vendor_lookup:
             unfurl.add_to_queue(
                 data_type="mac-address.vendor", key=None, value=vendor_lookup, label=f'Vendor: {vendor_lookup}',
+                parent_id=node.node_id, incoming_edge_config=uuid_edge)
+
+        if node.value[1] in ['2', '6', 'A', 'E', 'a', 'e']:
+            unfurl.add_to_queue(
+                data_type="descriptor", key=None,
+                value='MAC address is randomized (locally-administered & unicast bits set)',
                 parent_id=node.node_id, incoming_edge_config=uuid_edge)
 
     else:
