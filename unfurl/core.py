@@ -30,12 +30,12 @@ log = logging.getLogger(__name__)
 
 class Unfurl:
     def __init__(self, remote_lookups=None):
+        self.graph = networkx.DiGraph()
         self.nodes = {}
         self.edges = []
-        self.queue = queue.Queue()
-        self.next_id = 1
-        self.graph = networkx.DiGraph()
         self.total_nodes = 0
+        self.next_id = 1
+        self.queue = queue.Queue()
         self.api_keys = {}
         self.remote_lookups = remote_lookups
         self.known_domain_lists = None
@@ -335,8 +335,15 @@ class Unfurl:
         self.run_plugins(self.nodes[node_id])
 
     def parse_queue(self):
-        while not self.queue.empty() and self.total_nodes < 100:
+        while not self.queue.empty() and self.total_nodes < 200:
             self.parse(self.queue.get())
+
+    def reset_graph_state(self):
+        self.graph = networkx.DiGraph()
+        self.nodes = {}
+        self.edges = []
+        self.total_nodes = 0
+        self.next_id = 1
 
     @staticmethod
     def transform_node(node):
@@ -523,9 +530,13 @@ def run(url, data_type='url', return_type='json', remote_lookups=False, extra_op
         extra_options=extra_options
     )
     u.parse_queue()
+
     if return_type == 'text':
-        return u.generate_text_tree()
+        return_object = u.generate_text_tree()
     elif return_type == 'full_json':
-        return u.generate_full_json()
+        return_object = u.generate_full_json()
     else:
-        return u.generate_json()
+        return_object = u.generate_json()
+
+    u.reset_graph_state()
+    return return_object
