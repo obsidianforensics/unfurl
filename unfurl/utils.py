@@ -28,7 +28,7 @@ letters_re = re.compile(r'[A-Z]+', flags=re.IGNORECASE)
 digits_and_slash_re = re.compile(r'[0-9/]+')
 letters_and_slash_re = re.compile(r'[A-Z/]+', flags=re.IGNORECASE)
 float_re = re.compile(r'\d+\.\d+')
-mac_addr_re = re.compile(r'(?P<mac_addr>[0-9A-Fa-f]{12}|([0-9A-Fa-f]:){6})')
+mac_addr_re = re.compile(r'(?P<mac_addr>[0-9A-Fa-f]{12}|([0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2})')
 cisco_7_re = re.compile(r'\d{2}[A-F0-9]{4,}', re.IGNORECASE)
 octal_ip_re = re.compile(r'(0[0-7]{3})\.(0[0-7]{3})\.(0[0-7]{3})\.(0[0-7]{3})')
 
