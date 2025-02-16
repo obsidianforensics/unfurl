@@ -61,8 +61,8 @@ def command_line_interface():
             csv_writer = csv.writer(csv_file, quoting=csv.QUOTE_ALL)
             csv_writer.writerow(['url', 'unfurled'])
 
+            unfurl_instance = core.Unfurl(remote_lookups=args.lookups)
             for item in items_to_unfurl:
-                unfurl_instance = core.Unfurl(remote_lookups=args.lookups)
                 unfurl_instance.add_to_queue(
                     data_type='url', key=None,
                     value=item)
@@ -75,10 +75,11 @@ def command_line_interface():
                         [item, unfurl_instance.generate_text_tree(
                             detailed=args.detailed,
                             output_filter=args.filter)])
+                unfurl_instance.reset_graph_state()
 
     else:
+        unfurl_instance = core.Unfurl(remote_lookups=args.lookups)
         for item in items_to_unfurl:
-            unfurl_instance = core.Unfurl(remote_lookups=args.lookups)
             unfurl_instance.add_to_queue(
                 data_type='url', key=None,
                 value=item)
@@ -90,3 +91,4 @@ def command_line_interface():
                 print(unfurl_instance.generate_text_tree(
                     detailed=args.detailed, output_filter=args.filter))
             print()
+            unfurl_instance.reset_graph_state()

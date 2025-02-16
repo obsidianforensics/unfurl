@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "dfir-unfurl"
 authors = [{name = "Ryan Benson", email = "ryan@dfir.blog"}]
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = {file = "LICENSE"}
 classifiers = [
     "License :: OSI Approved :: Apache Software License",
