@@ -12,8 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import mac_vendor_lookup
+import netaddr
 from unfurl import utils
+
+import logging
+log = logging.getLogger(__name__)
 
 uuid_edge = {
     'color': {
@@ -26,7 +29,12 @@ uuid_edge = {
 
 def run(unfurl, node):
     if node.data_type == 'mac-address':
-        vendor_lookup = mac_vendor_lookup.MacLookup().lookup(node.value)
+        try:
+            vendor_lookup = netaddr.EUI(node.value).oui.registration().org
+        except Exception as e:
+            log.exception(f'Exception while parsing MAC address: {e}')
+            return
+
         if vendor_lookup:
             unfurl.add_to_queue(
                 data_type="mac-address.vendor", key=None, value=vendor_lookup, label=f'Vendor: {vendor_lookup}',
