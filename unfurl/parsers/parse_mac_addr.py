@@ -46,7 +46,7 @@ def run(unfurl, node):
         if node.value[1] in ['2', '6', 'A', 'E', 'a', 'e']:
             unfurl.add_to_queue(
                 data_type="descriptor", key=None,
-                value='MAC address is randomized (locally-administered & unicast bits set)',
+                value='MAC address may be randomized (locally-administered & unicast bits set)',
                 parent_id=node.node_id, incoming_edge_config=uuid_edge)
 
     else:
