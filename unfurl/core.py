@@ -39,6 +39,7 @@ class Unfurl:
         self.api_keys = {}
         self.remote_lookups = remote_lookups
         self.known_domain_lists = None
+        self.node_limit = 500
 
         config = configparser.ConfigParser()
         config.read('unfurl.ini')
@@ -335,7 +336,7 @@ class Unfurl:
         self.run_plugins(self.nodes[node_id])
 
     def parse_queue(self):
-        while not self.queue.empty() and self.total_nodes < 200:
+        while not self.queue.empty() and self.total_nodes < self.node_limit:
             self.parse(self.queue.get())
 
     def reset_graph_state(self):
