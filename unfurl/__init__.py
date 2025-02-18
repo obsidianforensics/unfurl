@@ -1,4 +1,4 @@
-# Copyright 2024 Ryan Benson
+# Copyright 2025 Ryan Benson
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
 # limitations under the License.
 
 __author__ = "Ryan Benson"
-__version__ = "20241121"
+__version__ = "20250218"
 __email__ = "ryan@dfir.blog"
 
 import logging
