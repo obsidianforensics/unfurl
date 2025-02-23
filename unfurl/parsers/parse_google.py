@@ -216,14 +216,6 @@ def run(unfurl, node):
                     parent_id=node.node_id, incoming_edge_config=google_edge)
 
             elif node.key == 'bih':
-                biw_node = unfurl.check_sibling_nodes(node, data_type='url.query.pair', key='biw', return_node=True)
-                if biw_node:
-                    unfurl.add_to_queue(
-                        data_type='descriptor', key=None,
-                        value=f'Size of browser window: {biw_node.value}x{node.value} pixels',
-                        hover='The size of the "content area" in browser window',
-                        parent_id=[node.node_id, biw_node.node_id], incoming_edge_config=google_edge)
-
                 unfurl.add_to_queue(
                     data_type='google.bih', key='Browser Height', value=node.value,
                     label=f'Browser height: {node.value}px',
@@ -956,5 +948,7 @@ def run(unfurl, node):
                 hover='The first two values combined in the <b>ei</b> parameter are thought to be the timestamp of '
                       'when the session began. The first (ei-0) contains the full seconds portion of the timestamp '
                       'and the second (ei-1) contains the fractional seconds.',
-                parent_id=[node.node_id, ei0_node.node_id],
+                # Commenting this out as the two parents breaks the "tree" for text_tree
+                # parent_id=[node.node_id, ei0_node.node_id],
+                parent_id=ei0_node.node_id,
                 incoming_edge_config=google_edge)
