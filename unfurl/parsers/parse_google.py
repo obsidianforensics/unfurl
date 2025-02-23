@@ -411,6 +411,36 @@ def run(unfurl, node):
                     data_type='google.tbm', key=None, value=f'Search Type: {value}',
                     hover='Google Search Type', parent_id=node.node_id, incoming_edge_config=google_edge)
 
+            elif node.key == 'udm':
+                # UDM _might_ be URL Data Manager?
+                # https://source.chromium.org/chromium/chromium/src/+/main:content/browser/webui/url_data_manager.h
+                udm_mappings = {
+                    '1': 'All',
+                    '2': 'Images',
+                    '3': 'Products',
+                    '6': 'Learn',
+                    '7': 'Videos',
+                    '8': 'Jobs',
+                    '12': 'News',
+                    '14': 'Web',
+                    '15': 'Things to do',
+                    '18': 'Forums',
+                    '28': 'Shopping',
+                    '36': 'Books',
+                    '37': 'Products',
+                    '38': 'Videos',
+                    '44': 'Visual matches',
+                    '47': 'Web (+"Refine Results" panel)',
+                    '48': 'Exact matches',
+                    '51': 'Homework'
+                    # Manually setting 56 and above results in a redirect with the udm parameter stripped off
+                    # (at least until 65, then I stopped testing)
+                }
+                value = udm_mappings.get(node.value, 'Unknown')
+                unfurl.add_to_queue(
+                    data_type='google.udm', key=None, value=f'Results Page Type: {value}',
+                    hover='Google Results Page Type', parent_id=node.node_id, incoming_edge_config=google_edge)
+
             elif node.key == 'uule':
                 # https://moz.com/ugc/geolocation-the-ultimate-tip-to-emulate-local-search
                 location_string = base64.b64decode(unfurl.add_b64_padding(node.value[10:]))
