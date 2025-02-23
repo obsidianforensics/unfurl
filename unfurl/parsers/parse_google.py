@@ -216,14 +216,6 @@ def run(unfurl, node):
                     parent_id=node.node_id, incoming_edge_config=google_edge)
 
             elif node.key == 'bih':
-                biw_node = unfurl.check_sibling_nodes(node, data_type='url.query.pair', key='biw', return_node=True)
-                if biw_node:
-                    unfurl.add_to_queue(
-                        data_type='descriptor', key=None,
-                        value=f'Size of browser window: {biw_node.value}x{node.value} pixels',
-                        hover='The size of the "content area" in browser window',
-                        parent_id=[node.node_id, biw_node.node_id], incoming_edge_config=google_edge)
-
                 unfurl.add_to_queue(
                     data_type='google.bih', key='Browser Height', value=node.value,
                     label=f'Browser height: {node.value}px',
@@ -418,6 +410,36 @@ def run(unfurl, node):
                 unfurl.add_to_queue(
                     data_type='google.tbm', key=None, value=f'Search Type: {value}',
                     hover='Google Search Type', parent_id=node.node_id, incoming_edge_config=google_edge)
+
+            elif node.key == 'udm':
+                # UDM _might_ be URL Data Manager?
+                # https://source.chromium.org/chromium/chromium/src/+/main:content/browser/webui/url_data_manager.h
+                udm_mappings = {
+                    '1': 'All',
+                    '2': 'Images',
+                    '3': 'Products',
+                    '6': 'Learn',
+                    '7': 'Videos',
+                    '8': 'Jobs',
+                    '12': 'News',
+                    '14': 'Web',
+                    '15': 'Things to do',
+                    '18': 'Forums',
+                    '28': 'Shopping',
+                    '36': 'Books',
+                    '37': 'Products',
+                    '38': 'Videos',
+                    '44': 'Visual matches',
+                    '47': 'Web (+"Refine Results" panel)',
+                    '48': 'Exact matches',
+                    '51': 'Homework'
+                    # Manually setting 56 and above results in a redirect with the udm parameter stripped off
+                    # (at least until 65, then I stopped testing)
+                }
+                value = udm_mappings.get(node.value, 'Unknown')
+                unfurl.add_to_queue(
+                    data_type='google.udm', key=None, value=f'Results Page Type: {value}',
+                    hover='Google Results Page Type', parent_id=node.node_id, incoming_edge_config=google_edge)
 
             elif node.key == 'uule':
                 # https://moz.com/ugc/geolocation-the-ultimate-tip-to-emulate-local-search
@@ -956,5 +978,7 @@ def run(unfurl, node):
                 hover='The first two values combined in the <b>ei</b> parameter are thought to be the timestamp of '
                       'when the session began. The first (ei-0) contains the full seconds portion of the timestamp '
                       'and the second (ei-1) contains the fractional seconds.',
-                parent_id=[node.node_id, ei0_node.node_id],
+                # Commenting this out as the two parents breaks the "tree" for text_tree
+                # parent_id=[node.node_id, ei0_node.node_id],
+                parent_id=ei0_node.node_id,
                 incoming_edge_config=google_edge)
