@@ -286,9 +286,40 @@ def parse_mastodon_snowflake(unfurl, node):
 
 
 def run(unfurl, node):
-    # Known pattern from mastodon.social site
-    if node.data_type == 'url.path.segment':
-        # Check if node is a child of a mastodon domain, is an integer, & timestamp would be between 2015-01 and 2030-01
-        if any(mastodon_domain in unfurl.find_preceding_domain(node) for mastodon_domain in mastodon_domains) and \
-                unfurl.check_if_int_between(node.value, 93065733734400000, 124089536413761540):
+    # Check if node is a child of a known mastodon domain
+    if node.data_type == 'url.path.segment' and any(mastodon_domain in unfurl.find_preceding_domain(node) for mastodon_domain in mastodon_domains):
+        # Check if the URL segment value is an integer & Mastodon timestamp would be between 2015-01 and 2030-01
+        if unfurl.check_if_int_between(node.value, 93065733734400000, 124089536413761540):
             parse_mastodon_snowflake(unfurl, node)
+
+        elif node.value.startswith('@'):
+            node.hover = ('Mastodon usernames consist of two parts: the local username and the domain of the server '
+                          '(similar to an email address) <a href="https://docs.joinmastodon.org/user/signup/#address" '
+                          'target="_blank">[ref]</a>.')
+
+            split_username = node.value[1:].split('@')
+            if len(split_username) == 1:
+                username = split_username[0]
+                if username.endswith('.rss'):
+                    username = username[:-len('.rss')]
+                    unfurl.add_to_queue(
+                        data_type='description', key=None, value=None, label='An RSS feed of the account\'s activity.',
+                        parent_id=node.node_id, incoming_edge_config=mastodon_edge)
+
+                unfurl.add_to_queue(
+                    data_type='description', key='Local Username', value=username,
+                    hover='This user account is on the hosting server, so the domain part of the username is omitted.',
+                    parent_id=node.node_id, incoming_edge_config=mastodon_edge)
+
+            elif len(split_username) == 2:
+                unfurl.add_to_queue(
+                    data_type='description', key=None, value=None, label='Local Username',
+                    hover='The local username of the account (similar to the "alice" in "alice@gmail.com" '
+                          'with email addresses).',
+                    parent_id=node.node_id, incoming_edge_config=mastodon_edge)
+
+                unfurl.add_to_queue(
+                    data_type='description', key=None, value=None, label='Account Domain',
+                    hover='The local username is on a different server than the host, so the domain part '
+                          'of the username is required.',
+                    parent_id=node.node_id, incoming_edge_config=mastodon_edge)
