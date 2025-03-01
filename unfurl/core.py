@@ -304,9 +304,6 @@ class Unfurl:
             new_item['extra_options'] = \
                 {'widthConstraint': {'maximum': max(max_row_length, 200)}}
 
-        if new_item['data_type'] == 'url':
-            new_item['value'] = re.sub(' ', '', new_item['value'])
-
         log.info(f'Added to queue: {new_item}')
         self.queue.put(new_item)
 
