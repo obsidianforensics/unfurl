@@ -48,7 +48,7 @@ def decode_epoch_seconds(seconds):
       1970: 0
       2015: 1420070400
       2025: 1735689600
-      2030: 1900000000
+      2030: 1893456000
 
     """
     return {
@@ -68,7 +68,7 @@ def decode_epoch_centiseconds(centiseconds):
       1970: 0
       2015: 142007040000
       2025: 173568960000
-      2030: 190000000000
+      2030: 189345600000
 
     """
     # Trim off the 4 trailing 0s (don't add precision that wasn't in the timestamp)
@@ -90,7 +90,7 @@ def decode_epoch_milliseconds(milliseconds):
       1970: 0
       2015: 1420070400000
       2025: 1735689600000
-      2030: 1900000000000
+      2030: 1893456000000
 
     """
     converted_dt = datetime.datetime(1970, 1, 1) + datetime.timedelta(milliseconds=float(milliseconds))
@@ -114,7 +114,7 @@ def decode_epoch_ten_microseconds(ten_microseconds):
       1970: 0
       2015: 142007040000000
       2025: 173568960000000
-      2030: 190000000000000
+      2030: 189345600000000
 
     """
     # Trim off the trailing 0 (don't add precision that wasn't in the timestamp)
@@ -136,7 +136,7 @@ def decode_epoch_microseconds(microseconds):
       1970: 0
       2015: 1420070400000000
       2025: 1735689600000000
-      2030: 1900000000000000
+      2030: 1893456000000000
 
     """
     converted_ts = datetime.datetime.fromtimestamp(float(microseconds) / 1000000, datetime.UTC)
@@ -157,6 +157,7 @@ def decode_webkit(microseconds):
       1970: 11644473600000000
       2015: 13064544000000000
       2025: 13380163200000000
+      2030: 13537929600000000
 
     """
     converted_ts = datetime.datetime.fromtimestamp((float(microseconds) / 1000000) - 11644473600, datetime.UTC)
@@ -177,6 +178,7 @@ def decode_windows_filetime(intervals):
       1970: 116444736000000000
       2015: 130645440000000000
       2025: 133801632000000000
+      2030: 135379296000000000
       2065: 146424672000000000
 
     """
@@ -204,6 +206,7 @@ def decode_datetime_ticks(ticks):
       1970: 621355968000000000
       2015: 635556672000000000
       2025: 638712864000000000
+      2030: 640290528000000000
       2038: 642815136000000000
 
     """
@@ -230,6 +233,7 @@ def decode_mac_absolute_time(seconds):
       1970: -978307200
       2015: 441763200
       2025: 757382400
+      2030: 915148800
       2035: 1072915200
 
     """
@@ -333,57 +337,57 @@ def run(unfurl, node):
             timestamp = int(node.value)
 
             # Windows FileTime (18 digits)
-            if 130645440000000000 <= timestamp <= 133801632000000000:  # 2015 <= ts <= 2025
+            if 130645440000000000 <= timestamp <= 135379296000000000:  # 2015 <= ts <= 2030
                 new_timestamp = decode_windows_filetime(timestamp)
 
             # .Net/C# DateTime ticks (18 digits)
-            elif 635556672000000000 <= timestamp <= 638712864000000000:  # 2015 <= ts <= 2025
+            elif 635556672000000000 <= timestamp <= 640290528000000000:  # 2015 <= ts <= 2030
                 new_timestamp = decode_datetime_ticks(timestamp)
 
             # WebKit (17 digits)
-            elif 13064544000000000 <= timestamp <= 13380163200000000:  # 2015 <= ts <= 2025
+            elif 13064544000000000 <= timestamp <= 13537929600000000:  # 2015 <= ts <= 2030
                 new_timestamp = decode_webkit(timestamp)
 
             # Epoch microseconds (16 digits)
-            elif 1420070400000000 <= timestamp <= 1735689600000000:  # 2015 <= ts <= 2025
+            elif 1420070400000000 <= timestamp <= 1893456000000000:  # 2015 <= ts <= 2030
                 new_timestamp = decode_epoch_microseconds(timestamp)
 
             # Epoch ten microsecond increments (15 digits)
-            elif 142007040000000 <= timestamp <= 173568960000000:  # 2015 <= ts <= 2025
+            elif 142007040000000 <= timestamp <= 189345600000000:  # 2015 <= ts <= 2030
                 new_timestamp = decode_epoch_microseconds(timestamp)
 
             # Epoch milliseconds (13 digits)
-            elif 1420070400000 <= timestamp <= 1735689600000:  # 2015 <= ts <= 2025
+            elif 1420070400000 <= timestamp <= 1893456000000:  # 2015 <= ts <= 2030
                 new_timestamp = decode_epoch_milliseconds(timestamp)
 
             # Epoch seconds (10 digits)
-            elif 1420070400 <= timestamp <= 1735689600:  # 2015 <= ts <= 2025
+            elif 1420070400 <= timestamp <= 1893456000:  # 2015 <= ts <= 2030
                 new_timestamp = decode_epoch_seconds(timestamp)
 
             # Mac Absolute Time (9 digits)
-            elif 441763200 <= timestamp <= 757382400:  # 2015 <= ts <= 2025
+            elif 441763200 <= timestamp <= 915148800:  # 2015 <= ts <= 2030
                 new_timestamp = decode_mac_absolute_time(timestamp)
 
         elif matches_float:
             timestamp = float(node.value)
 
             # Epoch seconds (10 digits)
-            if 1420070400.0 <= timestamp <= 1735689600.0:  # 2015 <= ts <= 2025
+            if 1420070400.0 <= timestamp <= 1893456000.0:  # 2015 <= ts <= 2030
                 new_timestamp = decode_epoch_seconds(timestamp)
 
             # Mac Absolute Time (9 digits)
-            elif 441763200.0 <= timestamp <= 757382400.0:  # 2015 <= ts <= 2025
+            elif 441763200.0 <= timestamp <= 915148800.0:  # 2015 <= ts <= 2030
                 new_timestamp = decode_mac_absolute_time(timestamp)
 
         elif matches_hex:
             timestamp = node.value.replace(':', '')
 
             # Epoch hex seconds (8 hex chars)
-            if 1420070400 <= int(timestamp, 16) <= 1735689600:  # 2015 <= ts <= 2025
+            if 1420070400 <= int(timestamp, 16) <= 1893456000:  # 2015 <= ts <= 2030
                 new_timestamp = decode_epoch_hex(timestamp)
 
             # Windows FileTime hex (16 hex digits)
-            elif 130645440000000000 <= int(timestamp, 16) <= 133801632000000000:  # 2015 <= ts <= 2025
+            elif 130645440000000000 <= int(timestamp, 16) <= 135379296000000000:  # 2015 <= ts <= 2030
                 new_timestamp = decode_windows_filetime_hex(timestamp)
 
     if new_timestamp != (None, 'unknown'):
