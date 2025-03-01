@@ -11,6 +11,7 @@ __all__ = [
     "parse_duckduckgo",
     "parse_google",
     "parse_hash",
+    "parse_initial_node",
     "parse_ip",
     "parse_json",
     "parse_jwt",
