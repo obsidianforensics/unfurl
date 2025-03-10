@@ -17,10 +17,8 @@ from typing import Union
 import re
 import requests
 
+import unfurl
 import logging
-
-import unfurl.app
-
 log = logging.getLogger(__name__)
 
 bluesky_edge = {
