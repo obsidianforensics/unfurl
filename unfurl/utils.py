@@ -69,3 +69,25 @@ def wrap_hover_text(hover_text: Union[str, None]) -> Union[str, None]:
     # "Wrap" the hover text by splitting it into lines of length <width>,
     # then joining them together with a <br>.
     return '<br>'.join(textwrap.wrap(hover_text, width=60))
+
+
+def extract_bits(identifier: int, start: int, end: int) -> int:
+    """
+    Extract a subset of bits from an integer based on specified start and
+    end positions. This operation shifts the specified bit range to the
+    rightmost (least-significant) position and applies a mask to select
+    the desired bits.
+
+    :param identifier: The integer value from which bits will be extracted.
+    :param start: The starting index of the bit range (inclusive).
+    :param end: The ending index of the bit range (exclusive).
+    :return: Extracted bits as an integer.
+    """
+
+    shifted = identifier >> start
+    mask = (1 << (end - start)) - 1
+    return shifted & mask
+
+def set_bits(value: int, offset: int, max_size=None) -> int:
+    return int(value << offset)
+
