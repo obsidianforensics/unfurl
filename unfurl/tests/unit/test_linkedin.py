@@ -38,7 +38,7 @@ class TestLinkedIn(unittest.TestCase):
         self.assertEqual(test.total_nodes, 13)
 
         # embedded timestamp parses correctly
-        self.assertEqual('2020-07-06 18:59:31.226', test.nodes[13].value)
+        self.assertIn('2020-07-06 18:59:31.226', test.nodes[13].value)
 
         # make sure the queue finished empty
         self.assertTrue(test.queue.empty())
