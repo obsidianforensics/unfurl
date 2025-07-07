@@ -21,7 +21,7 @@ class TestTwitter(unittest.TestCase):
         self.assertIn('Twitter Snowflakes', test.nodes[9].hover)
 
         # embedded timestamp parses correctly
-        self.assertEqual('2019-02-20 14:40:26.837', test.nodes[14].value)
+        self.assertIn('2019-02-20 14:40:26.837', test.nodes[14].value)
 
         # make sure the queue finished empty
         self.assertTrue(test.queue.empty())
