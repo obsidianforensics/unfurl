@@ -1,4 +1,4 @@
-# Copyright 2019 Google LLC
+# Copyright 2025 Ryan Benson
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -70,8 +70,8 @@ def parse_twitter_snowflake(unfurl, node, encoding_type='integer', on_twitter=Tr
                 f'Sequence number should be between 0 and 4096; got {sequence}'
 
             # Since we are trying to parse things that might not be valid, make sure the decoded
-            # timestamp is "reasonable" (between 2010-11 (the Snowflake epoch) and 2025-03
-            if not 1288834974657 < timestamp < 1741000800000:
+            # timestamp is "reasonable" (between 2010-11 (the Snowflake epoch) and 2030-01
+            if not 1288834974657 < timestamp < 1893456000000:
                 return
 
         except Exception as e:
@@ -107,13 +107,24 @@ def parse_twitter_snowflake(unfurl, node, encoding_type='integer', on_twitter=Tr
         hover='For every ID that is generated, this number is incremented and rolls over every 4096',
         parent_id=node.node_id, incoming_edge_config=twitter_snowflake_edge)
 
+def create_twitter_id(timestamp=None, days_ahead=None, sequence=1, machine_id=1):
+    id_timestamp = utils.create_epoch_seconds_timestamp(iso_timestamp=timestamp, days_ahead=days_ahead, offset=1288834974.657)
+
+    # Multiply the timestamp by 1000, as Twitter used a millisecond timestamp
+    timestamp_bits = utils.set_bits(id_timestamp*1000, 22)
+    machine_id_bits = utils.set_bits(machine_id, 12)
+    sequence_bits = utils.set_bits(sequence, 0)
+
+    return int(timestamp_bits + machine_id_bits + sequence_bits)
 
 def run(unfurl, node):
     preceding_domain = unfurl.find_preceding_domain(node)
     if preceding_domain in ['twitter.com', 'mobile.twitter.com', 'x.com', 'mobile.x.com']:
-        # Make sure potential snowflake is reasonable: between 2015-02-01 & 2027-06-18
+        # Make sure potential snowflake is reasonable: between 2015-02-01 & a year from now
+        min_reasonable_id = create_twitter_id('2015-02-01T00:00:00')
+        max_reasonable_id = create_twitter_id(days_ahead=365)
         if node.data_type == 'url.path.segment' and \
-                unfurl.check_if_int_between(node.value, 261675293291446272, 2200000000000000001):
+                unfurl.check_if_int_between(node.value, min_reasonable_id, max_reasonable_id):
             parse_twitter_snowflake(unfurl, node)
 
         # Based on information found in a Javascript file on Twitter's website. Thanks 2*yo (https://github.com/2xyo)!
