@@ -17,6 +17,7 @@
 import ipaddress
 import re
 import textwrap
+from datetime import datetime
 from typing import Union
 
 long_int_re = re.compile(r'\d{8,}')
@@ -69,6 +70,33 @@ def wrap_hover_text(hover_text: Union[str, None]) -> Union[str, None]:
     # "Wrap" the hover text by splitting it into lines of length <width>,
     # then joining them together with a <br>.
     return '<br>'.join(textwrap.wrap(hover_text, width=60))
+
+
+def create_epoch_seconds_timestamp(iso_timestamp: str | None = None, days_ahead: int | None = None, offset: int | float = 0) -> int:
+    """
+    Create a timestamp (number of seconds since Unix epoch) from either an ISO 8601-formatted timestamp string or for
+    some number of days in the future. Optionally, an offset (in seconds) can be provided that will be subtracted
+    from the return timestamp.
+
+    :param iso_timestamp: An ISO 8601-formatted timestamp string (ex: 2015-02-01T00:00:00)
+    :param days_ahead: Number of days ahead the timestamp should be created for (ex: 365)
+    :param offset: The offset in seconds from the Unix epoch
+    :return: An integer timestamp (in seconds)
+    """
+
+    # Neither are set; make the timestamp now.
+    if not iso_timestamp and not days_ahead:
+        timestamp = int(datetime.now().timestamp())
+    # timestamp is a string; parse it to epoch seconds
+    elif iso_timestamp:
+        timestamp = int(datetime.fromisoformat(iso_timestamp).timestamp())
+    # Make the timestamp now + days_ahead
+    elif not iso_timestamp and days_ahead:
+        timestamp = int(datetime.now().timestamp()) + (days_ahead * 86400)
+    else:
+        raise ValueError('Invalid options passed')
+
+    return int(timestamp - offset)
 
 
 def extract_bits(identifier: int, start: int, end: int) -> int:
