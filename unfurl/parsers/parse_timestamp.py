@@ -54,7 +54,7 @@ def decode_epoch_seconds(seconds):
     return {
         'data_type': 'timestamp.epoch-seconds',
         'display_type': 'Epoch seconds',
-        'timestamp_value': str(datetime.datetime.fromtimestamp(float(seconds), datetime.UTC))
+        'timestamp_value': str(datetime.datetime.fromtimestamp(float(seconds), tz=datetime.UTC))
     }
 
 
@@ -73,7 +73,7 @@ def decode_epoch_centiseconds(centiseconds):
     """
     # Trim off the 4 trailing 0s (don't add precision that wasn't in the timestamp)
     converted_ts = trim_zero_fractional_seconds(
-        str(datetime.datetime.fromtimestamp(float(centiseconds) / 100, datetime.UTC)), 4)
+        str(datetime.datetime.fromtimestamp(float(centiseconds) / 100, tz=datetime.UTC)), 4)
 
     return {
         'data_type': 'timestamp.epoch-centiseconds',
@@ -93,7 +93,7 @@ def decode_epoch_milliseconds(milliseconds):
       2030: 1893456000000
 
     """
-    converted_dt = datetime.datetime(1970, 1, 1) + datetime.timedelta(milliseconds=float(milliseconds))
+    converted_dt = datetime.datetime(1970, 1, 1, tzinfo=datetime.UTC) + datetime.timedelta(milliseconds=float(milliseconds))
     # Trim off the 3 trailing 0s (don't add precision that wasn't in the timestamp)
     converted_ts = trim_zero_fractional_seconds(str(converted_dt), 3)
 
@@ -119,7 +119,7 @@ def decode_epoch_ten_microseconds(ten_microseconds):
     """
     # Trim off the trailing 0 (don't add precision that wasn't in the timestamp)
     converted_ts = trim_zero_fractional_seconds(
-        str(datetime.datetime.fromtimestamp(float(ten_microseconds) / 100000, datetime.UTC)), 1)
+        str(datetime.datetime.fromtimestamp(float(ten_microseconds) / 100000, tz=datetime.UTC)), 1)
 
     return {
         'data_type': 'timestamp.epoch-ten-microseconds',
@@ -139,7 +139,7 @@ def decode_epoch_microseconds(microseconds):
       2030: 1893456000000000
 
     """
-    converted_ts = datetime.datetime.fromtimestamp(float(microseconds) / 1000000, datetime.UTC)
+    converted_ts = datetime.datetime.fromtimestamp(float(microseconds) / 1000000, tz=datetime.UTC)
 
     return {
         'data_type': 'timestamp.epoch-microseconds',
@@ -160,7 +160,7 @@ def decode_webkit(microseconds):
       2030: 13537929600000000
 
     """
-    converted_ts = datetime.datetime.fromtimestamp((float(microseconds) / 1000000) - 11644473600, datetime.UTC)
+    converted_ts = datetime.datetime.fromtimestamp((float(microseconds) / 1000000) - 11644473600, tz=datetime.UTC)
 
     return {
         'data_type': 'timestamp.webkit',
@@ -182,7 +182,7 @@ def decode_windows_filetime(intervals):
       2065: 146424672000000000
 
     """
-    converted_ts =  datetime.datetime.fromtimestamp((float(intervals) / 10000000) - 11644473600, datetime.UTC)
+    converted_ts =  datetime.datetime.fromtimestamp((float(intervals) / 10000000) - 11644473600, tz=datetime.UTC)
 
     return {
         'data_type': 'timestamp.windows-filetime',
@@ -211,7 +211,7 @@ def decode_datetime_ticks(ticks):
 
     """
     seconds = (ticks - 621355968000000000) / 10000000
-    converted_ts = datetime.datetime.fromtimestamp(seconds)
+    converted_ts = datetime.datetime.fromtimestamp(seconds, tz=datetime.UTC)
 
     return {
         'data_type': 'timestamp.datetime-ticks',
@@ -237,7 +237,7 @@ def decode_mac_absolute_time(seconds):
       2035: 1072915200
 
     """
-    converted_ts = datetime.datetime.fromtimestamp(float(seconds) + 978307200, datetime.UTC)
+    converted_ts = datetime.datetime.fromtimestamp(float(seconds) + 978307200, tz=datetime.UTC)
 
     return {
         'data_type': 'timestamp.mac-absolute-time',
