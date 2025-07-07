@@ -34,7 +34,11 @@ def trim_zero_fractional_seconds(timestamp_string, number_to_trim):
     incorrect precision to it.
 
     """
-    if re.search(rf'\.\d{{{6 - number_to_trim}}}0{{{number_to_trim}}}$', timestamp_string):
+    m = re.search(
+        rf'\.\d{{{6 - number_to_trim}}}0{{{number_to_trim}}}(?P<tz_offset>\+\d\d:\d\d)?$', timestamp_string)
+    if m and m.group('tz_offset'):
+        return f"{timestamp_string[:-(number_to_trim + 6)]}{m.group('tz_offset')}"
+    elif m:
         return timestamp_string[:-number_to_trim]
     return timestamp_string
 
