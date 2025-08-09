@@ -1,11 +1,25 @@
-version: '2'
 services:
   unfurl:
     container_name: unfurl
     build:
       context: ./
       dockerfile: Dockerfile
-    # Match the port defined in unfurl.ini
     ports:
       - "5000:5000"
     restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    volumes:
+      - ./unfurl.ini:/unfurl/unfurl.ini:ro
+    networks:
+      - unfurl-network
+
+networks:
+  unfurl-network:
+    driver: bridge
