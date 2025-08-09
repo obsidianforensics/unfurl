@@ -324,7 +324,7 @@ def run(unfurl, node):
 
                 unfurl.add_to_queue(
                     data_type='google.ei', key=1, value=parsed_ei[1],
-                    label=f'ei-1: {parsed_ei[1]}',
+                    label=f'ei-1: {parsed_ei[1]:06d}',
                     hover='The second <b>ei</b> value is thought to be part of the timestamp'
                           ' (fractional seconds) of when the session began.',
                     parent_id=node.node_id, incoming_edge_config=google_edge)
@@ -971,7 +971,7 @@ def run(unfurl, node):
         if ei0_node:
             # The first ei value is epoch seconds, the second has the fractional (micro) seconds.
             # Concatenating them here as strings lets the timestamp parser convert it later.
-            ei_timestamp = str(ei0_node.value) + str(node.value)
+            ei_timestamp = f'{ei0_node.value}{node.value:06d}'
 
             unfurl.add_to_queue(
                 data_type='epoch-microseconds', key=None, value=ei_timestamp, label=f'ei Timestamp: {ei_timestamp}',
