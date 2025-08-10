@@ -34,13 +34,13 @@ page with an interesting URL, you can click the bookmarklet and see the URL "unf
 
 After Unfurl is installed, you can run use it via the web app or command-line:
 
-1. Run `python unfurl_app.py`
+1. Run `unfurl_app`
 1. Browse to localhost:5000/ (editable via config file)
 1. Enter the URL to unfurl in the form, and 'Unfurl!'
 
 OR
 
-1. Run `python unfurl_cli.py https://twitter.com/_RyanBenson/status/1205161015177961473`
+1. Run `unfurl https://twitter.com/_RyanBenson/status/1205161015177961473`
 1. Output: 
 ```
 [1] https://twitter.com/_RyanBenson/status/1205161015177961473
@@ -59,9 +59,9 @@ OR
 ```
 
 If the URL has special characters (like "&") that your shell might interpret as a command, put the URL in quotes. 
-Example: `python unfurl_cli.py "https://www.google.com/search?&ei=yTLGXeyKN_2y0PEP2smVuAg&q=dfir.blog&oq=dfir.blog&ved=0ahUKEwisk-WjmNzlAhV9GTQIHdpkBYcQ4dUDCAg"`
+Example: `unfurl "https://www.google.com/search?&ei=yTLGXeyKN_2y0PEP2smVuAg&q=dfir.blog&oq=dfir.blog&ved=0ahUKEwisk-WjmNzlAhV9GTQIHdpkBYcQ4dUDCAg"`
 
-`unfurl_cli` has a number of command line options to modify its behavior:
+`unfurl` has a number of command line options to modify its behavior:
 ```
 optional arguments:
   -h, --help            show this help message and exit
