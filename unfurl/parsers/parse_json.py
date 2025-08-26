@@ -1,4 +1,4 @@
-# Copyright 2019 Google LLC
+# Copyright 2025 Ryan Benson
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,13 +25,15 @@ json_edge = {
     'label': 'JSON'
 }
 
+json_hover_text = ('This was parsed as JavaScript Object Notation (JSON), <br>'
+                   'which uses human-readable text to store and transmit data objects')
 
 def run(unfurl, node):
 
     if node.data_type in ('url.query.pair', 'string'):
         try:
             json_obj = json.loads(node.value)
-            assert isinstance(json_obj, dict), 'Loaded object should be a dict'
+            assert isinstance(json_obj, (dict, list)), 'Loaded object should be a dict or a list'
 
         except json.JSONDecodeError:
             return
@@ -41,13 +43,16 @@ def run(unfurl, node):
             return
 
         try:
-
-            for json_key, json_value in json_obj.items():
-                unfurl.add_to_queue(
-                    data_type='json', key=json_key, value=json_value, label=f'{json_key}: {json_value}',
-                    hover='This was parsed as JavaScript Object Notation (JSON), <br>'
-                          'which uses human-readable text to store and transmit data objects',
-                    parent_id=node.node_id, incoming_edge_config=json_edge)
+            if isinstance(json_obj, dict):
+                for json_key, json_value in json_obj.items():
+                    unfurl.add_to_queue(
+                        data_type='json', key=json_key, value=json_value, label=f'{json_key}: {json_value}',
+                        hover=json_hover_text, parent_id=node.node_id, incoming_edge_config=json_edge)
+            elif isinstance(json_obj, list):
+                for item in json_obj:
+                    unfurl.add_to_queue(
+                        data_type='json', key=None, value=item, label=f'[{len(item)} items]',
+                        hover=json_hover_text, parent_id=node.node_id, incoming_edge_config=json_edge)
 
         except Exception as e:
             log.exception(f'Exception parsing JSON string: {e}')
@@ -63,10 +68,33 @@ def run(unfurl, node):
         if isinstance(node_value, dict):
             try:
                 for key, value in node_value.items():
+                    if isinstance(value, dict):
+                        unfurl.add_to_queue(
+                            data_type='json', key=key, value=value, label=f'{key}: {{{len(value)} keys}}',
+                            hover='This was parsed as JavaScript Object Notation (JSON), <br>'
+                                  'which uses human-readable text to store and transmit data objects',
+                            parent_id=node.node_id, incoming_edge_config=json_edge)
+                    elif isinstance(value, list):
+                        unfurl.add_to_queue(
+                            data_type='json', key=key, value=value, label=f'{key}: [{len(value)} items]',
+                            hover='This was parsed as JavaScript Object Notation (JSON), <br>'
+                                  'which uses human-readable text to store and transmit data objects',
+                            parent_id=node.node_id, incoming_edge_config=json_edge)
+                    else:
+                        unfurl.add_to_queue(
+                            data_type='json', key=key, value=value, label=f'{key}: {value}',
+                            hover='This was parsed as JavaScript Object Notation (JSON), <br>'
+                                  'which uses human-readable text to store and transmit data objects',
+                            parent_id=node.node_id, incoming_edge_config=json_edge)
+
+            except Exception as e:
+                log.exception(f'Exception parsing JSON: {e}')
+
+        elif isinstance(node_value, list):
+            try:
+                for value in node_value:
                     unfurl.add_to_queue(
-                        data_type='json', key=key, value=value, label=f'{key}: {value}',
-                        hover='This was parsed as JavaScript Object Notation (JSON), <br>'
-                              'which uses human-readable text to store and transmit data objects',
+                        data_type='json', key=None, value=value, hover=json_hover_text,
                         parent_id=node.node_id, incoming_edge_config=json_edge)
 
             except Exception as e:
