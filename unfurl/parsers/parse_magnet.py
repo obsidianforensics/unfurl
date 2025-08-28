@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
+import requests
 import torf
 
 magnet_edge = {
@@ -58,9 +60,46 @@ xt_hash_types = {
            '<br>Supported by G2 (Gnutella2), such hashes are vulnerable to hash collision attacks.',
 }
 
+def check_tracker_statuses(magnet_url):
+    r = requests.get(f'https://checker.openwebtorrent.com/check', params={'magnet': magnet_url},
+                     allow_redirects=False)
+
+    if r.status_code == 200:
+        statuses = {}
+        content = r.content.decode('utf-8')
+        content_json = json.loads(content)
+        for tracker_status in content_json.get('extra'):
+            if tracker_status.get('tracker'):
+                statuses[tracker_status['tracker']] = tracker_status
+                statuses[tracker_status['tracker']].pop('tracker')
+        return statuses
+    else:
+        return {}
 
 def run(unfurl, node):
-    if node.data_type.startswith('magnet') and node.data_type.endswith('list'):
+    if node.data_type == 'magnet.tr.list':
+        for node_item in node.value:
+            unfurl.add_to_queue(
+                data_type='magnet.tr.tracker', key=None, value=node_item,
+                parent_id=node.node_id, incoming_edge_config=magnet_edge)
+
+    elif node.data_type == 'magnet.tr.tracker':
+        if unfurl.stash.get('tracker_statuses'):
+            status = unfurl.stash['tracker_statuses'].get(node.value)
+            if status:
+                status_string = ''
+                if status.get('error'):
+                    status_string = f'\n⚠️ Error - {status["error"]}'
+                if 'seeds' in status:
+                    status_string += f'\n🔺Seeds: {status["seeds"]} '
+                if 'peers' in status:
+                    status_string += f'\n🔻Peers: {status["peers"]}'
+
+                unfurl.add_to_queue(
+                    data_type='descriptor', key='Tracker Status', value=status_string,
+                    parent_id=node.node_id, incoming_edge_config=magnet_edge)
+
+    elif node.data_type.startswith('magnet') and node.data_type.endswith('list'):
         for node_item in node.value:
             unfurl.add_to_queue(
                 data_type='descriptor', key=None, value=node_item,
@@ -122,3 +161,7 @@ def run(unfurl, node):
                     unfurl.add_to_queue(
                         data_type='descriptor', key=field, value=value,
                         parent_id=node.node_id, incoming_edge_config=magnet_edge)
+
+            if unfurl.remote_lookups:
+                tracker_statuses = check_tracker_statuses(node.value)
+                unfurl.add_to_stash('tracker_statuses', tracker_statuses)

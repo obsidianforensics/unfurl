@@ -40,6 +40,7 @@ class Unfurl:
         self.remote_lookups = remote_lookups
         self.known_domain_lists = None
         self.node_limit = 500
+        self.stash = {}
 
         config = configparser.ConfigParser()
         config.read('unfurl.ini')
@@ -78,6 +79,12 @@ class Unfurl:
 
         def to_dict(self):
             return self.__dict__
+
+    def add_to_stash(self, key: str, value: dict) -> None:
+        if not self.stash.get(key):
+            self.stash[key] = value
+        else:
+            self.stash[key] = self.stash[key] | value
 
     def build_known_domain_lists(self):
         warning_lists = WarningLists()
