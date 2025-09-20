@@ -16,6 +16,8 @@ import requests
 import json
 import os
 
+from bs4 import BeautifulSoup
+
 
 shortlink_edge = {
     'color': {
@@ -39,6 +41,22 @@ def expand_bitly_url(bitlink_id, api_key):
     else:
         return {}
 
+def parse_linkedin_slink_url(shortcode):
+    r = requests.get(url=f'https://www.linkedin.com/slink?code={shortcode}')
+    soup = BeautifulSoup(r.content, 'html.parser')
+    link = soup.select_one("main a.artdeco-button")
+    if link.get('href'):
+        return link.get('href')
+    return {}
+
+
+def expand_vdg_url(shortcode):
+    # Ref: https://v.gd/apilookupreference.php
+    r = requests.get(url='https://v.gd/forward.php', params={'shorturl': shortcode, 'format': 'json'})
+    if r.status_code == 200:
+        return r.json().get('url')
+    return {}
+
 
 def expand_url_via_redirect_header(base_url, shortcode):
     r = requests.get(f'{base_url}{shortcode.rstrip("/")}', allow_redirects=False)
@@ -60,7 +78,7 @@ def run(unfurl, node):
     # this works.
     if node.data_type == 'url.query.pair' and node.key == 'code':
         if 'linkedin.com' in preceding_domain:
-            expanded_url = expand_url_via_redirect_header('https://www.linkedin.com/slink?code=', node.value)
+            expanded_url = parse_linkedin_slink_url(node.value)
             if expanded_url:
                 unfurl.add_to_queue(
                     data_type='url', key=None, value=expanded_url,
@@ -83,6 +101,25 @@ def run(unfurl, node):
 
     if node.data_type != 'url.path':
         return
+
+    if 'lnkd.in' == preceding_domain:
+        expanded_url = parse_linkedin_slink_url(node.value[1:])
+        if expanded_url:
+            unfurl.add_to_queue(
+                data_type='url', key=None, value=expanded_url,
+                label=f'Expanded URL: {expanded_url}',
+                hover='Expanded URL, retrieved from linkedin.com via redirect page',
+                parent_id=node.node_id, incoming_edge_config=shortlink_edge)
+        return
+
+    if 'v.gd' == preceding_domain:
+        expanded_url = expand_vdg_url(node.value[1:])
+        if expanded_url:
+            unfurl.add_to_queue(
+                data_type='url', key=None, value=expanded_url,
+                label=f'Expanded URL: {expanded_url}',
+                hover='Expanded URL, retrieved from v.gd via their API',
+                parent_id=node.node_id, incoming_edge_config=shortlink_edge)
 
     bitly_domains = ['bit.ly', 'bitly.com', 'j.mp']
     if any(bitly_domain in unfurl.find_preceding_domain(node) for bitly_domain in bitly_domains):
@@ -127,11 +164,13 @@ def run(unfurl, node):
         {'domain': 'ift.tt', 'base_url': 'https://ift.tt/'},
         {'domain': 'is.gd', 'base_url': 'https://is.gd/'},
         {'domain': 'lc.chat', 'base_url': 'https://lc.chat/'},
-        {'domain': 'lnkd.in', 'base_url': 'https://www.linkedin.com/slink?code='},
         {'domain': 'nyti.ms', 'base_url': 'https://nyti.ms/'},
+        {'domain': 'okt.to', 'base_url': 'https://okt.to/'},
         {'domain': 'ow.ly', 'base_url': 'http://ow.ly/'},
         {'domain': 'reut.rs', 'base_url': 'https://reut.rs/'},
+        {'domain': 'rb.gy', 'base_url': 'https://rb.gy/'},
         {'domain': 'sansurl.com', 'base_url': 'https://sansurl.com/'},
+        {'domain': 's.id', 'base_url': 'https://s.id/'},
         {'domain': 'snip.ly', 'base_url': 'https://snip.ly/'},
         {'domain': 't.co', 'base_url': 'https://t.co/'},
         {'domain': 't.ly', 'base_url': 'https://t.ly/'},
@@ -152,6 +191,18 @@ def run(unfurl, node):
                     hover=f'Expanded URL, retrieved from {redirect_expand["domain"]} via "Location" header',
                     parent_id=node.node_id, incoming_edge_config=shortlink_edge)
             return
+
+    # Guess that any domain + tld that is less than eight characters is a link shortener, and try to
+    # expand it via a 301/302 Location header.
+    if len(preceding_domain) < 8:
+        expanded_url = expand_url_via_redirect_header(f'https://{preceding_domain}/', node.value[1:])
+        if expanded_url:
+            unfurl.add_to_queue(
+                data_type='url', key=None, value=expanded_url,
+                label=f'Expanded URL: {expanded_url}',
+                hover=f'Expanded URL, retrieved from {preceding_domain} via "Location" header',
+                parent_id=node.node_id, incoming_edge_config=shortlink_edge)
+        return
 
     # Get the list of "known" URL shortener domains from MISP; many of these seem to be deprecated.
     # Try to expand the shortlink via a 301/302 Location header; if the site uses something like a meta refresh,
