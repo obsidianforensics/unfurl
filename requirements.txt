@@ -1,4 +1,5 @@
 bbpb >= 1.4.1
+beautifulsoup4 >= 4
 dnslib < 1
 netaddr >= 1.3.0
 networkx == 3.*
