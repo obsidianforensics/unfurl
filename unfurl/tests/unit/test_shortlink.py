@@ -2,7 +2,7 @@ from unfurl.core import Unfurl
 import unittest
 
 
-class TestShorLinks(unittest.TestCase):
+class TestShortLinks(unittest.TestCase):
 
     def test_linkedin_shortlink(self):
         """ Test a LinkedIn shortlink; these work a little different from the rest"""
