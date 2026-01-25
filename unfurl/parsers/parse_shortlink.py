@@ -61,7 +61,7 @@ def expand_vdg_url(shortcode):
 def expand_url_via_redirect_header(base_url, shortcode):
     r = requests.get(f'{base_url}{shortcode.rstrip("/")}', allow_redirects=False)
 
-    if r.status_code in [301, 302]:
+    if r.status_code in [301, 302, 303, 307, 308]:
         return r.headers['Location']
     else:
         return {}
