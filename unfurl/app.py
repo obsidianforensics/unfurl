@@ -104,7 +104,7 @@ def web_app(host='localhost', port='5000', debug='True', remote_lookups=False):
     if config.has_section('UNFURL_APP'):
         host = config['UNFURL_APP'].get('host')
         port = config['UNFURL_APP'].get('port')
-        debug = config['UNFURL_APP'].get('debug')
+        debug = config['UNFURL_APP'].getboolean('debug')
         try:
             remote_lookups = config['UNFURL_APP'].getboolean('remote_lookups')
         # If we can't interpret it as a boolean, fail "safe" to not allowing lookups
