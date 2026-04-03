@@ -40,7 +40,10 @@ def run(unfurl, node):
         return False
 
     if node.data_type == 'zlib':
-        inflated_str = zlib.decompress(node.value)
+        try:
+            inflated_str = utils.safe_decompress(node.value)
+        except (zlib.error, ValueError):
+            return
         unfurl.add_to_queue(
             data_type='zlib-inflate', key=None, value=inflated_str,
             hover='This data was inflated using zlib',
@@ -79,9 +82,9 @@ def run(unfurl, node):
         return
 
     try:
-        inflated_bytes = zlib.decompress(decoded)
-    except:
-        # If we can't inflate it, bail on this parser.
+        inflated_bytes = utils.safe_decompress(decoded)
+    except (zlib.error, ValueError):
+        # If we can't inflate it or it exceeds size limit, bail on this parser.
         return
 
     try:
@@ -93,7 +96,7 @@ def run(unfurl, node):
                 hover='This data was base64-decoded, then zlib inflated',
                 incoming_edge_config=b64_zip_edge)
             return
-    except:
+    except UnicodeDecodeError:
         # If we couldn't decode the inflated bytes as ASCII, that's ok; we'll
         # just show the raw inflated bytes below.
         pass

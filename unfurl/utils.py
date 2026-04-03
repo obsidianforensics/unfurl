@@ -17,6 +17,7 @@
 import ipaddress
 import re
 import textwrap
+import zlib
 from datetime import datetime
 from typing import Union
 
@@ -118,4 +119,26 @@ def extract_bits(identifier: int, start: int, end: int) -> int:
 
 def set_bits(value: int, offset: int, max_size=None) -> int:
     return int(value << offset)
+
+
+# Maximum decompressed size (1MB) to prevent zip bomb attacks
+MAX_DECOMPRESSED_SIZE = 1_000_000
+
+
+def safe_decompress(data: bytes, max_size: int = MAX_DECOMPRESSED_SIZE) -> bytes:
+    """Decompress zlib or gzip data with a size limit to prevent zip bomb attacks.
+
+    Uses wbits=47 (32 + MAX_WBITS) to auto-detect zlib or gzip format.
+
+    :param data: Compressed bytes to decompress
+    :param max_size: Maximum allowed decompressed size in bytes
+    :return: Decompressed bytes
+    :raises ValueError: If decompressed data exceeds max_size
+    :raises zlib.error: If decompression fails
+    """
+    decompressor = zlib.decompressobj(wbits=32 + zlib.MAX_WBITS)
+    result = decompressor.decompress(data, max_size)
+    if decompressor.unconsumed_tail:
+        raise ValueError("Decompressed data exceeds size limit")
+    return result
 
