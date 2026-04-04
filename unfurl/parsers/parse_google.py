@@ -15,15 +15,12 @@
 import base64
 import datetime
 
-import blackboxprotobuf
 import json
 import pycountry
 import zlib
 import struct
 import re
-from unfurl.parsers.proto.google_search_pb2 import Ved
 from unfurl import utils
-from google.protobuf import json_format
 
 import logging
 log = logging.getLogger(__name__)
@@ -476,94 +473,27 @@ def run(unfurl, node):
 
         elif node.key == 'ved':
             node.extra_options = {'widthConstraint': {'maximum': 400}}
-            known_ved_descriptions = {
-                'linkIndex':
-                    'Unique index for each link on the search page. <br>The higher the number, the farther'
-                    ' down the page the link is. <br>This should always be present. '
-                    '<a href="https://deedpolloffice.com/blog/articles/decoding-ved-parameter" '
-                    'target="_blank">[ref]</a>',
-                'linkType':
-                    'The type of link that was clicked on; there are thousands. <br>This should always be '
-                    'present. <a href="https://deedpolloffice.com/blog/articles/decoding-ved-parameter" '
-                    'target="_blank">[ref]</a>',
-                'subResultPosition':
-                    'The position of the link, if it was inside a "group" (like an adword or<br> '
-                    'knowledge graph). This starts at 0 and counts up.'
-                    '<a href="https://deedpolloffice.com/blog/articles/decoding-ved-parameter" '
-                    'target="_blank">[ref]</a>',
-                'resultPosition':
-                    'The position of the result on the page. The higher the number, <br>the farther '
-                    'down the page the result is. '
-                    '<a href="https://deedpolloffice.com/blog/articles/decoding-ved-parameter" '
-                    'target="_blank">[ref]</a>',
-                'resultsStart':
-                    'The starting position of the first result on the page. <br>On page 2, it will be '
-                    '10; and on page 3 it will be 20, <br>and so on. On page 1, the value isn’t '
-                    'present (but implicitly, this means a value of 0).'
-                    '<a href="https://deedpolloffice.com/blog/articles/decoding-ved-parameter" '
-                    'target="_blank">[ref]</a>',
-            }
-            assert node.value[0] in ['0', '2'], 'The ved parameter should start with 0 or 2'
+            if node.value[0] not in ['0', '2']:
+                return
+            ved_version = node.value[0]
             encoded_ved = node.value[1:]
-            padded_ved = unfurl.add_b64_padding(encoded_ved)
-            if not padded_ved:
-                return
-            try:
-                encoded_ved = base64.urlsafe_b64decode(padded_ved)
-                ved = Ved().FromString(encoded_ved)
-            except Exception as e:
-                log.warning(f'Unable to parse ved from {padded_ved}: {e}')
-                return
 
-            ved_dict = json_format.MessageToDict(ved)
-            for key, value in ved_dict.items():
-                if key == 'v13Outer':
-                    assert isinstance(value, dict), 'ved-13-Outer should be a dict'
-                    assert isinstance(value['v13Inner'], dict), 'ved-13-Inner should also be a dict'
-                    v13_timestamp = value['v13Inner'].get('timestamp')
-                    if v13_timestamp:
-                        unfurl.add_to_queue(
-                            data_type='epoch-microseconds', key='Timestamp', value=v13_timestamp,
-                            parent_id=node.node_id, incoming_edge_config=google_edge,
-                            hover='The ved parameter contains a timestamp, believed to <br>correspond to around '
-                                  'when the page loaded.')
+            ved_version_descriptions = {
+                '0': 'Version 0: older ved format, not base64-encoded',
+                '2': 'Version 2: current ved format, base64-encoded protobuf'
+            }
 
-                    v13_unknown_2 = value['v13Inner'].get('v132')
-                    if v13_unknown_2:
-                        unfurl.add_to_queue(
-                            data_type='google.ved', key='13-2', value=v13_unknown_2,
-                            parent_id=node.node_id, incoming_edge_config=google_edge,
-                            hover='Inside the ved parameter, the meanings of<br> 13-2 and 13-3 are not known.')
+            unfurl.add_to_queue(
+                data_type='google.ved.version', key='Ved Version', value=ved_version,
+                label=f'Ved Version: {ved_version}',
+                hover=ved_version_descriptions.get(ved_version),
+                parent_id=node.node_id, incoming_edge_config=google_edge)
 
-                    v13_unknown_3 = value['v13Inner'].get('v133')
-                    if v13_unknown_3:
-                        unfurl.add_to_queue(
-                            data_type='google.ved', key='13-3', value=v13_unknown_3,
-                            parent_id=node.node_id, incoming_edge_config=google_edge,
-                            hover='Inside the ved parameter, the meanings of 13-2 and 13-3 are not known, <br>'
-                                  'but the values in <b>ved 13-3</b> and <b>ei-3</b> match.')
-
-                elif key == 'v15':
-                    assert isinstance(value, dict), 'ved-15 should be a dict'
-                    v15_1 = value.get('v151')
-                    v15_2 = value.get('v152')
-
-                    if v15_1:
-                        unfurl.add_to_queue(
-                            data_type='google.ved', key='15-1', value=v15_1,
-                            parent_id=node.node_id, incoming_edge_config=google_edge,
-                            hover='Inside the ved parameter, the meanings of<br> 15-1 and 15-2 are not known.')
-                    if v15_2:
-                        unfurl.add_to_queue(
-                            data_type='google.ved', key='15-2', value=v15_2,
-                            parent_id=node.node_id, incoming_edge_config=google_edge,
-                            hover='Inside the ved parameter, the meanings of<br> 15-1 and 15-2 are not known.')
-
-                else:
-                    unfurl.add_to_queue(
-                        data_type='google.ved', key=key, value=value, label=f'{key}: {value}',
-                        hover=known_ved_descriptions.get(key, ''),
-                        parent_id=node.node_id, incoming_edge_config=google_edge)
+            unfurl.add_to_stash('proto_context', {node.node_id: 'google.ved'})
+            unfurl.add_to_queue(
+                data_type='proto.ved_raw', key=None, value=encoded_ved,
+                parent_id=node.node_id, incoming_edge_config=google_edge,
+                hover='The ved parameter value (base64-encoded protobuf)')
 
         elif node.key == 'gs_lcrp':
             from unfurl.parsers.proto.chrome_searchbox_stats_pb2 import ChromeSearchboxStats
@@ -891,10 +821,16 @@ def run(unfurl, node):
             5497: 'dictionary definition link'
         }
 
-        if node.key == 'linkType':
-            if known_link_types.get(node.value):
+        # Field 2 in the ved protobuf is the link type.
+        # This is scoped to data_type=='google.ved' so '2' won't match other protos.
+        if node.key == '2':
+            try:
+                link_type_int = int(node.value)
+            except (ValueError, TypeError):
+                link_type_int = node.value
+            if known_link_types.get(link_type_int):
                 unfurl.add_to_queue(
-                    data_type='descriptor', key=None, value=node.value, label=known_link_types.get(node.value),
+                    data_type='descriptor', key=None, value=node.value, label=known_link_types.get(link_type_int),
                     hover='There are tens of thousands of these values; the \'known\'<br> ones in Unfurl are based on '
                           '<a href="https://github.com/beschulz/ved-decoder" target="_blank">'
                           'Benjamin Schulz\'s work</a>',
