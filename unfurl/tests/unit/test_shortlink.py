@@ -46,6 +46,7 @@ class TestShortLinks(unittest.TestCase):
         """ Test a shortlink with remote lookups disabled"""
 
         test = Unfurl()
+        test.remote_lookups = False
         test.add_to_queue(data_type='url', key=None, value='https://t.co/g6VWYYwY12')
         test.parse_queue()
 

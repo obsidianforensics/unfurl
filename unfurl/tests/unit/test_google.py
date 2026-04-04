@@ -80,7 +80,7 @@ class TestGoogle(unittest.TestCase):
         self.assertEqual('Autocomplete Match (0): 69i60', test.nodes[18].label)
 
         # Check that match type of 1st autocomplete match parsed
-        self.assertIn('Type: Native Chrome Suggestion', test.nodes[28].label)
+        self.assertIn('Type: Native Chrome', test.nodes[28].label)
 
         # Check that match subtype of autocomplete match 5 parsed
         self.assertIn('Subtype: Omnibox History Title', test.nodes[39].label)

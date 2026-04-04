@@ -14,8 +14,8 @@ class TestBluesky(unittest.TestCase):
         test.parse_queue()
 
         # check the number of nodes
-        self.assertEqual(len(test.nodes.keys()), 13)
-        self.assertEqual(test.total_nodes, 13)
+        self.assertEqual(len(test.nodes.keys()), 15)
+        self.assertEqual(test.total_nodes, 15)
 
         # confirm that TID was detected
         self.assertIn('timestamp identifiers', test.nodes[12].hover)
