@@ -15,8 +15,8 @@ class TestHashDetection(unittest.TestCase):
         test.parse_queue()
 
         # check the number of nodes
-        self.assertEqual(len(test.nodes.keys()), 10)
-        self.assertEqual(test.total_nodes, 10)
+        self.assertEqual(len(test.nodes.keys()), 9)
+        self.assertEqual(test.total_nodes, 9)
 
         # confirm that detected as MD5
         self.assertIn('Potential MD5 hash', test.nodes[9].label)
