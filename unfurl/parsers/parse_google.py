@@ -1,4 +1,4 @@
-# Copyright 2020 Google LLC
+# Copyright 2026 Ryan Benson
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,12 +14,13 @@
 
 import base64
 import datetime
+
+import json
 import pycountry
+import zlib
 import struct
 import re
-from unfurl.parsers.proto.google_search_pb2 import Ved
 from unfurl import utils
-from google.protobuf import json_format
 
 import logging
 log = logging.getLogger(__name__)
@@ -204,406 +205,344 @@ def parse_rlz(rlz_string):
 
     return rlz
 
-
 def run(unfurl, node):
-    if node.data_type == 'url.query.pair':
-        if 'google' in unfurl.find_preceding_domain(node):
-            if node.key == 'biw':
-                unfurl.add_to_queue(
-                    data_type='google.biw', key='Browser Width', value=node.value,
-                    label=f'Browser width: {node.value}px',
-                    hover='Inner width of the browser window',
-                    parent_id=node.node_id, incoming_edge_config=google_edge)
+    if node.data_type == 'url.query.pair' and 'google' in unfurl.find_preceding_domain(node):
 
-            elif node.key == 'bih':
-                unfurl.add_to_queue(
-                    data_type='google.bih', key='Browser Height', value=node.value,
-                    label=f'Browser height: {node.value}px',
-                    hover='Inner height of the browser window',
-                    parent_id=node.node_id, incoming_edge_config=google_edge)
+        if node.key == 'biw':
+            unfurl.add_to_queue(
+                data_type='google.biw', key='Browser Width', value=node.value,
+                label=f'Browser width: {node.value}px',
+                hover='Inner width of the browser window',
+                parent_id=node.node_id, incoming_edge_config=google_edge)
 
-            elif node.key == 'aqs':
-                parsed_aqs = parse_aqs(node.value)
-                for key, value in parsed_aqs.items():
-                    if key == 'autocompletion_entries':
-                        repeated_count_offset = 0
-                        for index, match in enumerate(value):
-                            adjusted_start = index + repeated_count_offset
-                            if 'l' in match:
-                                _, repeated_count = split_exactly(match, 'l', 1)
-                                repeated_count = int(repeated_count) - 1
-                                repeated_count_offset += repeated_count
-                                unfurl.add_to_queue(
-                                    data_type='google.aqs.ac_match',
-                                    key=f'Autocomplete Matches ({adjusted_start}-{adjusted_start + repeated_count})',
-                                    value=match, parent_id=node.node_id, incoming_edge_config=google_edge)
-                            else:
-                                unfurl.add_to_queue(
-                                    data_type='google.aqs.ac_match',
-                                    key=f'Autocomplete Match ({adjusted_start})',
-                                    value=match, parent_id=node.node_id, incoming_edge_config=google_edge)
+        elif node.key == 'bih':
+            unfurl.add_to_queue(
+                data_type='google.bih', key='Browser Height', value=node.value,
+                label=f'Browser height: {node.value}px',
+                hover='Inner height of the browser window',
+                parent_id=node.node_id, incoming_edge_config=google_edge)
 
-                    elif key == 'page_classification':
-                        unfurl.add_to_queue(
-                            data_type='google.aqs.page_classification', key='Page Classification', value=value,
-                            hover='The type of page currently displayed when the user used the omnibox',
-                            parent_id=node.node_id, incoming_edge_config=google_edge)
-
-                    elif key == 'query_formulation_time':
-                        unfurl.add_to_queue(
-                            data_type='google.aqs.query_formulation_time', key='Query Formulation Time',
-                            value=f'{int(value)/1000} seconds',
-                            hover='Query formulation time (time from when the user first typed a character into the '
-                                  'omnibox to when the user selected a query)',
-                            parent_id=node.node_id, incoming_edge_config=google_edge)
-
-                    elif key == 'field_trial_triggered':
-                        unfurl.add_to_queue(
-                            data_type='google.aqs.field_trial_triggered', key='Field Trial Triggered',
-                            value=str(bool(int(value))),  # converts the '0' or '1' (strings) into True or False strings
-                            hover='Whether a field trial (of zero suggest or search provider) was triggered in the '
-                                  'session',
-                            parent_id=node.node_id, incoming_edge_config=google_edge)
-
-                    elif key == 'clicked_suggestion':
-                        if value:
+        elif node.key == 'aqs':
+            parsed_aqs = parse_aqs(node.value)
+            for key, value in parsed_aqs.items():
+                if key == 'autocompletion_entries':
+                    repeated_count_offset = 0
+                    for index, match in enumerate(value):
+                        adjusted_start = index + repeated_count_offset
+                        if 'l' in match:
+                            _, repeated_count = split_exactly(match, 'l', 1)
+                            repeated_count = int(repeated_count) - 1
+                            repeated_count_offset += repeated_count
                             unfurl.add_to_queue(
-                                data_type='google.aqs.clicked_suggestion', key='Clicked Suggestion',
-                                value=value, hover='The index (starting at 0) of the accepted suggestion',
-                                parent_id=node.node_id, incoming_edge_config=google_edge)
+                                data_type='google.aqs.ac_match',
+                                key=f'Autocomplete Matches ({adjusted_start}-{adjusted_start + repeated_count})',
+                                value=match, parent_id=node.node_id, incoming_edge_config=google_edge)
                         else:
                             unfurl.add_to_queue(
-                                data_type='google.aqs.clicked_suggestion', key='Clicked Suggestion',
-                                value='None', hover='The user did not click one of the offered suggestions',
-                                parent_id=node.node_id, incoming_edge_config=google_edge)
-                    else:
-                        unfurl.add_to_queue(
-                            data_type='google.aqs', key=key, value=value,
-                            parent_id=node.node_id, incoming_edge_config=google_edge)
+                                data_type='google.aqs.ac_match',
+                                key=f'Autocomplete Match ({adjusted_start})',
+                                value=match, parent_id=node.node_id, incoming_edge_config=google_edge)
 
-            elif node.key == 'ei':
-                if not re.fullmatch(utils.urlsafe_b64_re, node.value):
-                    return
-                padded_value = unfurl.add_b64_padding(node.value)
-                if not padded_value:
-                    return
-
-                try:
-                    parsed_ei = parse_ei(padded_value)
-                except Exception as e:
-                    log.exception(f'Exception running parse_ei() on {padded_value}: {e}')
-                    return
-
-                if not parsed_ei:
-                    return
-
-                node.hover = 'The \'<b>ei</b>\' parameter is base64-encoded and contains four values. ' \
-                             '<br>The first two are thought to be the timestamp of when the session started ' \
-                             '<br>(first value is full seconds, second is microsecond component)' \
-                             '<br>This may be seconds (but could be days!) before the URL was generated.' \
-                             '<br><br>References:<ul>' \
-                             '<li><a href="https://deedpolloffice.com/blog/articles/decoding-ei-parameter" ' \
-                             'target="_blank">Kevin Jones: How to decode the ei parameter in Google search</a></li>' \
-                             '<li><a href="http://cheeky4n6monkey.blogspot.com/2014/10/google-eid.html" ' \
-                             'target="_blank">Cheeky4n6Monkey: Google-ei\'d ?!</a></li>' \
-                             '<li><a href="https://github.com/obsidianforensics/unfurl/issues/56" ' \
-                             'target="_blank">Rasmus-Riis: Search Experiment with ei parameter</a></li>'\
-                             '<li>Adam Mazack: noticed the 2nd ei value contained fractional seconds ' \
-                             '<br> that match the ved</li></ul>'
-                node.extra_options = {'widthConstraint': {'maximum': 300}}
-
-                assert len(parsed_ei) == 4, \
-                    f'There should be 4 decoded ei values, but we have {len(parsed_ei)}!'
-
-                unfurl.add_to_queue(
-                    data_type='google.ei', key=0, value=parsed_ei[0],
-                    label=f'ei-0: {parsed_ei[0]}',
-                    hover='The first <b>ei</b> value is thought to be part of the timestamp'
-                          ' (seconds) of when the session began.',
-                    parent_id=node.node_id, incoming_edge_config=google_edge)
-
-                unfurl.add_to_queue(
-                    data_type='google.ei', key=1, value=parsed_ei[1],
-                    label=f'ei-1: {parsed_ei[1]:06d}',
-                    hover='The second <b>ei</b> value is thought to be part of the timestamp'
-                          ' (fractional seconds) of when the session began.',
-                    parent_id=node.node_id, incoming_edge_config=google_edge)
-
-                unfurl.add_to_queue(
-                    data_type='google.ei', key=2, value=parsed_ei[2],
-                    label=f'ei-2: {parsed_ei[2]}',
-                    hover='The meaning of the third <b>ei</b> value is not known.',
-                    parent_id=node.node_id, incoming_edge_config=google_edge)
-
-                unfurl.add_to_queue(
-                    data_type='google.ei', key=3, value=parsed_ei[3],
-                    label=f'ei-3: {parsed_ei[3]}',
-                    hover='The meaning of the fourth <b>ei</b> value is not known, '
-                          'but it matches the <b>ved</b> "13-3" value.',
-                    parent_id=node.node_id, incoming_edge_config=google_edge)
-
-            elif node.key == 'gs_l':
-                node.hover = 'The <b>gs_l</b> parameter contains multiple values, delimited by <b>.</b>. <br>' \
-                             'We only know the meaning of 7 (of the 26+) parameters.'
-                node.extra_options = {'widthConstraint': {'maximum': 1400}}
-
-                params = node.value.split('.')
-
-                known_params = [0, 1, 2, 4, 5, 7, 8, 26]
-                for known_param in known_params:
-                    if len(params) > known_param and len(params[known_param]) > 0:
-                        unfurl.add_to_queue(
-                            data_type='google.gs_l', key=str(known_param), value=params[known_param],
-                            label=f'Parameter {str(known_param)}: {params[known_param]}',
-                            parent_id=node.node_id, incoming_edge_config=google_edge)
-
-            elif node.key == 'oq':
-                unfurl.add_to_queue(
-                    data_type='google.oq', key=None, value=f'"Original" Search Query: {node.value}',
-                    hover='Original terms entered by the user; auto-complete or suggestions <br>'
-                          'may have been used to reach the actual search terms (in <b>q</b>)',
-                    parent_id=node.node_id, incoming_edge_config=google_edge)
-
-            elif node.key == 'q':
-                unfurl.add_to_queue(
-                    data_type='google.q', key=None, value=f'Search Query: {node.value}',
-                    hover='Terms used in the Google search', parent_id=node.node_id, incoming_edge_config=google_edge)
-
-            elif node.key == 'source':
-                if node.value in known_sources.keys():
+                elif key == 'page_classification':
                     unfurl.add_to_queue(
-                        data_type='google.source', key=None, value=f'Source: {known_sources[node.value]}',
-                        hover='Source of the Google search', parent_id=node.node_id, incoming_edge_config=google_edge)
+                        data_type='google.aqs.page_classification', key='Page Classification', value=value,
+                        hover='The type of page currently displayed when the user used the omnibox',
+                        parent_id=node.node_id, incoming_edge_config=google_edge)
 
-            elif node.key == 'start':
-                unfurl.add_to_queue(
-                    data_type='google.start', key=None, value=f'Starting Result: {node.value}',
-                    hover='Google search by default shows 10 results per page; higher <br>'
-                          '"start" values may indicate browsing more subsequent results pages.',
-                    parent_id=node.node_id, incoming_edge_config=google_edge)
+                elif key == 'query_formulation_time':
+                    unfurl.add_to_queue(
+                        data_type='google.aqs.query_formulation_time', key='Query Formulation Time',
+                        value=f'{int(value)/1000} seconds',
+                        hover='Query formulation time (time from when the user first typed a character into the '
+                              'omnibox to when the user selected a query)',
+                        parent_id=node.node_id, incoming_edge_config=google_edge)
 
-            elif node.key == 'sxsrf':
-                node.extra_options = {'widthConstraint': {'maximum': 400}}
-                sxs_0, sxs_1 = node.value.split(':', 1)
-                unfurl.add_to_queue(data_type='google.sxsrf', key=1, value=sxs_0,
-                                    parent_id=node.node_id, incoming_edge_config=google_edge)
-                unfurl.add_to_queue(
-                    data_type='epoch-milliseconds', key=2, value=sxs_1,
-                    hover='The <b>sxsrf</b> parameter contains a timestamp, believed<br>'
-                          ' to correspond to the previous page load. <br><br>Refernces:<ul><li>'
-                          '<a href="https://twitter.com/phillmoore/status/1169846359509233664" target="_blank">'
-                          'Phill Moore on Twitter</a></li></ul>', parent_id=node.node_id,
-                    incoming_edge_config=google_edge)
+                elif key == 'field_trial_triggered':
+                    unfurl.add_to_queue(
+                        data_type='google.aqs.field_trial_triggered', key='Field Trial Triggered',
+                        value=str(bool(int(value))),  # converts the '0' or '1' (strings) into True or False strings
+                        hover='Whether a field trial (of zero suggest or search provider) was triggered in the '
+                              'session',
+                        parent_id=node.node_id, incoming_edge_config=google_edge)
 
-            elif node.key == 'tbm':
-                tbm_mappings = {
-                    'bks': 'Google Books',
-                    'fin': 'Google Finance',
-                    'flm': 'Google Flights',
-                    'isch': 'Google Images',
-                    'nws': 'Google News',
-                    'shop': 'Google Shopping',
-                    'vid': 'Google Videos',
-                }
-
-                value = tbm_mappings.get(node.value, 'Unknown')
-                unfurl.add_to_queue(
-                    data_type='google.tbm', key=None, value=f'Search Type: {value}',
-                    hover='Google Search Type', parent_id=node.node_id, incoming_edge_config=google_edge)
-
-            elif node.key == 'udm':
-                # UDM _might_ be URL Data Manager?
-                # https://source.chromium.org/chromium/chromium/src/+/main:content/browser/webui/url_data_manager.h
-                udm_mappings = {
-                    '1': 'All',
-                    '2': 'Images',
-                    '3': 'Products',
-                    '6': 'Learn',
-                    '7': 'Videos',
-                    '8': 'Jobs',
-                    '12': 'News',
-                    '14': 'Web',
-                    '15': 'Things to do',
-                    '18': 'Forums',
-                    '28': 'Shopping',
-                    '36': 'Books',
-                    '37': 'Products',
-                    '38': 'Videos',
-                    '44': 'Visual matches',
-                    '47': 'Web (+"Refine Results" panel)',
-                    '48': 'Exact matches',
-                    '51': 'Homework'
-                    # Manually setting 56 and above results in a redirect with the udm parameter stripped off
-                    # (at least until 65, then I stopped testing)
-                }
-                value = udm_mappings.get(node.value, 'Unknown')
-                unfurl.add_to_queue(
-                    data_type='google.udm', key=None, value=f'Results Page Type: {value}',
-                    hover='Google Results Page Type', parent_id=node.node_id, incoming_edge_config=google_edge)
-
-            elif node.key == 'uule':
-                # https://moz.com/ugc/geolocation-the-ultimate-tip-to-emulate-local-search
-                location_string = base64.b64decode(unfurl.add_b64_padding(node.value[10:]))
-                unfurl.add_to_queue(
-                    data_type='google.uule', key=None, value=location_string, label=location_string,
-                    parent_id=node.node_id, incoming_edge_config=google_edge)
-
-            elif node.key == 'rlz':
-                unfurl.add_to_queue(
-                    data_type='descriptor', key=None,
-                    value='RLZ used for grouping promotion event signals and anonymous user cohorts',
-                    parent_id=node.node_id, incoming_edge_config=google_edge)
-
-                try:
-                    rlz = parse_rlz(node.value)
-                    if rlz:
-                        for component in rlz.values():
-                            unfurl.add_to_queue(
-                                data_type=component['data_type'], key=component['key'],
-                                value=component['value'], hover=component['hover'],
-                                parent_id=node.node_id, incoming_edge_config=google_edge)
-
-                except ValueError as e:
-                    print(f'Exception parsing RLZ: {e}')
-
-            elif node.key == 'ved':
-                node.extra_options = {'widthConstraint': {'maximum': 400}}
-                known_ved_descriptions = {
-                    'linkIndex':
-                        'Unique index for each link on the search page. <br>The higher the number, the farther'
-                        ' down the page the link is. <br>This should always be present. '
-                        '<a href="https://deedpolloffice.com/blog/articles/decoding-ved-parameter" '
-                        'target="_blank">[ref]</a>',
-                    'linkType':
-                        'The type of link that was clicked on; there are thousands. <br>This should always be '
-                        'present. <a href="https://deedpolloffice.com/blog/articles/decoding-ved-parameter" '
-                        'target="_blank">[ref]</a>',
-                    'subResultPosition':
-                        'The position of the link, if it was inside a "group" (like an adword or<br> '
-                        'knowledge graph). This starts at 0 and counts up.'
-                        '<a href="https://deedpolloffice.com/blog/articles/decoding-ved-parameter" '
-                        'target="_blank">[ref]</a>',
-                    'resultPosition':
-                        'The position of the result on the page. The higher the number, <br>the farther '
-                        'down the page the result is. '
-                        '<a href="https://deedpolloffice.com/blog/articles/decoding-ved-parameter" '
-                        'target="_blank">[ref]</a>',
-                    'resultsStart':
-                        'The starting position of the first result on the page. <br>On page 2, it will be '
-                        '10; and on page 3 it will be 20, <br>and so on. On page 1, the value isn’t '
-                        'present (but implicitly, this means a value of 0).'
-                        '<a href="https://deedpolloffice.com/blog/articles/decoding-ved-parameter" '
-                        'target="_blank">[ref]</a>',
-                }
-                assert node.value[0] in ['0', '2'], 'The ved parameter should start with 0 or 2'
-                encoded_ved = node.value[1:]
-                padded_ved = unfurl.add_b64_padding(encoded_ved)
-                if not padded_ved:
-                    return
-                try:
-                    encoded_ved = base64.urlsafe_b64decode(padded_ved)
-                    ved = Ved().FromString(encoded_ved)
-                except Exception as e:
-                    log.warning(f'Unable to parse ved from {padded_ved}: {e}')
-                    return
-
-                ved_dict = json_format.MessageToDict(ved)
-                for key, value in ved_dict.items():
-                    if key == 'v13Outer':
-                        assert isinstance(value, dict), 'ved-13-Outer should be a dict'
-                        assert isinstance(value['v13Inner'], dict), 'ved-13-Inner should also be a dict'
-                        v13_timestamp = value['v13Inner'].get('timestamp')
-                        if v13_timestamp:
-                            unfurl.add_to_queue(
-                                data_type='epoch-microseconds', key='Timestamp', value=v13_timestamp,
-                                parent_id=node.node_id, incoming_edge_config=google_edge,
-                                hover='The ved parameter contains a timestamp, believed to <br>correspond to around '
-                                      'when the page loaded.')
-
-                        v13_unknown_2 = value['v13Inner'].get('v132')
-                        if v13_unknown_2:
-                            unfurl.add_to_queue(
-                                data_type='google.ved', key='13-2', value=v13_unknown_2,
-                                parent_id=node.node_id, incoming_edge_config=google_edge,
-                                hover='Inside the ved parameter, the meanings of<br> 13-2 and 13-3 are not known.')
-
-                        v13_unknown_3 = value['v13Inner'].get('v133')
-                        if v13_unknown_3:
-                            unfurl.add_to_queue(
-                                data_type='google.ved', key='13-3', value=v13_unknown_3,
-                                parent_id=node.node_id, incoming_edge_config=google_edge,
-                                hover='Inside the ved parameter, the meanings of 13-2 and 13-3 are not known, <br>'
-                                      'but the values in <b>ved 13-3</b> and <b>ei-3</b> match.')
-
-                    elif key == 'v15':
-                        assert isinstance(value, dict), 'ved-15 should be a dict'
-                        v15_1 = value.get('v151')
-                        v15_2 = value.get('v152')
-
-                        if v15_1:
-                            unfurl.add_to_queue(
-                                data_type='google.ved', key='15-1', value=v15_1,
-                                parent_id=node.node_id, incoming_edge_config=google_edge,
-                                hover='Inside the ved parameter, the meanings of<br> 15-1 and 15-2 are not known.')
-                        if v15_2:
-                            unfurl.add_to_queue(
-                                data_type='google.ved', key='15-2', value=v15_2,
-                                parent_id=node.node_id, incoming_edge_config=google_edge,
-                                hover='Inside the ved parameter, the meanings of<br> 15-1 and 15-2 are not known.')
-
+                elif key == 'clicked_suggestion':
+                    if value:
+                        unfurl.add_to_queue(
+                            data_type='google.aqs.clicked_suggestion', key='Clicked Suggestion',
+                            value=value, hover='The index (starting at 0) of the accepted suggestion',
+                            parent_id=node.node_id, incoming_edge_config=google_edge)
                     else:
                         unfurl.add_to_queue(
-                            data_type='google.ved', key=key, value=value, label=f'{key}: {value}',
-                            hover=known_ved_descriptions.get(key, ''),
+                            data_type='google.aqs.clicked_suggestion', key='Clicked Suggestion',
+                            value='None', hover='The user did not click one of the offered suggestions',
                             parent_id=node.node_id, incoming_edge_config=google_edge)
+                else:
+                    unfurl.add_to_queue(
+                        data_type='google.aqs', key=key, value=value,
+                        parent_id=node.node_id, incoming_edge_config=google_edge)
+
+        elif node.key == 'ei':
+            if not re.fullmatch(utils.urlsafe_b64_re, node.value):
+                return
+            padded_value = unfurl.add_b64_padding(node.value)
+            if not padded_value:
+                return
+
+            try:
+                parsed_ei = parse_ei(padded_value)
+            except Exception as e:
+                log.exception(f'Exception running parse_ei() on {padded_value}: {e}')
+                return
+
+            if not parsed_ei:
+                return
+
+            node.hover = 'The \'<b>ei</b>\' parameter is base64-encoded and contains four values. ' \
+                         '<br>The first two are thought to be the timestamp of when the session started ' \
+                         '<br>(first value is full seconds, second is microsecond component)' \
+                         '<br>This may be seconds (but could be days!) before the URL was generated.' \
+                         '<br><br>References:<ul>' \
+                         '<li><a href="https://deedpolloffice.com/blog/articles/decoding-ei-parameter" ' \
+                         'target="_blank">Kevin Jones: How to decode the ei parameter in Google search</a></li>' \
+                         '<li><a href="http://cheeky4n6monkey.blogspot.com/2014/10/google-eid.html" ' \
+                         'target="_blank">Cheeky4n6Monkey: Google-ei\'d ?!</a></li>' \
+                         '<li><a href="https://github.com/obsidianforensics/unfurl/issues/56" ' \
+                         'target="_blank">Rasmus-Riis: Search Experiment with ei parameter</a></li>'\
+                         '<li>Adam Mazack: noticed the 2nd ei value contained fractional seconds ' \
+                         '<br> that match the ved</li></ul>'
+            node.extra_options = {'widthConstraint': {'maximum': 300}}
+
+            assert len(parsed_ei) == 4, \
+                f'There should be 4 decoded ei values, but we have {len(parsed_ei)}!'
+
+            unfurl.add_to_queue(
+                data_type='google.ei', key=0, value=parsed_ei[0],
+                label=f'ei-0: {parsed_ei[0]}',
+                hover='The first <b>ei</b> value is thought to be part of the timestamp'
+                      ' (seconds) of when the session began.',
+                parent_id=node.node_id, incoming_edge_config=google_edge)
+
+            unfurl.add_to_queue(
+                data_type='google.ei', key=1, value=parsed_ei[1],
+                label=f'ei-1: {parsed_ei[1]:06d}',
+                hover='The second <b>ei</b> value is thought to be part of the timestamp'
+                      ' (fractional seconds) of when the session began.',
+                parent_id=node.node_id, incoming_edge_config=google_edge)
+
+            unfurl.add_to_queue(
+                data_type='google.ei', key=2, value=parsed_ei[2],
+                label=f'ei-2: {parsed_ei[2]}',
+                hover='The meaning of the third <b>ei</b> value is not known.',
+                parent_id=node.node_id, incoming_edge_config=google_edge)
+
+            unfurl.add_to_queue(
+                data_type='google.ei', key=3, value=parsed_ei[3],
+                label=f'ei-3: {parsed_ei[3]}',
+                hover='The meaning of the fourth <b>ei</b> value is not known, '
+                      'but it matches the <b>ved</b> "13-3" value.',
+                parent_id=node.node_id, incoming_edge_config=google_edge)
+
+        elif node.key == 'gs_l':
+            node.hover = 'The <b>gs_l</b> parameter contains multiple values, delimited by <b>.</b>. <br>' \
+                         'We only know the meaning of 7 (of the 26+) parameters.'
+            node.extra_options = {'widthConstraint': {'maximum': 1400}}
+
+            params = node.value.split('.')
+
+            known_params = [0, 1, 2, 4, 5, 7, 8, 26]
+            for known_param in known_params:
+                if len(params) > known_param and len(params[known_param]) > 0:
+                    unfurl.add_to_queue(
+                        data_type='google.gs_l', key=str(known_param), value=params[known_param],
+                        label=f'Parameter {str(known_param)}: {params[known_param]}',
+                        parent_id=node.node_id, incoming_edge_config=google_edge)
+
+        elif node.key == 'oq':
+            unfurl.add_to_queue(
+                data_type='google.oq', key=None, value=f'"Original" Search Query: {node.value}',
+                hover='Original terms entered by the user; auto-complete or suggestions <br>'
+                      'may have been used to reach the actual search terms (in <b>q</b>)',
+                parent_id=node.node_id, incoming_edge_config=google_edge)
+
+        elif node.key == 'q':
+            unfurl.add_to_queue(
+                data_type='google.q', key=None, value=f'Search Query: {node.value}',
+                hover='Terms used in the Google search', parent_id=node.node_id, incoming_edge_config=google_edge)
+
+        elif node.key == 'source':
+            if node.value in known_sources.keys():
+                unfurl.add_to_queue(
+                    data_type='google.source', key=None, value=f'Source: {known_sources[node.value]}',
+                    hover='Source of the Google search', parent_id=node.node_id, incoming_edge_config=google_edge)
+
+        elif node.key == 'start':
+            unfurl.add_to_queue(
+                data_type='google.start', key=None, value=f'Starting Result: {node.value}',
+                hover='Google search by default shows 10 results per page; higher <br>'
+                      '"start" values may indicate browsing more subsequent results pages.',
+                parent_id=node.node_id, incoming_edge_config=google_edge)
+
+        elif node.key == 'sxsrf':
+            node.extra_options = {'widthConstraint': {'maximum': 400}}
+            sxs_0, sxs_1 = node.value.split(':', 1)
+            unfurl.add_to_queue(data_type='google.sxsrf', key=1, value=sxs_0,
+                                parent_id=node.node_id, incoming_edge_config=google_edge)
+            unfurl.add_to_queue(
+                data_type='epoch-milliseconds', key=2, value=sxs_1,
+                hover='The <b>sxsrf</b> parameter contains a timestamp, believed<br>'
+                      ' to correspond to the previous page load. <br><br>Refernces:<ul><li>'
+                      '<a href="https://twitter.com/phillmoore/status/1169846359509233664" target="_blank">'
+                      'Phill Moore on Twitter</a></li></ul>', parent_id=node.node_id,
+                incoming_edge_config=google_edge)
+
+        elif node.key == 'tbm':
+            tbm_mappings = {
+                'bks': 'Google Books',
+                'fin': 'Google Finance',
+                'flm': 'Google Flights',
+                'isch': 'Google Images',
+                'nws': 'Google News',
+                'shop': 'Google Shopping',
+                'vid': 'Google Videos',
+            }
+
+            value = tbm_mappings.get(node.value, 'Unknown')
+            unfurl.add_to_queue(
+                data_type='google.tbm', key=None, value=f'Search Type: {value}',
+                hover='Google Search Type', parent_id=node.node_id, incoming_edge_config=google_edge)
+
+        elif node.key == 'udm':
+            # UDM _might_ be URL Data Manager?
+            # https://source.chromium.org/chromium/chromium/src/+/main:content/browser/webui/url_data_manager.h
+            udm_mappings = {
+                '1': 'All',
+                '2': 'Images',
+                '3': 'Products',
+                '6': 'Learn',
+                '7': 'Videos',
+                '8': 'Jobs',
+                '12': 'News',
+                '14': 'Web',
+                '15': 'Things to do',
+                '18': 'Forums',
+                '28': 'Shopping',
+                '36': 'Books',
+                '37': 'Products',
+                '38': 'Videos',
+                '44': 'Visual matches',
+                '47': 'Web (+"Refine Results" panel)',
+                '48': 'Exact matches',
+                '51': 'Homework'
+                # Manually setting 56 and above results in a redirect with the udm parameter stripped off
+                # (at least until 65, then I stopped testing)
+            }
+            value = udm_mappings.get(node.value, 'Unknown')
+            unfurl.add_to_queue(
+                data_type='google.udm', key=None, value=f'Results Page Type: {value}',
+                hover='Google Results Page Type', parent_id=node.node_id, incoming_edge_config=google_edge)
+
+        elif node.key == 'uule':
+            # https://moz.com/ugc/geolocation-the-ultimate-tip-to-emulate-local-search
+            location_string = base64.b64decode(unfurl.add_b64_padding(node.value[10:]))
+            unfurl.add_to_queue(
+                data_type='google.uule', key=None, value=location_string, label=location_string,
+                parent_id=node.node_id, incoming_edge_config=google_edge)
+
+        elif node.key == 'rlz':
+            unfurl.add_to_queue(
+                data_type='descriptor', key=None,
+                value='RLZ used for grouping promotion event signals and anonymous user cohorts',
+                parent_id=node.node_id, incoming_edge_config=google_edge)
+
+            try:
+                rlz = parse_rlz(node.value)
+                if rlz:
+                    for component in rlz.values():
+                        unfurl.add_to_queue(
+                            data_type=component['data_type'], key=component['key'],
+                            value=component['value'], hover=component['hover'],
+                            parent_id=node.node_id, incoming_edge_config=google_edge)
+
+            except ValueError as e:
+                print(f'Exception parsing RLZ: {e}')
+
+        elif node.key == 'stick':
+            # Tag this node so parse_protobuf can look up friendly field names
+            # when it decodes the stick protobuf (via parse_compressed → parse_protobuf).
+            unfurl.add_to_stash('proto_context', {node.node_id: {'context': 'google.stick'}})
+
+        elif node.key == 'ved':
+            node.extra_options = {'widthConstraint': {'maximum': 400}}
+            if node.value[0] not in ['0', '2']:
+                return
+            ved_version = node.value[0]
+            encoded_ved = node.value[1:]
+
+            ved_version_descriptions = {
+                '0': 'Version 0: older ved format, not base64-encoded',
+                '2': 'Version 2: current ved format, base64-encoded protobuf'
+            }
+
+            unfurl.add_to_queue(
+                data_type='google.ved.version', key='Ved Version', value=ved_version,
+                label=f'Ved Version: {ved_version}',
+                hover=ved_version_descriptions.get(ved_version),
+                parent_id=node.node_id, incoming_edge_config=google_edge)
+
+            # Skip b64 decoding on this node — the value has a version byte prefix
+            # that would produce garbage proto fields. The child node below has
+            # the cleaned value.
+            unfurl.add_to_stash('proto_context', {node.node_id: {'context': 'google.ved', 'skip': True}})
+            unfurl.add_to_queue(
+                data_type='proto.ved_raw', key=None, value=encoded_ved,
+                parent_id=node.node_id, incoming_edge_config=google_edge,
+                hover='The ved parameter value (base64-encoded protobuf)')
+
+        elif node.key == 'gs_lcrp':
+            unfurl.add_to_stash('proto_context', {node.node_id: {'context': 'google.gs_lcrp'}})
+
+    # Expand and interpret gs_lcrp (ChromeSearchboxStats) fields.
+    if node.data_type == 'google.gs_lcrp':
+        if isinstance(node.value, list):
+            for item in node.value:
+                if isinstance(item, dict):
+                    unfurl.add_to_queue(
+                        data_type='google.gs_lcrp', key=node.key, value=item,
+                        label=f'Suggestion {item.get("index", "?")}',
+                        parent_id=node.node_id, incoming_edge_config=google_edge)
+                else:
+                    unfurl.add_to_queue(
+                        data_type='google.gs_lcrp', key=node.key, value=item,
+                        parent_id=node.node_id, incoming_edge_config=google_edge)
+        elif isinstance(node.value, dict):
+            for key, value in node.value.items():
+                if key == 'type':
+                    unfurl.add_to_queue(
+                        data_type='omnibox.suggest_type', key='Type', value=value,
+                        parent_id=node.node_id, incoming_edge_config=google_edge)
+                elif key == 'subtypes':
+                    for subtype in value:
+                        unfurl.add_to_queue(
+                            data_type='omnibox.suggest_subtype', key='Subtype', value=subtype,
+                            parent_id=node.node_id, incoming_edge_config=google_edge)
+                else:
+                    unfurl.add_to_queue(
+                        data_type='google.gs_lcrp', key=key, value=value,
+                        label=f'{key}: {value}',
+                        parent_id=node.node_id, incoming_edge_config=google_edge)
 
     if node.data_type == 'google.aqs.ac_match':
-        ac_types = {
-            0: 'Suggested Search',
-            # A suggested search (with the default engine) query that doesn't fall into one of the
-            # more specific suggestion categories below.
-            5: 'Suggested URL',
-            6: 'Calculator',
-            33: 'Suggested Search - Tail',  # A suggested search to complete the tail of the query.
-            35: 'Personalized Suggested Search',  # A personalized suggested search.
-            44: 'Personalized Suggested Search for a Google+ profile',
-            46: 'Suggested Entity Search',  # A suggested search for an entity.
-            69: 'Native Chrome Suggestion',
-            171: 'Tile Suggestion'
-        }
-
-        ac_subtypes = {
-            39: 'Personal',
-            57: 'Omnibox Echo Search',
-            58: 'Omnibox Echo URL',
-            59: 'Omnibox History Search',
-            60: 'Omnibox History URL',
-            61: 'Omnibox History Title',
-            62: 'Omnibox History Body',
-            63: 'Omnibox History Keyword',
-            64: 'Omnibox Other',  # This value indicates a native chrome suggestion with no named subtype
-            65: 'Omnibox Bookmark Title',
-            66: 'URL-based',
-            176: 'Clipboard Text',
-            177: 'Clipboard URL',
-            271: 'Suggest 2G Lite',
-            327: 'Clipboard Image',
-            362: 'Zero Prefix',
-            450: 'Zero Prefix Local History',
-            451: 'Zero Prefix Local Frequent URLs'
-        }
-
         entry, count = split_exactly(node.value, 'l', 1)
         ac_type, subtype_str = split_exactly(entry, 'i', 1)
 
         unfurl.add_to_queue(
-            data_type='descriptor', key='Type', value=ac_types.get(int(ac_type), f'Unknown ({ac_type})'),
+            data_type='omnibox.suggest_type', key='Type', value=int(ac_type),
             parent_id=node.node_id, incoming_edge_config=google_edge)
 
         if subtype_str:
             for subtype in subtype_str.split('i'):
                 unfurl.add_to_queue(
-                    data_type='descriptor', key='Subtype', value=ac_subtypes.get(int(subtype), f'Unknown ({subtype})'),
+                    data_type='omnibox.suggest_subtype', key='Subtype', value=int(subtype),
                     parent_id=node.node_id, incoming_edge_config=google_edge)
 
         if count:
@@ -864,10 +803,16 @@ def run(unfurl, node):
             5497: 'dictionary definition link'
         }
 
-        if node.key == 'linkType':
-            if known_link_types.get(node.value):
+        # Field 2 in the ved protobuf is the link type.
+        # This is scoped to data_type=='google.ved' so '2' won't match other protos.
+        if node.key == '2':
+            try:
+                link_type_int = int(node.value)
+            except (ValueError, TypeError):
+                link_type_int = node.value
+            if known_link_types.get(link_type_int):
                 unfurl.add_to_queue(
-                    data_type='descriptor', key=None, value=node.value, label=known_link_types.get(node.value),
+                    data_type='descriptor', key=None, value=node.value, label=known_link_types.get(link_type_int),
                     hover='There are tens of thousands of these values; the \'known\'<br> ones in Unfurl are based on '
                           '<a href="https://github.com/beschulz/ved-decoder" target="_blank">'
                           'Benjamin Schulz\'s work</a>',

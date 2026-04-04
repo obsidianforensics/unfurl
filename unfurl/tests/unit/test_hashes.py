@@ -8,6 +8,7 @@ class TestHashDetection(unittest.TestCase):
         """ Test detecting a MD5 in a URL with lookups disabled """
 
         test = Unfurl()
+        test.remote_lookups = False
         test.add_to_queue(
             data_type='url', key=None,
             value='http://test-hashes.com/test?1=5f4dcc3b5aa765d61d8327deb882cf99')
