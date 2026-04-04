@@ -20,7 +20,7 @@ import os
 import blackboxprotobuf
 from google.protobuf import json_format
 from unfurl import utils
-from unfurl.parsers.proto import proto_registry
+from unfurl.parsers.proto import proto_registry, enum_registry
 
 log = logging.getLogger(__name__)
 
@@ -70,17 +70,23 @@ wire_types = {
 
 
 def find_proto_context(unfurl, node):
-    """Walk up the parent chain to find a proto_context tag in the stash."""
+    """Walk up the parent chain to find a proto_context tag in the stash.
+    Returns (context_string, should_skip) tuple.
+    Stash entries are dicts with 'context' (required) and 'skip' (optional)."""
     proto_contexts = unfurl.stash.get('proto_context', {})
     current = node
     while current:
         if current.node_id in proto_contexts:
-            return proto_contexts[current.node_id]
+            entry = proto_contexts[current.node_id]
+            if isinstance(entry, dict):
+                return entry.get('context'), entry.get('skip', False) and current.node_id == node.node_id
+            # Backwards compat: plain string
+            return entry, False
         if current.parent_id:
             current = unfurl.nodes.get(current.parent_id)
         else:
             break
-    return None
+    return None, False
 
 
 def decode_with_compiled_proto(unfurl, node, raw_bytes, context, edge_type):
@@ -114,7 +120,30 @@ def decode_with_compiled_proto(unfurl, node, raw_bytes, context, edge_type):
     return True
 
 
+def resolve_enum_value(enum_class, value):
+    """Convert a protobuf enum int to a human-friendly name.
+    E.g., SuggestType(69) -> 'Native Chrome'."""
+    try:
+        name = enum_class.Name(int(value))
+        # Strip common prefixes (TYPE_, SUBTYPE_, etc.)
+        for prefix in ('TYPE_', 'SUBTYPE_'):
+            if name.startswith(prefix):
+                name = name[len(prefix):]
+                break
+        return name.replace('_', ' ').title()
+    except (ValueError, TypeError):
+        return f'Unknown ({value})'
+
+
 def run(unfurl, node):
+
+    # Resolve enum-typed nodes. Any node whose data_type is in the enum_registry
+    # gets a friendly label from the proto enum definition.
+    if node.data_type in enum_registry:
+        enum_class = enum_registry[node.data_type]
+        friendly = resolve_enum_value(enum_class, node.value)
+        node.label = f'{node.key}: {friendly}' if node.key else friendly
+        return
 
     def get_field_meta(path, field_map):
         """Look up field metadata using a dotted path (e.g., '13.1.1') in a flat field map.
@@ -180,13 +209,13 @@ def run(unfurl, node):
                         hover=field_hover,
                         parent_id=node.node_id, incoming_edge_config=edge_type)
 
-    context = find_proto_context(unfurl, node)
+    context, skip = find_proto_context(unfurl, node)
 
     # Handle nested proto messages. These may have data_type='proto.dict'/'proto.list'
     # (no context) or a context-specific type like 'google.ved' (with context).
     # In both cases, the value is a dict with 'field_values' and 'field_types'.
-    # Pass along field_context (nested field definitions from field_names.json)
-    # so child fields can get labels too.
+    # Pass along field_path (dotted prefix for field_names.json lookups)
+    # so nested fields can get labels too.
     if isinstance(node.value, dict) and 'field_values' in node.value:
         field_values = node.value.get('field_values')
         field_types = node.value.get('field_types')
@@ -221,11 +250,10 @@ def run(unfurl, node):
     if not isinstance(node.value, str):
         return False
 
-    # If this node is tagged in proto_context, a parser (e.g., parse_google) has
-    # already created a child node with the cleaned value for us to decode.
-    # Skip b64 decoding here to avoid duplicates.
-    proto_contexts = unfurl.stash.get('proto_context', {})
-    if node.node_id in proto_contexts:
+    # Skip b64 decoding if this node is explicitly marked (e.g., ved has a version
+    # byte prefix that would produce garbage proto fields; a child node has the
+    # cleaned value instead).
+    if skip:
         return
 
     if len(node.value) % 4 == 1:

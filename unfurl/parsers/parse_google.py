@@ -469,7 +469,7 @@ def run(unfurl, node):
         elif node.key == 'stick':
             # Tag this node so parse_protobuf can look up friendly field names
             # when it decodes the stick protobuf (via parse_compressed → parse_protobuf).
-            unfurl.add_to_stash('proto_context', {node.node_id: 'google.stick'})
+            unfurl.add_to_stash('proto_context', {node.node_id: {'context': 'google.stick'}})
 
         elif node.key == 'ved':
             node.extra_options = {'widthConstraint': {'maximum': 400}}
@@ -489,78 +489,60 @@ def run(unfurl, node):
                 hover=ved_version_descriptions.get(ved_version),
                 parent_id=node.node_id, incoming_edge_config=google_edge)
 
-            unfurl.add_to_stash('proto_context', {node.node_id: 'google.ved'})
+            # Skip b64 decoding on this node — the value has a version byte prefix
+            # that would produce garbage proto fields. The child node below has
+            # the cleaned value.
+            unfurl.add_to_stash('proto_context', {node.node_id: {'context': 'google.ved', 'skip': True}})
             unfurl.add_to_queue(
                 data_type='proto.ved_raw', key=None, value=encoded_ved,
                 parent_id=node.node_id, incoming_edge_config=google_edge,
                 hover='The ved parameter value (base64-encoded protobuf)')
 
         elif node.key == 'gs_lcrp':
-            from unfurl.parsers.proto.chrome_searchbox_stats_pb2 import ChromeSearchboxStats
-            padded_b64_value = unfurl.add_b64_padding(node.value)
-            if not padded_b64_value:
-                return
-            try:
-                encoded_gs_lcrp = base64.urlsafe_b64decode(padded_b64_value)
-                lcrp = ChromeSearchboxStats.FromString(encoded_gs_lcrp)
-            except Exception as e:
-                log.warning(f"Unable to parse ved from {padded_b64_value}: {e}")
-                return
+            unfurl.add_to_stash('proto_context', {node.node_id: {'context': 'google.gs_lcrp'}})
 
-            lcrp_dict = json_format.MessageToDict(lcrp)
-            for key, value in lcrp_dict.items():
-                unfurl.add_to_queue(
-                    data_type='google.gs_lcrp', key=key, value=value, label=f'{key}: {value}',
-                    hover='blahg.',
-                    parent_id=node.node_id, incoming_edge_config=google_edge)
+    # Expand and interpret gs_lcrp (ChromeSearchboxStats) fields.
+    if node.data_type == 'google.gs_lcrp':
+        if isinstance(node.value, list):
+            for item in node.value:
+                if isinstance(item, dict):
+                    unfurl.add_to_queue(
+                        data_type='google.gs_lcrp', key=node.key, value=item,
+                        label=f'Suggestion {item.get("index", "?")}',
+                        parent_id=node.node_id, incoming_edge_config=google_edge)
+                else:
+                    unfurl.add_to_queue(
+                        data_type='google.gs_lcrp', key=node.key, value=item,
+                        parent_id=node.node_id, incoming_edge_config=google_edge)
+        elif isinstance(node.value, dict):
+            for key, value in node.value.items():
+                if key == 'type':
+                    unfurl.add_to_queue(
+                        data_type='omnibox.suggest_type', key='Type', value=value,
+                        parent_id=node.node_id, incoming_edge_config=google_edge)
+                elif key == 'subtypes':
+                    for subtype in value:
+                        unfurl.add_to_queue(
+                            data_type='omnibox.suggest_subtype', key='Subtype', value=subtype,
+                            parent_id=node.node_id, incoming_edge_config=google_edge)
+                else:
+                    unfurl.add_to_queue(
+                        data_type='google.gs_lcrp', key=key, value=value,
+                        label=f'{key}: {value}',
+                        parent_id=node.node_id, incoming_edge_config=google_edge)
 
     if node.data_type == 'google.aqs.ac_match':
-        ac_types = {
-            0: 'Suggested Search',
-            # A suggested search (with the default engine) query that doesn't fall into one of the
-            # more specific suggestion categories below.
-            5: 'Suggested URL',
-            6: 'Calculator',
-            33: 'Suggested Search - Tail',  # A suggested search to complete the tail of the query.
-            35: 'Personalized Suggested Search',  # A personalized suggested search.
-            44: 'Personalized Suggested Search for a Google+ profile',
-            46: 'Suggested Entity Search',  # A suggested search for an entity.
-            69: 'Native Chrome Suggestion',
-            171: 'Tile Suggestion'
-        }
-
-        ac_subtypes = {
-            39: 'Personal',
-            57: 'Omnibox Echo Search',
-            58: 'Omnibox Echo URL',
-            59: 'Omnibox History Search',
-            60: 'Omnibox History URL',
-            61: 'Omnibox History Title',
-            62: 'Omnibox History Body',
-            63: 'Omnibox History Keyword',
-            64: 'Omnibox Other',  # This value indicates a native chrome suggestion with no named subtype
-            65: 'Omnibox Bookmark Title',
-            66: 'URL-based',
-            176: 'Clipboard Text',
-            177: 'Clipboard URL',
-            271: 'Suggest 2G Lite',
-            327: 'Clipboard Image',
-            362: 'Zero Prefix',
-            450: 'Zero Prefix Local History',
-            451: 'Zero Prefix Local Frequent URLs'
-        }
-
         entry, count = split_exactly(node.value, 'l', 1)
         ac_type, subtype_str = split_exactly(entry, 'i', 1)
 
         unfurl.add_to_queue(
-            data_type='descriptor', key='Type', value=ac_types.get(int(ac_type), f'Unknown ({ac_type})'),
+            data_type='omnibox.suggest_type', key='Type', value=int(ac_type),
             parent_id=node.node_id, incoming_edge_config=google_edge)
 
         if subtype_str:
             for subtype in subtype_str.split('i'):
                 unfurl.add_to_queue(
-                    data_type='descriptor', key='Subtype', value=ac_subtypes.get(int(subtype), f'Unknown ({subtype})'),
+                    data_type='omnibox.suggest_subtype', key='Subtype', value=int(subtype),
                     parent_id=node.node_id, incoming_edge_config=google_edge)
 
         if count:

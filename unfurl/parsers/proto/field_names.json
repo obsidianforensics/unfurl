@@ -1,0 +1,38 @@
+{
+  "google.stick": {
+    "1": "Type",
+    "2": "Subject",
+    "4": "Object",
+    "5": "Predicate",
+    "84": "Search Phrase"
+  },
+  "google.ved": {
+    "1": {
+      "name": "Link Index",
+      "hover": "Unique index for each link on the search page. <br>The higher the number, the farther down the page the link is. <br>This should always be present. <a href=\"https://deedpolloffice.com/blog/articles/decoding-ved-parameter\" target=\"_blank\">[ref]</a>"
+    },
+    "2": {
+      "name": "Link Type",
+      "hover": "The type of link that was clicked on; there are thousands. <br>This should always be present. <a href=\"https://deedpolloffice.com/blog/articles/decoding-ved-parameter\" target=\"_blank\">[ref]</a>"
+    },
+    "5": {
+      "name": "Sub-Result Position",
+      "hover": "The position of the link, if it was inside a \"group\" (like an adword or<br> knowledge graph). This starts at 0 and counts up. <a href=\"https://deedpolloffice.com/blog/articles/decoding-ved-parameter\" target=\"_blank\">[ref]</a>"
+    },
+    "6": {
+      "name": "Result Position",
+      "hover": "The position of the result on the page. The higher the number, <br>the farther down the page the result is. <a href=\"https://deedpolloffice.com/blog/articles/decoding-ved-parameter\" target=\"_blank\">[ref]</a>"
+    },
+    "7": {
+      "name": "Results Start",
+      "hover": "The starting position of the first result on the page. <br>On page 2, it will be 10; and on page 3 it will be 20, <br>and so on. On page 1, the value isn't present (but implicitly, this means a value of 0). <a href=\"https://deedpolloffice.com/blog/articles/decoding-ved-parameter\" target=\"_blank\">[ref]</a>"
+    },
+    "13.1.1": {
+      "name": "Timestamp",
+      "hover": "The ved parameter contains a timestamp, believed to <br>correspond to around when the page loaded."
+    },
+    "13.1.3": {
+      "hover": "The meaning of this number isn't known, <br>but it matches the <b>ei-3</b> value."
+    }
+  }
+}
