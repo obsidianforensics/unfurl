@@ -212,7 +212,7 @@ def run(unfurl, node):
                 parent_id=node.node_id, incoming_edge_config=twitter_edge)
 
     # I've only seen `pbs.twimg.com`, but there could be other subdomains used for image attachments to tweets
-    elif '.twimg.com' in preceding_domain:
+    elif preceding_domain == 'twimg.com' or preceding_domain.endswith('.twimg.com'):
         if node.data_type == 'url.path.segment':
             # Viewing an image attached to a tweet
             # Ex: https://pbs.twimg.com/media/ErD8xv0VkAIBJe7?format=jpg&name=medium
@@ -224,5 +224,5 @@ def run(unfurl, node):
     # uploaded somewhere else). The file name pattern appears fairly unique, so if we see a file name that matches it
     # and decodes to a "reasonable" timestamp, show it in the graph.
     if node.data_type == 'file.name' and len(node.value) == 15:
-        on_twitter = True if '.twimg.com' in preceding_domain else False
+        on_twitter = preceding_domain == 'twimg.com' or preceding_domain.endswith('.twimg.com')
         parse_twitter_snowflake(unfurl, node, encoding_type='base64', on_twitter=on_twitter)
