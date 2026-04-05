@@ -8,6 +8,7 @@ class TestProtobuf(unittest.TestCase):
         """ Test a protobuf that is zipped, then base64-encoded."""
 
         test = Unfurl()
+        test.remote_lookups = False
         test.add_to_queue(
             data_type='url', key=None,
             value='eJzj4tLP1TcwNajKKi8yYPSSTcvMSVUoriwuSc1VSMsvSs0rzkxWSMxLzKksziwGADbBDzw')
