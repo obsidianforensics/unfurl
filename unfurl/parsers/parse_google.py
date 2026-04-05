@@ -102,8 +102,8 @@ def parse_ei(ei):
 
 def parse_rlz(rlz_string):
     # Reference: https://github.com/rogerta/rlz/blob/wiki/HowToReadAnRlzString.md
-    rlz_re = re.compile(r'1(?P<ap>[A-z0-9]{2})(?P<brand_code>[A-z0-9]{4})(?P<cannibal>[c_])(?P<language_code>[A-z]{2}'
-                        r'(-[A-z]{2})?)(?P<install_cohort>[A-z]{2}\d{1,4})?(?P<search_cohort>[A-z]{2}\d{1,4})?')
+    rlz_re = re.compile(r'1(?P<ap>[A-Za-z0-9]{2})(?P<brand_code>[A-Za-z0-9]{4})(?P<cannibal>[c_])(?P<language_code>[A-Za-z]{2}'
+                        r'(-[A-Za-z]{2})?)(?P<install_cohort>[A-Za-z]{2}\d{1,4})?(?P<search_cohort>[A-Za-z]{2}\d{1,4})?')
     rlz_m = rlz_re.fullmatch(rlz_string)
     if not rlz_m:
         return
