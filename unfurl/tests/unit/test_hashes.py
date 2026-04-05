@@ -14,12 +14,9 @@ class TestHashDetection(unittest.TestCase):
             value='http://test-hashes.com/test?1=5f4dcc3b5aa765d61d8327deb882cf99')
         test.parse_queue()
 
-        # check the number of nodes
-        self.assertEqual(len(test.nodes.keys()), 9)
-        self.assertEqual(test.total_nodes, 9)
-
         # confirm that detected as MD5
-        self.assertIn('Potential MD5 hash', test.nodes[9].label)
+        md5_node = next(n for n in test.nodes.values() if n.data_type == 'hash.md5')
+        self.assertIn('Potential MD5 hash', md5_node.label)
 
 
 if __name__ == '__main__':

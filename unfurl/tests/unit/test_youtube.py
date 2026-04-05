@@ -28,6 +28,7 @@ class TestYouTube(unittest.TestCase):
         """ Test a youtu.be URL, with t as int"""
 
         test = Unfurl()
+        test.remote_lookups = False
         test.add_to_queue(
             data_type='url', key=None,
             value='https://youtu.be/LnhSTZgzKuY?list=PLlFGZ98XmfGfV6RAY9fQSeRfyIuhVGSdm&t=301')

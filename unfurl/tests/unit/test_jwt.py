@@ -68,6 +68,7 @@ class TestJWT(unittest.TestCase):
         """
 
         test = Unfurl()
+        test.remote_lookups = False
         test.add_to_queue(
             data_type='url', key=None,
             value='https://lnks.gd/l/eyJhbGciOiJIUzI1NiJ9.eyJidWxsZXRpbl9saW5rX2lkIjoxMDAsInVyaSI6ImJwMjpjbGl'
