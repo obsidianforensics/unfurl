@@ -289,7 +289,7 @@ def parse_mastodon_snowflake(unfurl, node):
 
 def run(unfurl, node):
     # Check if node is a child of a known mastodon domain
-    if node.data_type == 'url.path.segment' and any(mastodon_domain in unfurl.find_preceding_domain(node) for mastodon_domain in mastodon_domains):
+    if node.data_type == 'url.path.segment' and any(unfurl.preceding_domain_matches(node, d) for d in mastodon_domains):
         # Check if the URL segment value is an integer & Mastodon timestamp would be between 2015-01 and 2030-01
         if unfurl.check_if_int_between(node.value, 93065733734400000, 124089536413761540):
             parse_mastodon_snowflake(unfurl, node)
@@ -298,6 +298,7 @@ def run(unfurl, node):
             node.hover = ('Mastodon usernames consist of two parts: the local username and the domain of the server '
                           '(similar to an email address) <a href="https://docs.joinmastodon.org/user/signup/#address" '
                           'target="_blank">[ref]</a>.')
+            node.extra_options = {'widthConstraint': {'maximum': 250}}
 
             split_username = node.value[1:].split('@')
             if len(split_username) == 1:

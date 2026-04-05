@@ -70,7 +70,7 @@ def run(unfurl, node):
 
     # Known patterns from main Discord site
     discord_domains = ['discordapp.com', 'discordapp.net', 'discord.com']
-    if any(discord_domain in unfurl.find_preceding_domain(node) for discord_domain in discord_domains):
+    if any(unfurl.preceding_domain_matches(node, d) for d in discord_domains):
         if node.data_type == 'url.path.segment':
             # Viewing a channel on a server
             # Ex: https://discordapp.com/channels/427876741990711298/551531058039095296

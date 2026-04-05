@@ -3,12 +3,15 @@
 
 name: Unit Tests
 
-on: 
+on:
   pull_request:
     types: [opened, synchronize, reopened]
   push:
     branches: main
-    
+
+permissions:
+  contents: read
+
 jobs:
   build:
 

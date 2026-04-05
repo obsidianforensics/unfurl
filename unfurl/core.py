@@ -238,6 +238,21 @@ class Unfurl:
 
         return preceding_domain
 
+    def preceding_domain_matches(self, node, domain):
+        """Check if the preceding domain matches the given domain exactly.
+        Handles subdomains: preceding_domain_matches(node, 'yahoo.com')
+        matches 'yahoo.com' and 'www.yahoo.com' but not 'notyahoo.com'."""
+        preceding = self.find_preceding_domain(node)
+        return preceding == domain or preceding.endswith(f'.{domain}')
+
+    def preceding_domain_contains(self, node, label):
+        """Check if the preceding domain contains the given label as a domain segment.
+        preceding_domain_contains(node, 'google') matches 'google.com',
+        'www.google.co.uk', but not 'notgoogle.com'."""
+        preceding = self.find_preceding_domain(node)
+        labels = preceding.split('.')
+        return label in labels
+
     def get_id(self):
         new_id = self.next_id
         self.next_id += 1

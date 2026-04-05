@@ -43,7 +43,7 @@ def format_seconds(seconds):
 
 def run(unfurl, node):
     youtube_domains = ['youtube.com', 'youtu.be']
-    if any(youtube_domain in unfurl.find_preceding_domain(node) for youtube_domain in youtube_domains):
+    if any(unfurl.preceding_domain_matches(node, d) for d in youtube_domains):
         if node.key == 't' or node.key == 'time_continue' or node.key == 'start':
             time_formatted = format_seconds(node.value)
 
