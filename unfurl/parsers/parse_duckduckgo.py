@@ -24,7 +24,7 @@ duckduckgo = {
 def run(unfurl, node):
     # Some URL parameters are from https://duckduckgo.com/params
     if node.data_type == 'url.query.pair':
-        if 'duckduckgo' in unfurl.find_preceding_domain(node):
+        if unfurl.preceding_domain_matches(node, 'duckduckgo.com'):
 
             if node.key == 'df':
                 df_mappings = {

@@ -24,7 +24,7 @@ dropbox_edge = {
 
 def run(unfurl, node):
     # References: https://www.atropos4n6.com/cloud-forensics/artifacts-of-dropbox-usage-on-windows-10-part-2/
-    if 'dropbox.com' in unfurl.find_preceding_domain(node):
+    if unfurl.preceding_domain_matches(node, 'dropbox.com'):
         if node.data_type == 'url.path' and node.value.startswith('/home'):
             _, viewed_directory = node.value.split('/home', 1)
             viewed_value = ''

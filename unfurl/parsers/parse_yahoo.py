@@ -23,7 +23,7 @@ yahoo = {
 
 def run(unfurl, node):
     if node.data_type == 'url.query.pair':
-        if 'yahoo.com' in unfurl.find_preceding_domain(node):
+        if unfurl.preceding_domain_matches(node, 'yahoo.com'):
 
             if node.key == 'durs':
                 durs_mappings = {

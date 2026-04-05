@@ -30,7 +30,7 @@ CORS(app)
 
 
 class UnfurlApp:
-    def __init__(self, unfurl_debug='True', unfurl_host='localhost', unfurl_port='5000', remote_lookups=False):
+    def __init__(self, unfurl_debug=False, unfurl_host='localhost', unfurl_port=5000, remote_lookups=False):
         self.unfurl_debug = unfurl_debug
         self.unfurl_host = unfurl_host
         self.unfurl_port = unfurl_port

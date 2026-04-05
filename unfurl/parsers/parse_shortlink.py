@@ -77,7 +77,7 @@ def run(unfurl, node):
     # refactor this in the future to be more flexible if I find more sites that operate this way, but for now
     # this works.
     if node.data_type == 'url.query.pair' and node.key == 'code':
-        if 'linkedin.com' in preceding_domain:
+        if unfurl.preceding_domain_matches(node, 'linkedin.com'):
             expanded_url = parse_linkedin_slink_url(node.value)
             if expanded_url:
                 unfurl.add_to_queue(
@@ -122,7 +122,7 @@ def run(unfurl, node):
                 parent_id=node.node_id, incoming_edge_config=shortlink_edge)
 
     bitly_domains = ['bit.ly', 'bitly.com', 'j.mp']
-    if any(bitly_domain in unfurl.find_preceding_domain(node) for bitly_domain in bitly_domains):
+    if any(unfurl.preceding_domain_matches(node, d) for d in bitly_domains):
         expanded_info = expand_bitly_url(node.value[1:], unfurl.api_keys.get('bitly', os.environ.get('bitly')))
 
         if not expanded_info:

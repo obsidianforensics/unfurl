@@ -83,7 +83,7 @@ def parse_linkedin_message_id_v2(unfurl, node):
 
 
 def run(unfurl, node):
-    if 'linkedin.com' in unfurl.find_preceding_domain(node):
+    if unfurl.preceding_domain_matches(node, 'linkedin.com'):
         # Parsing LinkedIn Profile ID from the default Profile Page URL
         # Example: https://linkedin.com/in/charolette-pare-93b3a220a
         # h/t: Jack Crook (https://twitter.com/jackcr/status/1575915823075495936)

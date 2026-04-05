@@ -117,7 +117,7 @@ def run(unfurl, node):
     max_reasonable_id = create_tiktok_id(days_ahead=365)
 
     if node.data_type == 'url.path.segment':
-        if 'tiktok.com' in unfurl.find_preceding_domain(node):
+        if unfurl.preceding_domain_matches(node, 'tiktok.com'):
             if node.key == 1:
                 if node.value.startswith('@'):
                     unfurl.add_to_queue(

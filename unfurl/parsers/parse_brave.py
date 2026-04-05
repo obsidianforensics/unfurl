@@ -24,7 +24,7 @@ brave_edge = {
 
 
 def run(unfurl, node):
-    if 'search.brave' in unfurl.find_preceding_domain(node):
+    if unfurl.preceding_domain_matches(node, 'search.brave.com'):
         if node.data_type == 'url.query.pair':
             if node.key == 'tf':
                 tf_mappings = {
