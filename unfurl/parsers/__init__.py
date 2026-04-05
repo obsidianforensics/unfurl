@@ -15,6 +15,7 @@ __all__ = [
     "parse_ip",
     "parse_json",
     "parse_jwt",
+    "parse_kg",
     "parse_ksuid",
     "parse_linkedin",
     "parse_mac_addr",
