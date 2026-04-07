@@ -33,7 +33,7 @@ hash_lookup_edge = {
 
 
 def nitrxgen_md5_lookup(value):
-    response = requests.get(f'https://www.nitrxgen.net/md5db/{value}', verify=False).text
+    response = requests.get(f'https://www.nitrxgen.net/md5db/{value}', verify=False, timeout=3).text
 
     if response:
         return response
@@ -44,7 +44,7 @@ def nitrxgen_md5_lookup(value):
 def virustotal_lookup(unfurl, hash_value):
 
     response = requests.get(f'https://www.virustotal.com/api/v3/files/{hash_value}',
-                            headers={'x-apikey': unfurl.api_keys.get('virustotal')})
+                            headers={'x-apikey': unfurl.api_keys.get('virustotal')}, timeout=3)
 
     if response.status_code == 200:
         try:
