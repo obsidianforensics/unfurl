@@ -42,7 +42,7 @@ def expand_bitly_url(bitlink_id, api_key):
         return {}
 
 def parse_linkedin_slink_url(shortcode):
-    r = requests.get(url=f'https://www.linkedin.com/slink?code={shortcode}')
+    r = requests.get(url=f'https://www.linkedin.com/slink?code={shortcode}', timeout=3)
     soup = BeautifulSoup(r.content, 'html.parser')
     link = soup.select_one("main a.artdeco-button")
     if link.get('href'):
@@ -52,14 +52,14 @@ def parse_linkedin_slink_url(shortcode):
 
 def expand_vdg_url(shortcode):
     # Ref: https://v.gd/apilookupreference.php
-    r = requests.get(url='https://v.gd/forward.php', params={'shorturl': shortcode, 'format': 'json'})
+    r = requests.get(url='https://v.gd/forward.php', params={'shorturl': shortcode, 'format': 'json'}, timeout=3)
     if r.status_code == 200:
         return r.json().get('url')
     return {}
 
 
 def expand_url_via_redirect_header(base_url, shortcode):
-    r = requests.get(f'{base_url}{shortcode.rstrip("/")}', allow_redirects=False)
+    r = requests.get(f'{base_url}{shortcode.rstrip("/")}', allow_redirects=False, timeout=3)
 
     if r.status_code in [301, 302, 303, 307, 308]:
         return r.headers['Location']
@@ -194,7 +194,7 @@ def run(unfurl, node):
 
     # Guess that any domain + tld that is less than eight characters is a link shortener, and try to
     # expand it via a 301/302 Location header.
-    if len(preceding_domain) < 8:
+    if preceding_domain and len(preceding_domain) < 8:
         expanded_url = expand_url_via_redirect_header(f'https://{preceding_domain}/', node.value[1:])
         if expanded_url:
             unfurl.add_to_queue(

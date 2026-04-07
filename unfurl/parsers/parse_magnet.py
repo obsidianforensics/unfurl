@@ -61,8 +61,11 @@ xt_hash_types = {
 }
 
 def check_tracker_statuses(magnet_url):
-    r = requests.get(f'https://checker.openwebtorrent.com/check', params={'magnet': magnet_url},
-                     allow_redirects=False)
+    try:
+        r = requests.get('https://checker.openwebtorrent.com/check', params={'magnet': magnet_url},
+                         allow_redirects=False, timeout=3)
+    except requests.exceptions.RequestException:
+        return {}
 
     if r.status_code == 200:
         statuses = {}

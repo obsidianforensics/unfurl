@@ -43,7 +43,7 @@ def run(unfurl, node):
     try:
         response = requests.get(
             'https://kgsearch.googleapis.com/v1/entities:search',
-            params={'ids': node.value, 'limit': 10, 'key': api_key})
+            params={'ids': node.value, 'limit': 10, 'key': api_key}, timeout=3)
         response.raise_for_status()
         response = response.json()
     except Exception as e:

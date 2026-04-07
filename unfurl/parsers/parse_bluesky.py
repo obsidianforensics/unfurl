@@ -68,7 +68,7 @@ def parse_bluesky_tid(unfurl: unfurl.core.Unfurl, node: unfurl.core.Unfurl.Node)
 def resolve_bsky_handle_to_did(unfurl: unfurl.core.Unfurl, handle: str) -> str | None:
     if not unfurl.remote_lookups:
         return None
-    r = requests.get(f'https://bsky.social/xrpc/com.atproto.identity.resolveHandle?handle={handle}')
+    r = requests.get(f'https://bsky.social/xrpc/com.atproto.identity.resolveHandle?handle={handle}', timeout=3)
     if r.status_code == 200 and r.content and r.json().get('did'):
         return r.json()['did']
     else:
@@ -88,7 +88,7 @@ def add_resolved_did_node(unfurl: unfurl.core.Unfurl, node: unfurl.core.Unfurl.N
 def get_did_plc_audit_log_values(unfurl: unfurl.core.Unfurl, did: str, record_index: int = None, field: str = None) -> Union[str, dict, False]:
     if not unfurl.remote_lookups:
         return False
-    r = requests.get(f'https://plc.directory/{did}/log/audit')
+    r = requests.get(f'https://plc.directory/{did}/log/audit', timeout=3)
     if r.status_code == 200:
         if record_index is not None and field:
             return r.json()[record_index][field]
