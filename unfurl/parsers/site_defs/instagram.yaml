@@ -1,0 +1,207 @@
+# Instagram URL parser definition
+# Parsed by parse_site_defs.py
+
+name: Instagram
+domains:
+  - instagram.com
+edge:
+  color: "#E1306C"
+  title: Instagram
+  label: "📷"
+
+path_rules:
+
+  # --- Posts ---
+  # instagram.com/p/SHORTCODE/
+  - match:
+      1: p
+    position: 2
+    apply:
+      label: "Post: {value}"
+      data_type: instagram.shortcode
+      hover: >-
+        An Instagram post shortcode. This is a base64-encoded media ID.
+        Shortcodes are monotonically increasing, so newer posts have
+        lexicographically later shortcodes.
+
+  # --- Reels ---
+  # instagram.com/reel/SHORTCODE/ or instagram.com/reels/SHORTCODE/
+  - match:
+      1: reel
+    position: 2
+    apply:
+      label: "Reel: {value}"
+      data_type: instagram.shortcode
+      hover: >-
+        An Instagram Reel shortcode. Same encoding as post shortcodes.
+
+  - match:
+      1: reels
+    position: 2
+    apply:
+      label: "Reel: {value}"
+      data_type: instagram.shortcode
+      hover: >-
+        An Instagram Reel shortcode. Same encoding as post shortcodes.
+
+  # --- IGTV ---
+  # instagram.com/tv/SHORTCODE/
+  - match:
+      1: tv
+    position: 2
+    apply:
+      label: "IGTV: {value}"
+      data_type: instagram.shortcode
+      hover: >-
+        An Instagram TV (IGTV) shortcode.
+
+  # --- Stories ---
+  # instagram.com/stories/USERNAME/STORY_ID/
+  # instagram.com/stories/highlights/ID (must come before generic stories rule)
+  - match:
+      1: stories
+      2: highlights
+    position: 3
+    apply:
+      label: "Highlight: {value}"
+      data_type: instagram.highlight_id
+      hover: >-
+        An Instagram story highlight ID.
+
+  # instagram.com/stories/USERNAME/STORY_ID/
+  - match:
+      1: stories
+    position: 2
+    exclude_values: [highlights]
+    apply:
+      label: "Stories by: {value}"
+      data_type: instagram.username
+      hover: >-
+        The Instagram username whose story is being viewed.
+
+  - match:
+      1: stories
+    position: 3
+    apply:
+      label: "Story ID: {value}"
+      data_type: instagram.story_id
+      hover: >-
+        An Instagram story media ID. These are numeric IDs that
+        increase over time.
+
+  # --- Profiles ---
+  # instagram.com/USERNAME/
+  # Must exclude known non-profile first segments
+  - match: {}
+    position: 1
+    exclude_values: [p, reel, reels, tv, stories, explore, direct, accounts,
+                     developer, about, legal, press, api, graphql,
+                     web, emails, challenge, oauth, static, lite]
+    apply:
+      label: "Profile: {value}"
+      data_type: instagram.username
+      hover: >-
+        An Instagram username/profile.
+
+  # --- User sub-pages ---
+  # instagram.com/USERNAME/p/SHORTCODE (alternate post URL format)
+  - match:
+      2: p
+    position: 3
+    apply:
+      label: "Post: {value}"
+      data_type: instagram.shortcode
+      hover: >-
+        An Instagram post shortcode from a user-scoped URL.
+
+  # --- Explore ---
+  # instagram.com/explore/tags/TAGNAME/
+  - match:
+      1: explore
+      2: tags
+    position: 3
+    apply:
+      label: "Tag: #{value}"
+      data_type: instagram.tag
+      hover: >-
+        An Instagram hashtag being explored.
+
+  # instagram.com/explore/locations/ID/NAME/
+  - match:
+      1: explore
+      2: locations
+    position: 3
+    apply:
+      label: "Location ID: {value}"
+      data_type: instagram.location_id
+      hover: >-
+        An Instagram location ID.
+
+  - match:
+      1: explore
+      2: locations
+    position: 4
+    apply:
+      label: "Location: {value}"
+      data_type: instagram.location_name
+      hover: >-
+        An Instagram location name (URL-encoded).
+
+# Query parameter rules
+query_rules:
+
+  # l.instagram.com/?u=ENCODED_URL&e=TRACKING
+  - key: u
+    apply:
+      label: "Redirect to: {value}"
+      data_type: url
+      hover: >-
+        The destination URL in an Instagram outbound redirect
+        (l.instagram.com). The URL the user was sent to after
+        clicking a link in an Instagram post or bio.
+
+  - key: e
+    apply:
+      label: "Tracking: {value}"
+      data_type: instagram.redirect_tracking
+      hover: >-
+        A tracking token in an Instagram outbound redirect link.
+
+  - key: igshid
+    apply:
+      label: "Share ID: {value}"
+      data_type: instagram.share_id
+      hover: >-
+        Instagram share ID. A base64-encoded value added when a link
+        is shared through the Instagram app. Can indicate the sharing
+        method/platform.
+
+  - key: igsh
+    apply:
+      label: "Share ID: {value}"
+      data_type: instagram.share_id
+      hover: >-
+        Instagram share ID (short form). Same as igshid but with a
+        shorter parameter name used in newer app versions.
+
+  - key: img_index
+    apply:
+      label: "Image #{value} in carousel"
+      data_type: instagram.carousel_index
+      hover: >-
+        The index of the image being viewed in a multi-image carousel post.
+        Numbering starts at 1.
+
+  - key: utm_source
+    apply:
+      label: "UTM Source: {value}"
+      data_type: url.tracking
+      hover: >-
+        UTM tracking parameter indicating the traffic source.
+
+  - key: hl
+    apply:
+      label: "Language: {value}"
+      data_type: instagram.language
+      hover: >-
+        The display language for the Instagram page.
