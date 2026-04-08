@@ -1,4 +1,4 @@
-# Copyright 2024 Ryan Benson
+# Copyright 2026 Ryan Benson
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -167,7 +167,7 @@ def run(unfurl, node):
             x = split_params.group('delim')
             parsed_params = node.value.split(x)
             for parsed_param in parsed_params:
-                key, value = parsed_param.split('=')
+                key, _, value = parsed_param.partition('=')
                 unfurl.add_to_queue(
                     data_type='url.param.pair', key=key, value=value,
                     parent_id=node.node_id, incoming_edge_config=urlparse_edge)

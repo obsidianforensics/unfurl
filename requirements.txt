@@ -6,6 +6,7 @@ networkx == 3.*
 protobuf >= 6.0, < 7.0
 publicsuffix2
 pycountry > 24
+pyyaml >= 6.0
 pymispwarninglists >= 1.6.1
 requests >= 2.32
 torf > 4

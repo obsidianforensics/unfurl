@@ -25,6 +25,7 @@ __all__ = [
     "parse_metasploit",
     "parse_protobuf",
     "parse_shortlink",
+    "parse_site_defs",
     "parse_sonyflake",
     "parse_tiktok",
     "parse_timestamp",
