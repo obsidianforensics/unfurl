@@ -1,0 +1,346 @@
+# GitHub URL parser definition
+# Parsed by parse_site_defs.py
+
+name: GitHub
+domains:
+  - github.com
+edge:
+  color: "#333333"
+  title: GitHub
+  label: "⑃"
+
+# Each rule matches against url.path.segment nodes.
+# "match" checks sibling segments by key (1-indexed position) for literal values.
+# "apply" defines what to add to the matched node.
+#
+# The rule fires on the segment at "position" (the node being processed).
+# If "position" is omitted, use "on_value" to match by segment value instead.
+#
+# Available placeholders in label/hover: {value} = the node's value
+
+path_rules:
+
+  # --- Owner / Repo identification ---
+  # github.com/:owner/:repo - label the owner
+  # Excludes known non-repo first segments
+  - match: {}
+    position: 1
+    exclude_values: [login, join, orgs, settings, search, explore, marketplace,
+                     notifications, new, topics, collections, sponsors, team,
+                     features, enterprise, pricing, about, site, codespaces,
+                     blog, customer-stories, nonprofit]
+    apply:
+      label: "Owner: {value}"
+      data_type: github.owner
+      hover: >-
+        A GitHub user or organization that owns the repository.
+
+  # github.com/:owner/:repo - label the repo
+  - match: {}
+    position: 2
+    exclude_sibling:
+      key: 1
+      values: [login, join, orgs, settings, search, team]
+    apply:
+      label: "Repo: {value}"
+      data_type: github.repo
+      hover: >-
+        A GitHub repository name.
+
+  # --- Commits ---
+  # github.com/:owner/:repo/commit/:sha
+  - match:
+      3: commit
+    position: 4
+    apply:
+      label: "Commit: {value}"
+      data_type: github.commit_hash
+      hover: >-
+        A Git commit SHA hash. This uniquely identifies a specific commit
+        in the repository's history.
+
+  # github.com/:owner/:repo/commits (commit log, optionally with ?author=)
+  - match: {}
+    on_value: commits
+    apply:
+      label: "Commit History"
+      data_type: descriptor
+
+  # --- Issues ---
+  # github.com/:owner/:repo/issues/:number
+  - match:
+      3: issues
+    position: 4
+    apply:
+      label: "Issue #{value}"
+      data_type: github.issue_number
+      hover: >-
+        A GitHub issue number. Issues are numbered sequentially
+        within a repository.
+
+  # --- Pull Requests ---
+  # github.com/:owner/:repo/pull/:number
+  - match:
+      3: pull
+    position: 4
+    apply:
+      label: "PR #{value}"
+      data_type: github.pr_number
+      hover: >-
+        A GitHub pull request number. PRs are numbered in the same
+        sequence as issues within a repository.
+
+  # github.com/:owner/:repo/pull/:number/files
+  - match:
+      3: pull
+    on_value: files
+    apply:
+      label: "Changed Files"
+      data_type: descriptor
+
+  # github.com/:owner/:repo/pull/:number/commits
+  - match:
+      3: pull
+    on_value: commits
+    apply:
+      label: "PR Commits"
+      data_type: descriptor
+
+  # --- File browsing ---
+  # github.com/:owner/:repo/blob/:ref/:path
+  - match:
+      3: blob
+    position: 4
+    apply:
+      label: "Branch/Ref: {value}"
+      data_type: github.ref
+      hover: >-
+        A Git branch name, tag, or commit SHA used to view a specific
+        version of the file.
+
+  # github.com/:owner/:repo/tree/:ref/:path
+  - match:
+      3: tree
+    position: 4
+    apply:
+      label: "Branch/Ref: {value}"
+      data_type: github.ref
+      hover: >-
+        A Git branch name, tag, or commit SHA used to view a specific
+        version of the directory.
+
+  # --- Releases ---
+  # github.com/:owner/:repo/releases/tag/:tag
+  - match:
+      3: releases
+      4: tag
+    position: 5
+    apply:
+      label: "Release Tag: {value}"
+      data_type: github.release_tag
+      hover: >-
+        A Git tag marking a specific release version.
+
+  # github.com/:owner/:repo/releases/download/:tag/:filename
+  - match:
+      3: releases
+      4: download
+    position: 5
+    apply:
+      label: "Release: {value}"
+      data_type: github.release_tag
+      hover: >-
+        The release version tag for this download.
+
+  - match:
+      3: releases
+      4: download
+    position: 6
+    apply:
+      label: "Asset: {value}"
+      data_type: github.release_asset
+      hover: >-
+        A release asset (downloadable file) attached to a GitHub release.
+
+  # --- Actions ---
+  # github.com/:owner/:repo/actions
+  - match: {}
+    on_value: actions
+    apply:
+      label: "GitHub Actions"
+      data_type: descriptor
+
+  # github.com/:owner/:repo/actions/runs/:run_id
+  - match:
+      3: actions
+      4: runs
+    position: 5
+    apply:
+      label: "Actions Run: {value}"
+      data_type: github.actions_run_id
+      hover: >-
+        A GitHub Actions workflow run ID.
+
+  # --- Other pages ---
+  # github.com/:owner/:repo/wiki
+  - match: {}
+    on_value: wiki
+    apply:
+      label: "Wiki"
+      data_type: descriptor
+
+  # github.com/:owner/:repo/security
+  - match: {}
+    on_value: security
+    apply:
+      label: "Security Advisories"
+      data_type: descriptor
+
+  # github.com/:owner/:repo/stargazers
+  - match: {}
+    on_value: stargazers
+    apply:
+      label: "Stargazers"
+      data_type: descriptor
+
+  # github.com/:owner/:repo/network
+  - match: {}
+    on_value: network
+    apply:
+      label: "Network Graph"
+      data_type: descriptor
+
+  # github.com/:owner/:repo/graphs/traffic
+  - match:
+      3: graphs
+    on_value: traffic
+    apply:
+      label: "Traffic Stats"
+      data_type: descriptor
+
+  # github.com/:owner/:repo/compare/:base...:head
+  - match:
+      3: compare
+    position: 4
+    apply:
+      label: "Compare: {value}"
+      data_type: github.compare_range
+      hover: >-
+        A comparison range between two Git refs (branches, tags, or commits).
+
+  # github.com/:owner/:repo/blame/:ref/:path
+  - match:
+      3: blame
+    position: 4
+    apply:
+      label: "Branch/Ref: {value}"
+      data_type: github.ref
+      hover: >-
+        Viewing git blame for this branch/ref, showing who last
+        modified each line.
+
+  # --- User-level pages ---
+  # github.com/orgs/:org/packages
+  - match:
+      1: orgs
+    position: 2
+    apply:
+      label: "Organization: {value}"
+      data_type: github.org
+      hover: >-
+        A GitHub organization.
+
+  # github.com/settings/tokens
+  - match:
+      1: settings
+      2: tokens
+    position: 2
+    apply:
+      label: "Personal Access Tokens"
+      data_type: descriptor
+      hover: >-
+        GitHub personal access token management page.
+
+  # github.com/login/oauth/authorize
+  - match:
+      1: login
+      2: oauth
+      3: authorize
+    position: 3
+    apply:
+      label: "OAuth Authorization"
+      data_type: descriptor
+      hover: >-
+        GitHub OAuth authorization endpoint. The query parameters contain
+        the client_id, scope, and redirect_uri for the requesting application.
+
+# Query parameter rules: match on url.query.pair nodes by key name.
+query_rules:
+  # github.com/.../authorize?client_id=...
+  - key: client_id
+    apply:
+      label: "OAuth Client ID: {value}"
+      data_type: github.oauth_client_id
+      hover: >-
+        The OAuth application's client ID. This identifies which third-party
+        application is requesting access to the user's GitHub account.
+
+  - key: redirect_uri
+    apply:
+      label: "Redirect: {value}"
+      data_type: url
+      hover: >-
+        The URL the user will be redirected to after authorizing
+        the OAuth application.
+
+  - key: scope
+    apply:
+      label: "Scope: {value}"
+      data_type: github.oauth_scope
+      hover: >-
+        The OAuth permission scope being requested. Common scopes include
+        repo, user, read:org, admin:org.
+
+  - key: notification_referrer_id
+    apply:
+      label: "Notification Ref: {value}"
+      data_type: github.notification_ref
+      hover: >-
+        An ID linking this page view to a GitHub notification.
+        Format is typically NT_... with a base64-encoded payload.
+
+# Fragment rules: match on url.fragment nodes or segments within fragments.
+fragment_rules:
+  # github.com/.../file.py#L10-L20
+  - pattern: "^L(?P<start>\\d+)(?:-L(?P<end>\\d+))?$"
+    apply:
+      label: "Lines {start}-{end}"
+      label_single: "Line {start}"
+      data_type: github.line_reference
+      hover: >-
+        A reference to specific line number(s) in the file.
+
+  # github.com/.../pull/123/files#diff-abc123
+  - pattern: "^diff-(?P<hash>[a-f0-9]+)"
+    apply:
+      label: "File Diff: {hash}"
+      data_type: github.diff_reference
+      hover: >-
+        A reference to a specific file's diff within a pull request.
+        The hash identifies which file's changes to scroll to.
+
+  # #discussion_r1234567
+  - pattern: "^discussion_r(?P<id>\\d+)"
+    apply:
+      label: "Review Comment: {id}"
+      data_type: github.review_comment_id
+      hover: >-
+        A GitHub pull request review comment ID.
+
+  # #issuecomment-1234567
+  - pattern: "^issuecomment-(?P<id>\\d+)"
+    apply:
+      label: "Comment: {id}"
+      data_type: github.issue_comment_id
+      hover: >-
+        A GitHub issue or pull request comment ID.

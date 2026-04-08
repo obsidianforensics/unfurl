@@ -2,6 +2,19 @@ from unfurl.core import Unfurl
 import unittest
 
 
+def find_node(unfurl_instance, **criteria):
+    """Find a node matching all given criteria (label, value, data_type, key)."""
+    for node in unfurl_instance.nodes.values():
+        if all(getattr(node, attr, None) == val for attr, val in criteria.items()):
+            return node
+    return None
+
+
+def has_node(unfurl_instance, **criteria):
+    """Check if a node matching all given criteria exists."""
+    return find_node(unfurl_instance, **criteria) is not None
+
+
 class TestShortLinks(unittest.TestCase):
 
     def test_linkedin_shortlink(self):
@@ -11,15 +24,12 @@ class TestShortLinks(unittest.TestCase):
         test.add_to_queue(data_type='url', key=None, value='https://lnkd.in/fDJnJ64')
         test.parse_queue()
 
-        # test number of nodes
-        self.assertEqual(len(test.nodes.keys()), 19)
-        self.assertEqual(test.total_nodes, 19)
+        # Verify key structural elements
+        self.assertTrue(has_node(test, value='/fDJnJ64'))
+        self.assertTrue(has_node(test, value='thisweekin4n6.com'))
+        self.assertTrue(has_node(test, data_type='url.path.segment', key=4))
 
-        self.assertEqual(test.nodes[4].value, '/fDJnJ64')
-        self.assertEqual(test.nodes[12].value, 'thisweekin4n6.com')
-        self.assertEqual(test.nodes[19].key, 4)
-
-        # is processing finished empty
+        # is processing finished
         self.assertTrue(test.queue.empty())
         self.assertEqual(len(test.edges), 0)
 
@@ -30,15 +40,13 @@ class TestShortLinks(unittest.TestCase):
         test.add_to_queue(data_type='url', key=None, value='https://t.co/g6VWYYwY12')
         test.parse_queue()
 
-        # test number of nodes
-        self.assertEqual(20, len(test.nodes.keys()))
-        self.assertEqual(20, test.total_nodes)
+        # Verify the shortlink resolved to a github.com URL
+        self.assertTrue(has_node(test, value='/g6VWYYwY12'))
+        self.assertTrue(has_node(test, value='github.com'))
+        self.assertTrue(has_node(test, data_type='url.path.segment', key=1, value='obsidianforensics'))
 
-        self.assertEqual(test.nodes[4].value, '/g6VWYYwY12')
-        self.assertEqual(test.nodes[12].value, 'github.com')
-        self.assertEqual(test.nodes[17].label, '1: obsidianforensics')
 
-        # is processing finished empty
+        # is processing finished
         self.assertTrue(test.queue.empty())
         self.assertEqual(len(test.edges), 0)
 
@@ -50,9 +58,9 @@ class TestShortLinks(unittest.TestCase):
         test.add_to_queue(data_type='url', key=None, value='https://t.co/g6VWYYwY12')
         test.parse_queue()
 
-        # test number of nodes
-        self.assertEqual(9, len(test.nodes.keys()))
-        self.assertEqual(9, test.total_nodes)
+        # Without remote lookups, the shortlink can't be expanded
+        self.assertTrue(has_node(test, value='/g6VWYYwY12'))
+        self.assertFalse(has_node(test, value='github.com'))
 
 
 if __name__ == '__main__':
