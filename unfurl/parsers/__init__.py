@@ -12,6 +12,7 @@ __all__ = [
     "parse_google",
     "parse_hash",
     "parse_initial_node",
+    "parse_instagram",
     "parse_ip",
     "parse_json",
     "parse_jwt",
