@@ -153,8 +153,7 @@ query_rules:
   # l.instagram.com/?u=ENCODED_URL&e=TRACKING
   - key: u
     apply:
-      label: "Redirect to: {value}"
-      data_type: url
+      hover_only: true
       hover: >-
         The destination URL in an Instagram outbound redirect
         (l.instagram.com). The URL the user was sent to after
@@ -162,24 +161,21 @@ query_rules:
 
   - key: e
     apply:
-      label: "Tracking: {value}"
-      data_type: instagram.redirect_tracking
+      hover_only: true
       hover: >-
-        A tracking token in an Instagram outbound redirect link.
+        Instagram redirect tracking token. Value is included
+        on l.instagram.com outbound redirect links.
 
   - key: igshid
     apply:
-      label: "Share ID: {value}"
-      data_type: instagram.share_id
+      hover_only: true
       hover: >-
-        Instagram share ID. A base64-encoded value added when a link
-        is shared through the Instagram app. Can indicate the sharing
-        method/platform.
+        Instagram share ID; thought to be a base64-encoded value added when
+        a link is shared through the Instagram app.
 
   - key: igsh
     apply:
-      label: "Share ID: {value}"
-      data_type: instagram.share_id
+      hover_only: true
       hover: >-
         Instagram share ID (short form). Same as igshid but with a
         shorter parameter name used in newer app versions.

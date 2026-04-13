@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import fnmatch
 import logging
 import re
 from pathlib import Path
@@ -118,18 +119,23 @@ def _check_path_rule(unfurl, node, rule, site_def):
         if node.key != rule['position']:
             return False
 
-        # Check exclude_values: skip if this node's value is in the exclusion list
-        if node.value in rule.get('exclude_values', []):
-            return False
+        # Check exclude_values: skip if this node's value matches the exclusion list.
+        # Supports wildcards (e.g., '*.php') via fnmatch.
+        for pattern in rule.get('exclude_values', []):
+            if fnmatch.fnmatch(node.value, pattern):
+                return False
 
-        # Check exclude_sibling: skip if a sibling segment matches any excluded value
+        # Check exclude_sibling: skip if a sibling segment matches any excluded value.
+        # Supports wildcards (e.g., '*.php') via fnmatch.
         exclude_sib = rule.get('exclude_sibling')
         if exclude_sib:
-            for val in exclude_sib.get('values', []):
-                if unfurl.check_sibling_nodes(
-                        node, data_type='url.path.segment',
-                        key=int(exclude_sib['key']), value=str(val)):
-                    return False
+            sibling = unfurl.check_sibling_nodes(
+                node, data_type='url.path.segment',
+                key=int(exclude_sib['key']), return_node=True)
+            if sibling:
+                for pattern in exclude_sib.get('values', []):
+                    if fnmatch.fnmatch(str(sibling.value), pattern):
+                        return False
 
         # Check match constraints
         for seg_key, seg_value in match.items():
@@ -149,6 +155,12 @@ def _check_query_rule(unfurl, node, rule, site_def):
         return False
 
     apply = rule['apply']
+
+    # hover_only: just set hover text on the existing node, don't create a child
+    if apply.get('hover_only'):
+        node.hover = apply.get('hover', '')
+        return True
+
     edge_config = site_def['_edge_config']
     label = _format_label(apply.get('label', '{value}'), node.value)
 
