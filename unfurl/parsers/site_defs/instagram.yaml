@@ -169,17 +169,14 @@ query_rules:
 
   - key: igshid
     apply:
-      label: "Share ID: {value}"
-      data_type: instagram.share_id
+      hover_only: true
       hover: >-
-        Instagram share ID. A base64-encoded value added when a link
-        is shared through the Instagram app. Can indicate the sharing
-        method/platform.
+        Instagram share ID; thought to be a base64-encoded value added when
+        a link is shared through the Instagram app.
 
   - key: igsh
     apply:
-      label: "Share ID: {value}"
-      data_type: instagram.share_id
+      hover_only: true
       hover: >-
         Instagram share ID (short form). Same as igshid but with a
         shorter parameter name used in newer app versions.

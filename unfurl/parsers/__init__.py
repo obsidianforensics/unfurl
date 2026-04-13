@@ -8,6 +8,7 @@ __all__ = [
     "parse_dns",
     "parse_domain",
     "parse_dropbox",
+    "parse_facebook",
     "parse_duckduckgo",
     "parse_google",
     "parse_hash",

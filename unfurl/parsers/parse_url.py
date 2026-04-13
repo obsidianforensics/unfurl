@@ -238,7 +238,9 @@ def run(unfurl, node):
                     parent_id=node.node_id, incoming_edge_config=urlparse_edge)
                 return
 
-        try_url_unquote(unfurl, node)
+        # If the query pair value is itself a URL, parse it as one.
+        if not try_url_parse(unfurl, node):
+            try_url_unquote(unfurl, node)
 
     elif node.data_type == 'url.path.segment':
         for file_type in mimetypes.types_map.keys():

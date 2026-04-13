@@ -50,20 +50,25 @@ class TestInstagram(unittest.TestCase):
         self.assertFalse(has_node(u, data_type='epoch-milliseconds'))
 
     def test_redirect_url(self):
-        """l.instagram.com redirect parses destination URL"""
+        """l.instagram.com redirect parses destination URL; e gets hover only"""
         u = self._unfurl('https://l.instagram.com/?u=https%3A%2F%2Fexample.com%2Fpage&e=ATMnj6KS')
         self.assertTrue(has_node(u, value='example.com'))
-        self.assertTrue(has_node(u, data_type='instagram.redirect_tracking', value='ATMnj6KS'))
+        # e should get hover only, not a child node
+        self.assertFalse(has_node(u, data_type='instagram.redirect_tracking'))
 
-    def test_share_id_igshid(self):
-        """igshid query parameter"""
+    def test_share_id_igshid_hover(self):
+        """igshid gets hover text, not a child node"""
         u = self._unfurl('https://instagram.com/user123?igshid=NTc4MTIwNjQ2YQ==')
-        self.assertTrue(has_node(u, data_type='instagram.share_id', value='NTc4MTIwNjQ2YQ=='))
+        self.assertFalse(has_node(u, data_type='instagram.share_id'))
+        for node in u.nodes.values():
+            if node.data_type == 'url.query.pair' and node.key == 'igshid':
+                self.assertIn('share id', node.hover.lower())
+                break
 
-    def test_share_id_igsh(self):
-        """igsh query parameter (newer format)"""
+    def test_share_id_igsh_hover(self):
+        """igsh gets hover text, not a child node"""
         u = self._unfurl('https://www.instagram.com/reel/DWbNC2OEilE/?igsh=MWdkOWZ3NHZ0ZngzMQ==')
-        self.assertTrue(has_node(u, data_type='instagram.share_id', value='MWdkOWZ3NHZ0ZngzMQ=='))
+        self.assertFalse(has_node(u, data_type='instagram.share_id'))
 
     def test_language_param(self):
         """hl language parameter"""

@@ -1,0 +1,291 @@
+# Facebook URL parser definition
+# Parsed by parse_site_defs.py
+
+name: Facebook
+domains:
+  - facebook.com
+edge:
+  color: "#1877F2"
+  title: Facebook
+  label: "f"
+
+path_rules:
+
+  # --- Posts ---
+  # facebook.com/USERNAME/posts/POST_ID
+  - match:
+      2: posts
+    position: 3
+    apply:
+      label: "Post: {value}"
+      data_type: facebook.post_id
+      hover: >-
+        A Facebook post ID. Older posts use numeric IDs; newer posts
+        (since ~2022) use "pfbid" format, which Meta describes as a
+        "time-rotating pseudonymized identifier" combining the original
+        FBID and a timestamp. No known method exists to decode pfbids
+        offline; the numeric ID can be extracted by fetching the post
+        page and reading the share_fbid from the HTML.
+        <a href="https://about.fb.com/news/2022/09/deterring-scraping-by-protecting-facebook-identifiers/"
+        target="_blank">[ref]</a>
+
+  # --- Photos ---
+  # facebook.com/USERNAME/photos/PHOTO_ID
+  - match:
+      2: photos
+    position: 3
+    apply:
+      label: "Photo: {value}"
+      data_type: facebook.photo_id
+      hover: >-
+        A Facebook photo ID or photo set identifier.
+
+  # --- Videos ---
+  # facebook.com/USERNAME/videos/VIDEO_ID
+  - match:
+      2: videos
+    position: 3
+    apply:
+      label: "Video: {value}"
+      data_type: facebook.video_id
+      hover: >-
+        A Facebook video ID.
+
+  # facebook.com/watch?v=VIDEO_ID
+  - match: {}
+    on_value: watch
+    apply:
+      label: "Watch"
+      data_type: descriptor
+
+  # --- Groups ---
+  # facebook.com/groups/GROUP_ID_OR_NAME/
+  - match:
+      1: groups
+    position: 2
+    apply:
+      label: "Group: {value}"
+      data_type: facebook.group_id
+      hover: >-
+        A Facebook group ID or vanity name.
+
+  # --- Events ---
+  # facebook.com/events/EVENT_ID/
+  - match:
+      1: events
+    position: 2
+    apply:
+      label: "Event: {value}"
+      data_type: facebook.event_id
+      hover: >-
+        A Facebook event ID.
+
+  # --- Stories ---
+  # facebook.com/stories/STORY_ID
+  - match:
+      1: stories
+    position: 2
+    apply:
+      label: "Story: {value}"
+      data_type: facebook.story_id
+      hover: >-
+        A Facebook story ID.
+
+  # --- Pages ---
+  # facebook.com/pages/PAGE_NAME/PAGE_ID
+  - match:
+      1: pages
+    position: 2
+    apply:
+      label: "Page: {value}"
+      data_type: facebook.page_name
+      hover: >-
+        A Facebook Page name (from the legacy Pages URL format).
+
+  - match:
+      1: pages
+    position: 3
+    apply:
+      label: "Page ID: {value}"
+      data_type: facebook.page_id
+      hover: >-
+        A Facebook Page numeric ID.
+
+  # --- Share ---
+  # facebook.com/share/p/SHARE_ID/ or /share/r/SHARE_ID/
+  - match:
+      1: share
+    position: 3
+    apply:
+      label: "Share: {value}"
+      data_type: facebook.share_id
+      hover: >-
+        A Facebook share link ID.
+
+  # facebook.com/share/SHARE_ID/ (without type prefix)
+  - match:
+      1: share
+    position: 2
+    exclude_values: [p, r, v]
+    apply:
+      label: "Share: {value}"
+      data_type: facebook.share_id
+      hover: >-
+        A Facebook share link ID.
+
+  # --- Marketplace ---
+  # facebook.com/marketplace/item/ITEM_ID/
+  - match:
+      1: marketplace
+      2: item
+    position: 3
+    apply:
+      label: "Marketplace Item: {value}"
+      data_type: facebook.marketplace_id
+      hover: >-
+        A Facebook Marketplace listing ID.
+
+  # --- Profile username (first path segment) ---
+  - match: {}
+    position: 1
+    exclude_values: [groups, events, pages, stories, share, marketplace,
+                     watch, search, login, recover, help, settings, bookmarks,
+                     notifications, messages, friends, gaming, fundraisers,
+                     "*.php", plugins, hashtag, explore, reel, reels, ads,
+                     business, privacy, policies, about, careers, developers,
+                     security, lite]
+    apply:
+      label: "Profile: {value}"
+      data_type: facebook.username
+      hover: >-
+        A Facebook profile or Page vanity URL username.
+
+# Query parameter rules
+query_rules:
+
+  # l.facebook.com/l.php?u=ENCODED_URL
+  - key: u
+    apply:
+      hover_only: true
+      hover: >-
+        The destination URL in a Facebook outbound redirect link
+        (l.facebook.com/l.php). This is the URL the user was sent
+        to after clicking an external link on Facebook.
+
+  # l.facebook.com/l.php?h=HASH
+  - key: h
+    apply:
+      hover_only: true
+      hover: >-
+        Facebook link verification hash. Used to validate the redirect
+        URL hasn't been tampered with.
+
+  - key: hash
+    apply:
+      hover_only: true
+      hover: >-
+        Facebook link verification hash (lsr.php variant).
+
+  - key: enc
+    apply:
+      hover_only: true
+      hover: >-
+        Suspected Facebook tracking parameter.
+
+  - key: s
+    apply:
+      hover_only: true
+      hover: >-
+        Facebook link shim parameter. Part of the redirect link
+        verification system.
+
+  - key: __tn__
+    apply:
+      hover_only: true
+      hover: >-
+        Suspected Facebook content type/rendering flags.
+
+  - key: __cft__[0]
+    apply:
+      hover_only: true
+      hover: >-
+        Suspected Facebook tracking parameter.
+
+  - key: hc_ref
+    apply:
+      hover_only: true
+      hover: >-
+        Facebook referral context. Indicates where on Facebook the user
+        came from (e.g. PAGES_TIMELINE, news feed, notification).
+
+  # lsr.php?ext=TIMESTAMP
+  - key: ext
+    apply:
+      hover_only: true
+      hover: >-
+        A Unix timestamp in a Facebook redirect link (lsr.php),
+        thought to indicate when the link was generated or clicked.
+
+  # profile.php?id=USER_ID
+  - key: id
+    apply:
+      label: "User/Page ID: {value}"
+      data_type: facebook.user_id
+      hover: >-
+        A Facebook numeric user or Page ID.
+
+  # story.php params
+  - key: story_fbid
+    apply:
+      label: "Story FBID: {value}"
+      data_type: facebook.story_fbid
+      hover: >-
+        A Facebook story or post FBID (Facebook ID). This identifies
+        the specific story or post being viewed.
+
+  # mibextid - mobile browser extension ID
+  - key: mibextid
+    apply:
+      hover_only: true
+      hover: >-
+        Facebook Mobile In-Browser Extension ID. Indicates the link was
+        opened or shared from a Facebook mobile app. Common values:
+        ZbWKwL (Android), LQQJ4d (iOS), wwXIfr (share sheet).
+
+  # Share/referral params
+  - key: comment_id
+    apply:
+      label: "Comment: {value}"
+      data_type: facebook.comment_id
+      hover: >-
+        A Facebook comment ID, linking to a specific comment on a post.
+
+  - key: reply_comment_id
+    apply:
+      label: "Reply: {value}"
+      data_type: facebook.reply_comment_id
+      hover: >-
+        A Facebook reply comment ID.
+
+  - key: notif_id
+    apply:
+      hover_only: true
+      hover: >-
+        A Facebook notification ID that led the user to this URL.
+
+  - key: notif_t
+    apply:
+      label: "Notification Type: {value}"
+      data_type: facebook.notification_type
+      hover: >-
+        The type of Facebook notification (e.g. mentions_reply,
+        group_activity, comment_mention).
+
+  # Sharer
+  - key: app_id
+    apply:
+      label: "App ID: {value}"
+      data_type: facebook.app_id
+      hover: >-
+        A Facebook application ID identifying which app generated
+        or shared this link.
