@@ -153,8 +153,7 @@ query_rules:
   # l.instagram.com/?u=ENCODED_URL&e=TRACKING
   - key: u
     apply:
-      label: "Redirect to: {value}"
-      data_type: url
+      hover_only: true
       hover: >-
         The destination URL in an Instagram outbound redirect
         (l.instagram.com). The URL the user was sent to after
@@ -162,10 +161,10 @@ query_rules:
 
   - key: e
     apply:
-      label: "Tracking: {value}"
-      data_type: instagram.redirect_tracking
+      hover_only: true
       hover: >-
-        A tracking token in an Instagram outbound redirect link.
+        Instagram redirect tracking token. Value is included
+        on l.instagram.com outbound redirect links.
 
   - key: igshid
     apply:
