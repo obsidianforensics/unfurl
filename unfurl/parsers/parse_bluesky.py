@@ -111,7 +111,7 @@ def run(unfurl: unfurl.core.Unfurl, node: unfurl.core.Unfurl.Node) -> None:
         created = get_did_plc_audit_log_values(unfurl, did_plc_value, record_index=0, field='createdAt')
         if created and isinstance(created, str):
             unfurl.add_to_queue(
-                data_type='timestamp.is08601', key='createdAt', value=created, label=f'Created at {created}',
+                data_type='timestamp.iso8601', key='createdAt', value=created, label=f'Created at {created}',
                 hover='The audit log for DIDs on plc.directory contains "createdAt" timestamps.',
                 parent_id=node.node_id, incoming_edge_config=bluesky_edge)
 

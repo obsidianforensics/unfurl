@@ -21,6 +21,23 @@ class TestTimestamps(unittest.TestCase):
         self.assertIn('2016-01-23 19:32:28.702751', test.nodes[2].label)
         self.assertIn('Windows FileTime (hex)', test.nodes[2].hover)
 
+    def test_webkit_milliseconds(self):
+        """ Test a bare conversion of Webkit milliseconds timestamp """
+
+        test = Unfurl()
+        test.add_to_queue(
+            data_type='url', key=None,
+            value='13317004800000')
+        test.parse_queue()
+
+        # check the number of nodes
+        self.assertEqual(2, len(test.nodes.keys()))
+        self.assertEqual(2, test.total_nodes)
+
+        # confirm the timestamp is parsed
+        self.assertIn('2023-01-01 00:00:00', test.nodes[2].label)
+        self.assertIn('Webkit milliseconds', test.nodes[2].hover)
+
     def test_epoch_seconds_hex(self):
         """ Test a bare conversion of Epoch Seconds (Hex) timestamp """
 
