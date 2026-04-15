@@ -172,6 +172,28 @@ def decode_webkit(microseconds):
         'timestamp_value': str(converted_ts)
     }
 
+def decode_webkit_milliseconds(milliseconds):
+    """Decode a numeric timestamp in Webkit milliseconds format to a human-readable timestamp.
+
+    A Webkit milliseconds timestamp (14 digits) is an integer that counts the number of milliseconds since
+    12:00AM Jan 1 1601 UTC.
+
+    Useful values for ranges (all Jan-1 00:00:00):
+      1970: 11644473600000
+      2015: 13064544000000
+      2025: 13380163200000
+      2030: 13537929600000
+
+    """
+    converted_ts = datetime.datetime.fromtimestamp((float(milliseconds) / 1000) - 11644473600, tz=datetime.UTC)
+
+    return {
+        'data_type': 'timestamp.webkit-milliseconds',
+        'display_type': 'Webkit milliseconds',
+        'timestamp_value': str(converted_ts)
+    }
+
+
 def decode_windows_filetime(intervals):
     """Decode a numeric timestamp in Windows FileTime format to a human-readable timestamp.
 
@@ -322,6 +344,9 @@ def run(unfurl, node):
     elif node.data_type == 'webkit':
         new_timestamp = decode_webkit(node.value)
 
+    elif node.data_type == 'webkit-milliseconds':
+        new_timestamp = decode_webkit_milliseconds(node.value)
+
     elif node.data_type == 'datetime-ticks':
         new_timestamp = decode_datetime_ticks(node.value)
 
@@ -359,6 +384,10 @@ def run(unfurl, node):
             # Epoch ten microsecond increments (15 digits)
             elif 142007040000000 <= timestamp <= 189345600000000:  # 2015 <= ts <= 2030
                 new_timestamp = decode_epoch_microseconds(timestamp)
+
+            # Webkit milliseconds (14 digits)
+            elif 12906777600000 < timestamp < 15000000000000:  # 2009 < ts < 2076
+                new_timestamp = decode_webkit_milliseconds(timestamp)
 
             # Epoch milliseconds (13 digits)
             elif 1420070400000 <= timestamp <= 1893456000000:  # 2015 <= ts <= 2030
