@@ -394,7 +394,7 @@ def run(unfurl, node):
                 new_timestamp = decode_epoch_milliseconds(timestamp)
 
             # Epoch seconds (10 digits)
-            elif 1420070400 <= timestamp <= 1893456000:  # 2015 <= ts <= 2030
+            elif 1262304000 <= timestamp <= 1893456000:  # 2010 <= ts <= 2030
                 new_timestamp = decode_epoch_seconds(timestamp)
 
             # Mac Absolute Time (9 digits)

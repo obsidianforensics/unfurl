@@ -117,3 +117,4 @@ dmypy.json
 /dist/
 /dfir_unfurl.egg-info/
 /build/
+/.claude/settings.local.json
