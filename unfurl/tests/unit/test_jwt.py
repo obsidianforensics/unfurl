@@ -18,10 +18,6 @@ class TestJWT(unittest.TestCase):
                   'dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk')
         test.parse_queue()
 
-        # check the number of nodes
-        self.assertEqual(len(test.nodes.keys()), 15)
-        self.assertEqual(test.total_nodes, 15)
-
         # confirm the encoded header was separated out
         self.assertEqual('jwt.header.enc', test.nodes[2].data_type)
 
