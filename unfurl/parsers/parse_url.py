@@ -151,18 +151,27 @@ def run(unfurl, node):
         if node.data_type == 'url.fragment' and ':~:' in node.value:
             fragment_value, fragment_directive = node.value.split(':~:', 1)
 
-        # If we split off a fragment directive, the remaining fragment_value is the traditional
-        # anchor (e.g. "heading1"). Only parse it as query string pairs if it looks like one
-        # (contains '='). Otherwise, treat it as a plain anchor identifier.
-        if fragment_value and fragment_directive is not None and '=' not in fragment_value:
+        # Fragments can contain SPA-style routes with a '?' separating the path from query
+        # params (e.g. "#/im?p=@user"). Split on '?' so parse_qs only sees the query part.
+        fragment_path = None
+        if fragment_value and node.data_type == 'url.fragment' and '?' in fragment_value:
+            fragment_path, fragment_value = fragment_value.split('?', 1)
+
+        # A fragment value without '=' is a plain anchor (e.g. "heading1"), not a query string.
+        # Only parse through parse_qs if it contains key=value pairs.
+        if fragment_value and node.data_type == 'url.fragment' and '=' not in fragment_value:
+            fragment_path = fragment_value
+            fragment_value = None
+
+        if fragment_path:
             unfurl.add_to_queue(
-                data_type='url.fragment.anchor', key='Fragment Anchor', value=fragment_value,
-                label=f'Fragment Anchor: {fragment_value}',
+                data_type='url.fragment.anchor', key='Fragment Anchor', value=fragment_path,
+                label=f'Fragment Anchor: {fragment_path}',
                 hover='This is the traditional URL <b>fragment</b> (anchor) that identifies '
                       'a specific section of the page.',
                 parent_id=node.node_id, incoming_edge_config=urlparse_edge)
 
-        if fragment_value and (fragment_directive is None or '=' in fragment_value):
+        if fragment_value:
             parsed_qs = urllib.parse.parse_qs(fragment_value, keep_blank_values=True)
             for key, value in parsed_qs.items():
                 assert type(value) is list, 'parsed_qs should result in type list, but did not.'

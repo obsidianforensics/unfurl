@@ -112,7 +112,7 @@
             evt.preventDefault();
             // Spaces aren't allowed in URLs, but people sometimes add them by accident
             value_to_send = document.getElementById("text_to_unfurl").value.replace(/ /g, "");
-            window.location.replace("/" + value_to_send);
+            window.location.replace("/graph?url=" + encodeURIComponent(value_to_send));
         }
         return false;
     });
