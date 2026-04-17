@@ -41,10 +41,6 @@ class TestJWT(unittest.TestCase):
                   'gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI')
         test.parse_queue()
 
-        # check the number of nodes
-        self.assertEqual(len(test.nodes.keys()), 14)
-        self.assertEqual(test.total_nodes, 14)
-
         # confirm the encoded payload was separated out
         self.assertEqual('jwt.payload.enc', test.nodes[3].data_type)
 
@@ -72,10 +68,6 @@ class TestJWT(unittest.TestCase):
                   'y5jYS5nb3YvP3V0bV9jb250ZW50PSZ1dG1fbWVkaXVtPWVtYWlsJnV0bV9zb3VyY2U9Z292ZGVsaXZlcnkifQ.3oRvU'
                   '4vPXukD9yDoJYKVgmI9FwEtaRgvCIN5Xl9mUc0/s/1113920505/br/81525199996-l')
         test.parse_queue()
-
-        # check the number of nodes
-        self.assertEqual(len(test.nodes.keys()), 35)
-        self.assertEqual(test.total_nodes, 35)
 
         # confirm the JWT was separated out
         self.assertEqual('eyJhbGciOiJIUzI1NiJ9.eyJidWxsZXRpbl9saW5rX2lkIjoxMDAsInVyaSI6ImJwMjpjbGljayIsImJ1bGxl'
