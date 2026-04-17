@@ -23,6 +23,7 @@ __all__ = [
     "parse_mac_addr",
     "parse_magnet",
     "parse_mastodon",
+    "parse_mongo",
     "parse_mailto",
     "parse_metasploit",
     "parse_protobuf",
