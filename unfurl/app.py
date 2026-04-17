@@ -88,7 +88,7 @@ class JsonVisJS(Resource):
     def get(self):
         if 'url' not in request.args:
             return {}
-        unfurl_this = unquote(request.args['url'])
+        unfurl_this = request.args['url']
         return run(
             unfurl_this,
             return_type='json',

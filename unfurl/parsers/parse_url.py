@@ -142,23 +142,66 @@ def run(unfurl, node):
                               'Numbering starts at 1.', parent_id=node.node_id, incoming_edge_config=urlparse_edge)
 
     elif node.data_type == 'url.query' or node.data_type == 'url.fragment':
-        parsed_qs = urllib.parse.parse_qs(node.value, keep_blank_values=True)
-        for key, value in parsed_qs.items():
-            assert type(value) is list, 'parsed_qs should result in type list, but did not.'
-            # In the majority of cases, query string keys are unique, but the spec is ambiguous. In the case of
-            # duplicate keys, urllib.parse.parsed_qs adds them to a list. Unfurl will loop over and create a
-            # node for each value in that list of values (this is typically only one value, but could be more).
-            for v in value:
-                unfurl.add_to_queue(
-                    data_type='url.query.pair', key=key, value=v, label=f'{key}: {v}',
-                    parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+        fragment_value = node.value
+        fragment_directive = None
 
-        # If the query string or fragment is actually another URL (as seen in some redirectors), we want to
-        # continue doing subsequent parsing on it. For that, we need to recognize it and change the data_type to url.
-        if not parsed_qs:
-            parsed = try_url_parse(unfurl, node)
-            if parsed:
-                return
+        # Text Fragments (ref: https://wicg.github.io/scroll-to-text-fragment/) use :~: as a
+        # fragment directive delimiter. The part before :~: is the traditional fragment; the part
+        # after contains directives like text= that tell the browser to highlight/scroll to text.
+        if node.data_type == 'url.fragment' and ':~:' in node.value:
+            fragment_value, fragment_directive = node.value.split(':~:', 1)
+
+        # Fragments can contain SPA-style routes with a '?' separating the path from query
+        # params (e.g. "#/im?p=@user"). Split on '?' so parse_qs only sees the query part.
+        fragment_path = None
+        if fragment_value and node.data_type == 'url.fragment' and '?' in fragment_value:
+            fragment_path, fragment_value = fragment_value.split('?', 1)
+
+        # A fragment value without '=' is a plain anchor (e.g. "heading1"), not a query string.
+        # Only parse through parse_qs if it contains key=value pairs.
+        if fragment_value and node.data_type == 'url.fragment' and '=' not in fragment_value:
+            fragment_path = fragment_value
+            fragment_value = None
+
+        if fragment_path:
+            unfurl.add_to_queue(
+                data_type='url.fragment.anchor', key='Fragment Anchor', value=fragment_path,
+                label=f'Fragment Anchor: {fragment_path}',
+                hover='This is the traditional URL <b>fragment</b> (anchor) that identifies '
+                      'a specific section of the page.',
+                parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+
+        if fragment_value:
+            parsed_qs = urllib.parse.parse_qs(fragment_value, keep_blank_values=True)
+            for key, value in parsed_qs.items():
+                assert type(value) is list, 'parsed_qs should result in type list, but did not.'
+                # In the majority of cases, query string keys are unique, but the spec is ambiguous. In the case of
+                # duplicate keys, urllib.parse.parsed_qs adds them to a list. Unfurl will loop over and create a
+                # node for each value in that list of values (this is typically only one value, but could be more).
+                for v in value:
+                    unfurl.add_to_queue(
+                        data_type='url.query.pair', key=key, value=v, label=f'{key}: {v}',
+                        parent_id=node.node_id, incoming_edge_config=urlparse_edge)
+
+            # If the query string or fragment is actually another URL (as seen in some redirectors), we want to
+            # continue doing subsequent parsing on it. For that, we need to recognize it and change the data_type to url.
+            if not parsed_qs:
+                parsed = try_url_parse(unfurl, node)
+                if parsed:
+                    return
+
+        if fragment_directive:
+            # Parse each directive (separated by &). Currently only text= is defined in the spec.
+            directives = urllib.parse.parse_qs(fragment_directive, keep_blank_values=True)
+            for directive_values in directives.get('text', []):
+                decoded_text = urllib.parse.unquote_plus(directive_values)
+                unfurl.add_to_queue(
+                    data_type='url.fragment.text-fragment', key='Text Fragment', value=decoded_text,
+                    label=f'Text Fragment: {decoded_text}',
+                    hover='A <b>Text Fragment</b> tells the browser to scroll to and highlight '
+                          'the specified text on the page. '
+                          '<a href="https://wicg.github.io/scroll-to-text-fragment/" target="_blank">[spec]</a>',
+                    parent_id=node.node_id, incoming_edge_config=urlparse_edge)
 
     elif node.data_type == 'url.params':
         split_params_re = re.compile(r'^(?P<key>[^=]+?)=(?P<value>[^=?]+)(?P<delim>[;,|])')

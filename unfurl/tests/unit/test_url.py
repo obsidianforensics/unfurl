@@ -47,6 +47,54 @@ class TestUrl(unittest.TestCase):
         self.assertIn('File Extension: .png', test.nodes[13].label)
 
 
+    def test_text_fragment(self):
+        """Test that Text Fragments (#:~:text=...) are parsed.
+
+        Regression test for https://github.com/RyanDFIR/unfurl/issues/140
+        """
+
+        test = Unfurl()
+        test.add_to_queue(
+            data_type='url', key=None,
+            value='https://blog.chromium.org/2019/12/chrome-80-content-indexing-es-modules.html'
+                  '#:~:text=ECMAScript%20Modules%20in%20Web%20Workers')
+        test.parse_queue()
+
+        # confirm the text fragment is parsed out with the decoded text
+        text_fragments = [node for node in test.nodes.values()
+                          if node.data_type == 'url.fragment.text-fragment']
+        self.assertEqual(1, len(text_fragments))
+        self.assertEqual('ECMAScript Modules in Web Workers', text_fragments[0].value)
+
+    def test_text_fragment_multiple(self):
+        """Test that multiple Text Fragments are each parsed as separate nodes."""
+
+        test = Unfurl()
+        test.add_to_queue(
+            data_type='url', key=None,
+            value='https://example.com/page#:~:text=first%20match&text=second%20match')
+        test.parse_queue()
+
+        text_fragments = [node for node in test.nodes.values()
+                          if node.data_type == 'url.fragment.text-fragment']
+        self.assertEqual(2, len(text_fragments))
+        self.assertEqual('first match', text_fragments[0].value)
+        self.assertEqual('second match', text_fragments[1].value)
+
+    def test_text_fragment_with_anchor(self):
+        """Test a fragment that has both a traditional anchor and a text fragment."""
+
+        test = Unfurl()
+        test.add_to_queue(
+            data_type='url', key=None,
+            value='https://example.com/page#heading1:~:text=highlighted%20text')
+        test.parse_queue()
+
+        text_fragments = [node for node in test.nodes.values()
+                          if node.data_type == 'url.fragment.text-fragment']
+        self.assertEqual(1, len(text_fragments))
+        self.assertEqual('highlighted text', text_fragments[0].value)
+
     def test_query_param_no_value(self):
         """Test that query parameters with no value are preserved."""
 
