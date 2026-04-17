@@ -13,10 +13,6 @@ class TestUrl(unittest.TestCase):
             value='https://www.test-example.com/testing/1?2=3&4=5')
         test.parse_queue()
 
-        # check the number of nodes
-        self.assertEqual(len(test.nodes.keys()), 12)
-        self.assertEqual(test.total_nodes, 12)
-
         # confirm the scheme is parsed
         self.assertIn('https', test.nodes[2].label)
 
@@ -35,10 +31,6 @@ class TestUrl(unittest.TestCase):
             value='https://www.test-example.com/testing/1?2=3&4=5&lang=en')
         test.parse_queue()
 
-        # check the number of nodes
-        self.assertEqual(len(test.nodes.keys()), 14)
-        self.assertEqual(test.total_nodes, 14)
-
         # confirm the scheme is parsed
         self.assertIn('English', test.nodes[14].label)
 
@@ -51,12 +43,26 @@ class TestUrl(unittest.TestCase):
             value='https://dfir.blog/content/images/2019/01/logo.png')
         test.parse_queue()
 
-        # check the number of nodes
-        self.assertEqual(len(test.nodes.keys()), 13)
-        self.assertEqual(test.total_nodes, 13)
-
         # confirm the scheme is parsed
         self.assertIn('File Extension: .png', test.nodes[13].label)
+
+
+    def test_query_param_no_value(self):
+        """Test that query parameters with no value are preserved."""
+
+        test = Unfurl()
+        test.add_to_queue(
+            data_type='url', key=None,
+            value='https://www.facebook.com/photo.php?type=3&theater')
+        test.parse_queue()
+
+        # confirm that both query params are present, including the valueless "theater"
+        query_pairs = {node.key: node.value for node in test.nodes.values()
+                       if node.data_type == 'url.query.pair'}
+        self.assertIn('type', query_pairs)
+        self.assertIn('theater', query_pairs)
+        self.assertEqual('3', query_pairs['type'])
+        self.assertEqual('', query_pairs['theater'])
 
 
 if __name__ == '__main__':

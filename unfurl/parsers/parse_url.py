@@ -142,7 +142,7 @@ def run(unfurl, node):
                               'Numbering starts at 1.', parent_id=node.node_id, incoming_edge_config=urlparse_edge)
 
     elif node.data_type == 'url.query' or node.data_type == 'url.fragment':
-        parsed_qs = urllib.parse.parse_qs(node.value)
+        parsed_qs = urllib.parse.parse_qs(node.value, keep_blank_values=True)
         for key, value in parsed_qs.items():
             assert type(value) is list, 'parsed_qs should result in type list, but did not.'
             # In the majority of cases, query string keys are unique, but the spec is ambiguous. In the case of
