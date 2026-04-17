@@ -179,7 +179,16 @@
 
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('url')) {
-        document.getElementById("text_to_unfurl").value = decodeURI(urlParams.get('url') + window.location.hash);
+        // Reconstruct the original URL exactly as the user entered it. The input is
+        // evidence being analyzed, so percent-encoding must not be silently altered.
+        // encodeURIComponent in the submit handler double-encodes (e.g. %20 → %2520),
+        // so one decodeURIComponent here restores the original input faithfully.
+        var rawMatch = window.location.search.match(/[?&]url=([^&]*)/);
+        if (rawMatch) {
+            document.getElementById("text_to_unfurl").value = decodeURIComponent(rawMatch[1]);
+        } else {
+            document.getElementById("text_to_unfurl").value = urlParams.get('url') + window.location.hash;
+        }
         var url = new URL(`${window.location.protocol}//${window.location.host}/json/visjs`);
         url.searchParams.set('url', urlParams.get('url') + window.location.hash);
         fetch(url).then(response => {
