@@ -154,6 +154,12 @@ def _check_query_rule(unfurl, node, rule, site_def):
     if node.key != rule.get('key'):
         return False
 
+    # Optional path scoping: only apply this rule when the URL path matches.
+    if 'path' in rule:
+        preceding_path = unfurl.find_preceding_path(node)
+        if preceding_path != rule['path']:
+            return False
+
     apply = rule['apply']
 
     # hover_only: just set hover text on the existing node, don't create a child

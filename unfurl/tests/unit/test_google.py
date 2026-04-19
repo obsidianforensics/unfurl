@@ -1,4 +1,5 @@
 from unfurl.core import Unfurl
+from urllib.parse import urlparse
 import unittest
 
 
@@ -94,6 +95,49 @@ class TestGoogle(unittest.TestCase):
         # make sure the queue finished empty
         self.assertTrue(test.queue.empty())
         self.assertEqual(len(test.edges), 0)
+
+
+    def test_google_url_redirect(self):
+        """Test that google.com/url redirects are parsed correctly.
+
+        The q parameter should NOT be labeled as a search query; it is
+        a redirect target URL. The hover text should explain this.
+        """
+
+        test = Unfurl()
+        test.remote_lookups = False
+        test.add_to_queue(
+            data_type='url', key=None,
+            value='https://www.google.com/url?q=https://example.org/landing'
+                  '&sa=D&ust=1546552999624000&usg=AFQjCNGESR0jI6krt8QOg3NlJ0GS60RxJg')
+        test.parse_queue()
+
+        # confirm q is NOT labeled as "Search Query"
+        google_q_nodes = [n for n in test.nodes.values() if n.data_type == 'google.q']
+        self.assertEqual(0, len(google_q_nodes))
+
+        # confirm q has the redirect hover text
+        q_node = next(n for n in test.nodes.values()
+                      if n.data_type == 'url.query.pair' and n.key == 'q')
+        self.assertIn('redirect target', q_node.hover.lower())
+
+        # confirm the destination URL is parsed
+        dest_urls = [
+            n for n in test.nodes.values()
+            if n.data_type == 'url'
+            and urlparse(str(n.value)).hostname == 'example.org'
+        ]
+        self.assertGreaterEqual(len(dest_urls), 1)
+
+        # confirm sa has hover text
+        sa_node = next(n for n in test.nodes.values()
+                       if n.data_type == 'url.query.pair' and n.key == 'sa')
+        self.assertIn('action type', sa_node.hover.lower())
+
+        # confirm usg has hover text
+        usg_node = next(n for n in test.nodes.values()
+                        if n.data_type == 'url.query.pair' and n.key == 'usg')
+        self.assertIn('signature', usg_node.hover.lower())
 
 
 if __name__ == '__main__':
