@@ -253,6 +253,27 @@ class Unfurl:
         labels = preceding.split('.')
         return label in labels
 
+    def find_preceding_path(self, node):
+        """Find the URL path associated with a node by traversing up to the URL
+        ancestor and looking for a url.path sibling."""
+        parent_nodes = self.get_predecessor_node(node)
+
+        if not parent_nodes:
+            return ''
+
+        for parent_node in parent_nodes:
+            if parent_node.data_type == 'url':
+                for child_node in self.get_successor_nodes(parent_node):
+                    if child_node.data_type == 'url.path':
+                        return child_node.value
+                return ''
+            else:
+                result = self.find_preceding_path(parent_node)
+                if result:
+                    return result
+
+        return ''
+
     def get_id(self):
         new_id = self.next_id
         self.next_id += 1

@@ -365,6 +365,11 @@ def run(unfurl, node):
                 parent_id=node.node_id, incoming_edge_config=google_edge)
 
         elif node.key == 'q':
+            # On /url redirect pages, q is the destination URL, not a search query.
+            # Skip here and let the google site_def handle it with the correct label.
+            if unfurl.find_preceding_path(node) == '/url':
+                return
+
             unfurl.add_to_queue(
                 data_type='google.q', key=None, value=f'Search Query: {node.value}',
                 hover='Terms used in the Google search', parent_id=node.node_id, incoming_edge_config=google_edge)

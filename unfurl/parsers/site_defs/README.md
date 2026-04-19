@@ -204,6 +204,22 @@ use `hover_only`:
         Content type/rendering flags.
 ```
 
+### Scoping by path
+
+A query parameter can mean different things depending on the URL path. Use `path` to
+restrict a rule to a specific path:
+
+```yaml
+  # q means "redirect target" on /url, but "search query" on /search
+  - key: q
+    path: /url
+    apply:
+      hover_only: true
+      hover: The redirect target URL.
+```
+
+Without `path`, the rule fires on every URL for the domain that has the matching key.
+
 ### Parsing values as URLs
 
 Set `data_type: url` to have unfurl parse the parameter value as a full URL:
@@ -301,4 +317,5 @@ class TestExample(unittest.TestCase):
 See the existing definitions in this directory for complete examples:
 - `github.yaml` - Path rules, query rules, fragment rules, exclude_sibling
 - `facebook.yaml` - Complex path rules, wildcard excludes, hover_only query rules
+- `google.yaml` - Path-scoped query rules, hover_only for context-dependent parameters
 - `instagram.yaml` - Multiple URL formats for the same content type
