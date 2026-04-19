@@ -1,4 +1,5 @@
 from unfurl.core import Unfurl
+from urllib.parse import urlparse
 import unittest
 
 
@@ -121,8 +122,11 @@ class TestGoogle(unittest.TestCase):
         self.assertIn('redirect target', q_node.hover.lower())
 
         # confirm the destination URL is parsed
-        dest_urls = [n for n in test.nodes.values()
-                     if n.data_type == 'url' and 'example.org' in str(n.value)]
+        dest_urls = [
+            n for n in test.nodes.values()
+            if n.data_type == 'url'
+            and urlparse(str(n.value)).hostname == 'example.org'
+        ]
         self.assertGreaterEqual(len(dest_urls), 1)
 
         # confirm sa has hover text
