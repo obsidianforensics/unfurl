@@ -1,0 +1,54 @@
+name: Publish web build
+
+# Builds a wheel for the online Unfurl (unfurl-gcp) without touching PyPI, so a fix can go
+# live between PyPI releases. Push a tag named web-<current version>.post<N>, for example
+# web-20261007.post1. The wheel is built with that version, so unfurl-gcp's request logs
+# show it is not the PyPI release, and is attached to a GitHub pre-release.
+# unfurl-gcp then pins to the wheel's URL. The /deploy-web-fix skill does all of this.
+#
+# The release is created with GITHUB_TOKEN, and events made with that token do not trigger
+# other workflows, so publish-to-test-pypi.yml does not run for it. Both PyPI workflows also
+# skip web-* tags, in case one of these releases is created or edited by hand.
+on:
+  push:
+    tags: ['web-*']
+
+jobs:
+  build-n-release:
+    name: Build the wheel and attach it to a GitHub pre-release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # create the release
+    steps:
+    - uses: actions/checkout@v7
+    - name: Set up Python
+      uses: actions/setup-python@v7
+      with:
+        python-version: '3.12'
+    - name: Set the version from the tag
+      run: |
+        version=${GITHUB_REF_NAME#web-}
+        base=$(sed -n 's/^__version__ = "\(.*\)"$/\1/p' unfurl/__init__.py)
+        if [[ ! $version =~ ^${base}\.post[0-9]+$ ]]; then
+          echo "Tag $GITHUB_REF_NAME must be web-${base}.post<N> to match __version__ at this commit."
+          exit 1
+        fi
+        sed -i "s/^__version__ = \".*\"$/__version__ = \"$version\"/" unfurl/__init__.py
+        echo "VERSION=$version" >> "$GITHUB_ENV"
+    - name: Install pypa/build and twine
+      run: python -m pip install build twine
+    - name: Build a binary wheel
+      run: python -m build --wheel --outdir dist/ .
+    - name: Check distribution metadata
+      run: python -m twine check dist/*
+    - name: Check the wheel installs and reports the tag's version
+      run: |
+        python -m pip install dist/*.whl
+        test "$(cd /tmp && python -c 'import unfurl; print(unfurl.__version__)')" = "$VERSION"
+    - name: Create the pre-release
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        gh release create "$GITHUB_REF_NAME" dist/*.whl --prerelease --verify-tag \
+          --title "Web build $VERSION" \
+          --notes "Build for the online Unfurl only; not published to PyPI. Commit: $GITHUB_SHA"

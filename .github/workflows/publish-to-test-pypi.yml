@@ -12,6 +12,8 @@ on:
 jobs:
   build-n-publish:
     name: Build and publish Python 🐍 distributions 📦 to Test PyPI
+    # web-* pre-releases are builds for the online Unfurl only (publish-web-build.yml).
+    if: ${{ !startsWith(github.event.release.tag_name, 'web-') }}
     runs-on: ubuntu-latest
     environment:
       name: test_pypi
