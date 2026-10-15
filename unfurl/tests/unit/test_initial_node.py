@@ -40,6 +40,20 @@ class TestRefang(unittest.TestCase):
         self.assertIn('98d8049e-804f-11f1-b79f-ae3a8bb85d01',
                       [n.value for n in test.nodes.values() if n.data_type == 'url.query.pair'])
 
+    def test_defanged_scheme_is_parsed_only_once(self):
+        """'hxxp://host/...' is a parsable URL as it stands, but only its refanged
+        version should be split up, rather than a second tree with an 'hxxp' scheme."""
+
+        test = _unfurl('hxxp://2549127135/app/FilesInspectorX.msi')
+
+        self.assertEqual('hxxp://2549127135/app/FilesInspectorX.msi', test.nodes[1].value)
+        self.assertEqual(
+            ['http'], [n.value for n in test.nodes.values() if n.data_type == 'url.scheme'])
+        hostnames = [n for n in test.nodes.values() if n.data_type == 'url.hostname']
+        self.assertEqual(['2549127135'], [n.value for n in hostnames])
+        self.assertEqual('http://2549127135/app/FilesInspectorX.msi',
+                         _parent(test, hostnames[0]).value)
+
     def test_defanged_input_logs_no_errors(self):
         """urlparse raises on brackets in a host, which parse_url used to let escape."""
 
