@@ -63,12 +63,18 @@ def parse_twitter_snowflake(unfurl, node, encoding_type='integer', on_twitter=Tr
             timestamp = (snowflake_int >> 46) + 1288834974657
             machine_id = (snowflake_int & 0x3FF000000000) >> 36
             sequence = (snowflake_int & 0xFFF000000) >> 24
-            assert 0 <= sequence <= 4096, \
-                f'Sequence number should be between 0 and 4096; got {sequence}'
 
             # Since we are trying to parse things that might not be valid, make sure the decoded
             # timestamp is "reasonable" (between 2010-11 (the Snowflake epoch) and 2030-01
             if not 1288834974657 < timestamp < 1893456000000:
+                return
+
+            # Off Twitter, the timestamp check alone passes about 1 in 7 arbitrary 15-character
+            # names ("FilesInspectorX", "IMG_0814-scaled"). Media IDs seen in real pbs.twimg.com
+            # URLs all have a small sequence number (none above 26, most 0), while decoding an
+            # arbitrary name gives one anywhere up to 4095. On Twitter, a rare high sequence is
+            # still shown, as the domain already says what the value is.
+            if not on_twitter and sequence >= 64:
                 return
 
         except Exception as e:
