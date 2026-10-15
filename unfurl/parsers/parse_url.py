@@ -18,6 +18,7 @@ import urllib.parse
 
 from unfurl import utils
 from unfurl.file_types import lookup_extension
+from unfurl.parsers.parse_initial_node import will_be_cleaned
 
 urlparse_edge = {
     'color': {
@@ -144,6 +145,10 @@ def try_semicolon_delimited_pairs(unfurl_instance, node) -> bool:
 
 
 def run(unfurl, node):
+
+    # A defanged or otherwise unclean input is parsed through its cleaned version instead
+    if will_be_cleaned(node):
+        return
 
     if not node.data_type.startswith('url'):
         try:

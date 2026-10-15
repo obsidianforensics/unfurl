@@ -119,25 +119,47 @@ def refang(value):
 cleaning_steps = (remove_whitespace, remove_outer_quotes, refang)
 
 
+def is_cleaning_target(node):
+    """Whether cleaning applies to this node: the input, or a cleaned version of it.
+
+    Cleaning applies to each cleaned version too, so the steps can build on each other:
+    a quoted, defanged URL needs two.
+    """
+    return isinstance(node.value, str) and (
+        node.node_id == 1 or node.incoming_edge_config is cleaning_edge)
+
+
+def first_cleaning(value):
+    """The (cleaned value, hover) from the first step that changes the value, or None."""
+    for step in cleaning_steps:
+        cleaned = step(value)
+        if cleaned:
+            return cleaned
+    return None
+
+
+def will_be_cleaned(node):
+    """Whether this parser will add a cleaned version of this node.
+
+    Other parsers can leave such a node alone, as its cleaned version is parsed in its
+    place. Parsing both would draw a second copy of the tree, built from a value that
+    still carries the problem the cleaning fixes (a URL with "hxxp" as its scheme).
+    """
+    return is_cleaning_target(node) and first_cleaning(node.value) is not None
+
+
 def run(unfurl, node):
 
-    if not isinstance(node.value, str):
-        return
-
-    # Cleaning applies to the input and to each cleaned version of it, so the steps can
-    # build on each other: a quoted, defanged URL needs two.
-    if node.node_id != 1 and node.incoming_edge_config is not cleaning_edge:
+    if not is_cleaning_target(node):
         return
 
     # Only the first step that changes the value runs here. Its result comes back through
     # this parser, where the next step gets its turn. That makes the cleaning one chain
     # from the input to the fully cleaned value, rather than a sibling per step that each
     # fixes one thing (and a duplicate branch for every order they could be applied in).
-    for step in cleaning_steps:
-        cleaned = step(node.value)
-        if cleaned:
-            cleaned_value, hover = cleaned
-            unfurl.add_to_queue(data_type=node.data_type, key=node.key, value=cleaned_value,
-                                hover=hover, parent_id=node.node_id,
-                                incoming_edge_config=cleaning_edge)
-            return
+    cleaned = first_cleaning(node.value)
+    if cleaned:
+        cleaned_value, hover = cleaned
+        unfurl.add_to_queue(data_type=node.data_type, key=node.key, value=cleaned_value,
+                            hover=hover, parent_id=node.node_id,
+                            incoming_edge_config=cleaning_edge)
