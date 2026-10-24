@@ -309,7 +309,7 @@ def run(unfurl, node):
                         parent_id=node.node_id, incoming_edge_config=bing_edge)
 
             # Redirect URLs are base64 prepended with 'a1'
-            # Tend to be seen in URLs starting with bing.com/ck/a?!&&...
+            # Tend to be seen in URLs starting with `bing.com/ck/a?!&&...`
             # https://stackoverflow.com/questions/73251425/how-to-get-real-webpage-of-a-bing-com-ck-a-page
             # https://pushsecurity.com/blog/adception-malvertising-another-search-engines-search-results#id-how-the-attack-works
             elif node.key == 'u' and node.value[:6] == 'a1aHR0':
@@ -317,7 +317,7 @@ def run(unfurl, node):
                     data_type='base64', key='Redirect URL', value=node.value[2:],
                     parent_id=node.node_id, incoming_edge_config=bing_edge)
 
-            # Tend to be seen in URLs starting with bing.com/ck/a?!&&...
+            # Tend to be seen in URLs starting with `bing.com/ck/a?!&&...`
             elif node.key == 'p':
                 decoded = utils.try_urlsafe_b64_decode(node.value)
                 if decoded:
